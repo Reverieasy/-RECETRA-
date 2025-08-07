@@ -1,69 +1,72 @@
 # RECETRA - NU Dasma Receipt Management System
 
-A comprehensive receipt management system designed exclusively for NU Dasma student organizations to manage Official Receipts (OR) for donations, membership fees, and purchases.
+A comprehensive React Native mobile application for NU Dasma student organizations to manage official receipts, donations, and membership fees with role-based access control.
 
-## Features
+## 🚀 Features
 
-### 🔐 Role-Based Access Control
-- **Admin**: Full system access with user and template management
-- **Encoder**: Can issue receipts and manage their own receipts
-- **Viewer**: Read-only access to view and verify receipts
+### **Authentication & Authorization**
+- Secure login/signup system
+- Role-based access control (Admin, Encoder, Viewer)
+- Session management with AsyncStorage
+- Input validation and error handling
 
-### 📄 Receipt Management
-- Create and issue official receipts
-- Automatic receipt number generation
-- QR code generation for each receipt
-- Receipt verification system
-- Customizable receipt templates
+### **Role-Based Dashboards**
 
-### 📊 Dashboard & Analytics
-- Role-specific dashboards
-- Real-time statistics and reports
-- Organization-specific data views
-- System-wide analytics (Admin only)
+#### **Admin Dashboard**
+- System statistics overview
+- User management capabilities
+- Template management
+- Receipt verification tools
+- FAQ chatbot access
 
-### 🔍 Receipt Verification
-- QR code scanning capability
-- Manual receipt number entry
-- Complete receipt details display
-- Payment and notification status tracking
+#### **Encoder Dashboard**
+- Personal receipt statistics
+- Receipt issuance functionality
+- Transaction archive
+- Quick tips and guidance
+- Receipt verification access
 
-### 💬 FAQ Chatbot
-- Interactive chat interface
-- Quick question buttons
-- Intelligent response system
-- Help and support integration
+#### **Viewer Dashboard**
+- Organization statistics
+- Payment gateway access
+- Receipt verification
+- Read-only receipt viewing
 
-### 📧 Notifications
-- Email notifications for receipts
-- SMS notifications
-- Payment status updates
-- Automated delivery tracking
+### **Core Functionality**
+- **Receipt Management**: Issue, verify, and track official receipts
+- **QR Code System**: Unique QR codes for each receipt
+- **Payment Gateway**: Paymongo integration for online payments
+- **User Management**: Add, edit, and manage user accounts
+- **Template Management**: Customize receipt templates
+- **Transaction Archive**: Track all transactions and payments
+- **FAQ Chatbot**: Interactive help system
 
-## Test Accounts
+## 📱 Screenshots
 
-Use these credentials to test different user roles:
+*[Screenshots will be added here]*
 
-| Username | Password | Role | Organization |
-|----------|----------|------|--------------|
-| admin | password | Admin | NU Dasma Admin |
-| encoder | password | Encoder | Computer Science Society |
-| viewer | password | Viewer | Student Council |
+## 🛠️ Technology Stack
 
-## Installation & Setup
+- **React Native** with Expo SDK 53
+- **TypeScript** for type safety
+- **React Navigation** for navigation
+- **AsyncStorage** for session management
+- **Context API** for state management
 
-### Prerequisites
+## 📋 Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI
 - iOS Simulator or Android Emulator (optional)
+- Expo Go app for mobile testing
 
-### Installation Steps
+## 🚀 Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd RECETRA
+   git clone https://github.com/JOMPOGI/-RECETRA-.git
+   cd -RECETRA-
    ```
 
 2. **Install dependencies**
@@ -76,149 +79,172 @@ Use these credentials to test different user roles:
    npx expo start
    ```
 
-4. **Run on device/simulator**
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
-   - Scan QR code with Expo Go app on your phone
+4. **Run on your device**
+   - Install Expo Go from App Store/Google Play
+   - Scan the QR code with Expo Go
+   - Or press 'i' for iOS simulator, 'a' for Android emulator
 
-## Project Structure
+## 👥 Test Accounts
+
+Use these accounts to test different roles:
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | password |
+| Encoder | encoder | password |
+| Viewer | viewer | password |
+
+## 📁 Project Structure
 
 ```
 RECETRA/
 ├── src/
 │   ├── components/
-│   │   └── Layout.tsx              # Main layout with sidebar
+│   │   └── Layout.tsx          # Main layout with sidebar
 │   ├── context/
-│   │   └── AuthContext.tsx         # Authentication context
+│   │   └── AuthContext.tsx     # Authentication context
 │   ├── data/
-│   │   └── mockData.ts             # Mock data and interfaces
+│   │   └── mockData.ts         # Mock data and interfaces
 │   ├── screens/
-│   │   ├── LoginScreen.tsx         # Login screen
-│   │   ├── AdminDashboard.tsx      # Admin dashboard
-│   │   ├── EncoderDashboard.tsx    # Encoder dashboard
-│   │   ├── ViewerDashboard.tsx     # Viewer dashboard
-│   │   ├── IssueReceiptScreen.tsx  # Receipt creation form
-│   │   ├── ReceiptVerificationScreen.tsx # Receipt verification
-│   │   └── FAQChatbotScreen.tsx    # FAQ chatbot
+│   │   ├── LoginScreen.tsx     # Login screen
+│   │   ├── SignupScreen.tsx    # Signup screen
+│   │   ├── AdminDashboard.tsx  # Admin dashboard
+│   │   ├── EncoderDashboard.tsx # Encoder dashboard
+│   │   ├── ViewerDashboard.tsx # Viewer dashboard
+│   │   ├── IssueReceiptScreen.tsx # Receipt issuance
+│   │   ├── ReceiptVerificationScreen.tsx # QR verification
+│   │   ├── PaymentGatewayScreen.tsx # Paymongo integration
+│   │   ├── UserManagementScreen.tsx # User management
+│   │   ├── TemplateManagementScreen.tsx # Template management
+│   │   ├── TransactionArchiveScreen.tsx # Transaction history
+│   │   ├── ProfileScreen.tsx   # User profile
+│   │   └── FAQChatbotScreen.tsx # Help system
 │   └── services/
-│       └── mockApi.ts              # Mock API services
-├── App.tsx                         # Main app component
-└── package.json
+│       └── mockApi.ts          # Mock API services
+├── assets/                     # App icons and images
+├── App.tsx                     # Main application entry
+├── package.json                # Dependencies
+└── README.md                   # This file
 ```
 
-## Key Components
+## 🔧 Development
 
-### Authentication System
-- Secure login with role-based access
-- Session management with AsyncStorage
-- Automatic redirection based on user role
+### **Available Scripts**
 
-### Dashboard System
-- **Admin Dashboard**: System statistics, user management, template management
-- **Encoder Dashboard**: Personal statistics, receipt issuance, recent receipts
-- **Viewer Dashboard**: Organization statistics, receipt viewing, verification
+- `npm start` - Start the Expo development server
+- `npm run android` - Run on Android device/emulator
+- `npm run ios` - Run on iOS device/simulator
+- `npm run web` - Run in web browser
 
-### Receipt Management
-- Comprehensive receipt creation form
-- Automatic QR code generation
-- Receipt verification with detailed results
-- Payment and notification status tracking
+### **Key Features Implementation**
 
-### Mock Services
-- Payment gateway integration simulation
-- Email and SMS service simulation
-- QR code generation and verification
-- Report generation and analytics
+#### **Authentication Flow**
+```typescript
+// Login with role-based routing
+const { login } = useAuth();
+await login(username, password);
+// Automatically navigates to appropriate dashboard
+```
 
-## Technology Stack
+#### **Receipt Management**
+```typescript
+// Issue new receipt
+const receipt = {
+  payer: "John Doe",
+  amount: 1000,
+  purpose: "Membership Fee",
+  category: "Fees",
+  organization: "Student Council"
+};
+```
 
-- **Framework**: React Native with Expo
-- **Language**: TypeScript
-- **Navigation**: React Navigation
-- **State Management**: React Context API
-- **Storage**: AsyncStorage
-- **UI**: Custom components with consistent blue/white theme
+#### **QR Code Verification**
+```typescript
+// Verify receipt authenticity
+const verifyReceipt = (receiptNumber: string) => {
+  // QR code scanning and verification logic
+};
+```
 
-## Development Guidelines
+## 🎯 Frontend Team Tasks
 
-### Code Style
-- Use TypeScript for type safety
-- Follow React Native best practices
-- Maintain consistent component structure
-- Use proper error handling
+The following features are ready for implementation by the frontend team:
 
-### Adding New Features
-1. Create new screen components in `src/screens/`
-2. Add navigation routes in `App.tsx`
-3. Update mock data in `src/data/mockData.ts`
-4. Add mock services in `src/services/mockApi.ts`
+### **Non-Functional Features (Ready for Implementation)**
+- Back button navigation
+- Change password functionality
+- Edit profile functionality
+- Change profile photo functionality
 
-### Testing
-- Test all user roles and their specific functionalities
-- Verify receipt creation and verification
-- Test QR code functionality
-- Validate form inputs and error handling
+### **Implementation Guidelines**
+- All non-functional features have empty function stubs
+- No distracting comments or alerts
+- Clean codebase ready for development
+- Consistent UI/UX patterns established
 
-## Future Enhancements
+## 🔒 Security Features
 
-### Phase 2 Features
-- Real backend API integration
-- Database implementation
-- Push notifications
-- Advanced reporting
-- Multi-language support
+- Input validation on all forms
+- Role-based access control
+- Secure session management
+- Mock API services for development
 
-### Phase 3 Features
-- Mobile app deployment
-- Web dashboard
-- Advanced analytics
-- Integration with payment gateways
-- Bulk operations
+## 📊 Data Management
 
-## Troubleshooting
+- Mock data system for development
+- Structured interfaces for type safety
+- Helper functions for data manipulation
+- Ready for backend integration
 
-### Common Issues
+## 🎨 UI/UX Design
 
-1. **Metro bundler issues**
-   ```bash
-   npx expo start --clear
-   ```
+- Consistent blue/white theme
+- Professional, clean design
+- Responsive layouts
+- Intuitive navigation
+- Loading states and error handling
 
-2. **Dependencies issues**
-   ```bash
-   npm install --force
-   ```
-
-3. **iOS build issues**
-   ```bash
-   cd ios && pod install
-   ```
-
-### Performance Tips
-- Use FlatList for large data sets
-- Implement proper loading states
-- Optimize images and assets
-- Use React.memo for expensive components
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-This project is developed for NU Dasma student organizations. All rights reserved.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+## 👨‍💻 Team
 
-For technical support or questions:
+- **Project Lead**: [Your Name]
+- **Frontend Team**: [Team Members]
+- **Backend Team**: [Team Members]
+
+## 📞 Support
+
+For support and questions:
+- Create an issue in the GitHub repository
 - Contact the development team
 - Check the FAQ chatbot in the app
-- Review the documentation
+
+## 🚀 Deployment
+
+### **Expo Build**
+```bash
+# Build for iOS
+expo build:ios
+
+# Build for Android
+expo build:android
+```
+
+### **App Store Deployment**
+1. Configure app.json with your app details
+2. Build the production version
+3. Submit to App Store/Google Play
 
 ---
 
-**RECETRA** - Empowering NU Dasma student organizations with efficient receipt management.
+**RECETRA** - Empowering NU Dasma student organizations with efficient receipt management! 🎓📱
