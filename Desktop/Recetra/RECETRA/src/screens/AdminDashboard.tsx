@@ -47,19 +47,19 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Layout title="Admin Dashboard">
+      
       <ScrollView style={styles.container}>
         {/* System Statistics Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>System Statistics</Text>
           
           <View style={styles.statsGrid}>
-            {/* Total Receipts Card */}
             <StatCard
               title="Total Receipts"
               value={mockSystemStats.totalReceipts}
               subtitle="All time"
+             
             />
-            
             {/* Total Amount Card */}
             <StatCard
               title="Total Amount"
@@ -148,6 +148,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   
+
+
   // Section container with bottom margin
   section: {
     marginBottom: 24,
@@ -261,6 +263,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: 'white',
+  },
+
+  totalReceiptsCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    width: '48%',  // Two cards per row
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
 

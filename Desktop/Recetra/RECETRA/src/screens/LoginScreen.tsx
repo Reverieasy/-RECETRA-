@@ -8,6 +8,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
@@ -67,8 +68,12 @@ const LoginScreen: React.FC = () => {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>RECETRA</Text>
-          <Text style={styles.subtitle}>NU Dasma Receipt Management</Text>
+          <Image
+            source={require('../../assets/Logo_with_Color.png')}
+            style={{ width: 1080, height: 300, marginTop: 50, marginBottom: -100, alignContent: 'center' }}
+            resizeMode="contain"
+          />
+    
         </View>
 
         {/* Login Form */}
@@ -153,7 +158,7 @@ const styles = StyleSheet.create({
   // Main container
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
   },
   
   // Content area

@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,8 +24,11 @@ import { useAuth } from '../context/AuthContext';
  * - Navigation to login screen
  * - Some non-functional buttons for frontend team
  */
-const SignupScreen: React.FC = () => {
-  const navigation = useNavigation();
+type SignupScreenProps = {
+  navigation: StackNavigationProp<any>;
+};
+
+const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
