@@ -3,16 +3,16 @@ import Layout from '../components/Layout';
 
 /**
  * FAQ Chatbot Screen Component
- * Provides an interactive chatbot interface for user support
+ * Provides an interactive chatbot interface for user support, with role-based answers
  * 
  * Features:
  * - Chat interface with message history
  * - Quick question buttons for common queries
- * - Intelligent response generation
+ * - Intelligent response generation (role-based)
  * - Typing indicators
  * - Responsive design
  */
-const FAQChatbotScreen = () => {
+const FAQChatbotScreen = ({ userRole = 'viewer' }) => {
   const [messages, setMessages] = useState([
     {
       id: '1',
@@ -26,7 +26,7 @@ const FAQChatbotScreen = () => {
   const messagesEndRef = useRef(null);
 
   // Add some debugging
-  console.log('FAQChatbotScreen rendering');
+  // console.log('FAQChatbotScreen rendering, userRole:', userRole);
 
   const quickQuestions = [
     'How do I issue a receipt?',
@@ -36,39 +36,54 @@ const FAQChatbotScreen = () => {
     'Contact support',
   ];
 
+  // Role-based FAQ responses
   const faqResponses = {
-    'how do i issue a receipt': 'To issue a receipt, go to the "Issue Receipt" section, fill in the payer details, amount, purpose, select a category and template, then submit the form. The system will generate a unique receipt number and QR code.',
-    'how to verify a receipt': 'You can verify a receipt by scanning its QR code or manually entering the receipt number in the "Receipt Verification" section. This will show you all the receipt details and confirm its authenticity.',
-    'what are the different user roles': 'There are three roles: Admin (full system access), Encoder (can issue receipts), and Viewer (read-only access to view and verify receipts).',
-    'how to use qr codes': 'QR codes are automatically generated for each receipt. You can scan them using the verification feature to quickly access receipt details and verify authenticity.',
-    'contact support': 'For technical support, please contact the system administrator or your organization\'s IT department.',
+    'how do i issue a receipt': (role) => {
+      if (role === 'admin' || role === 'encoder') {
+        return 'To issue a receipt, go to the "Issue Receipt" section, fill in the payer details, amount, purpose, select a category and template, then submit the form. The system will generate a unique receipt number and QR code.';
+      } else {
+        return 'Issuing receipts is only available to Admin and Encoder roles. You have read-only access.';
+      }
+    },
+    'how to verify a receipt': (_) =>
+      'You can verify a receipt by scanning its QR code or manually entering the receipt number in the "Receipt Verification" section. This will show you all the receipt details and confirm its authenticity.',
+    'what are the different user roles': (_) =>
+      'There are three roles: Admin (full system access), Encoder (can issue receipts), and Viewer (read-only access to view and verify receipts).',
+    'how to use qr codes': (role) => {
+      if (role === 'viewer') {
+        return 'As a Viewer, you can use the QR code to quickly access receipt details and verify authenticity.';
+      }
+      return 'QR codes are automatically generated for each receipt. You can scan them using the verification feature to quickly access receipt details and verify authenticity.';
+    },
+    'contact support': (_) =>
+      'For technical support, please contact the system administrator or your organization\'s IT department.',
   };
 
   const generateResponse = (userMessage) => {
     const lowerMessage = userMessage.toLowerCase();
-    
+
     // Check for exact matches
-    for (const [question, answer] of Object.entries(faqResponses)) {
+    for (const [question, answerFn] of Object.entries(faqResponses)) {
       if (lowerMessage.includes(question)) {
-        return answer;
+        return answerFn(userRole);
       }
     }
 
     // Check for keywords
     if (lowerMessage.includes('receipt') && lowerMessage.includes('issue')) {
-      return faqResponses['how do i issue a receipt'];
+      return faqResponses['how do i issue a receipt'](userRole);
     }
     if (lowerMessage.includes('verify') || lowerMessage.includes('check')) {
-      return faqResponses['how to verify a receipt'];
+      return faqResponses['how to verify a receipt'](userRole);
     }
     if (lowerMessage.includes('role') || lowerMessage.includes('admin') || lowerMessage.includes('encoder')) {
-      return faqResponses['what are the different user roles'];
+      return faqResponses['what are the different user roles'](userRole);
     }
     if (lowerMessage.includes('qr') || lowerMessage.includes('scan')) {
-      return faqResponses['how to use qr codes'];
+      return faqResponses['how to use qr codes'](userRole);
     }
     if (lowerMessage.includes('help') || lowerMessage.includes('support') || lowerMessage.includes('contact')) {
-      return faqResponses['contact support'];
+      return faqResponses['contact support'](userRole);
     }
 
     return 'I\'m not sure I understand. Could you please rephrase your question or try one of the quick questions below?';
@@ -160,7 +175,7 @@ const FAQChatbotScreen = () => {
                   </div>
                 </div>
               ))}
-              
+
               {isTyping && (
                 <div style={styles.typingContainer}>
                   <span style={styles.typingText}>Assistant is typing...</span>
@@ -184,6 +199,9 @@ const FAQChatbotScreen = () => {
                 </button>
               ))}
             </div>
+            <span style={{ marginTop: 10, fontSize: 12, color: '#9ca3af', fontStyle: 'italic', display: 'block' }}>
+              Current Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+            </span>
           </div>
 
           {/* Input Area */}
@@ -244,7 +262,7 @@ const FAQChatbotScreen = () => {
                 </div>
               </div>
             ))}
-            
+
             {isTyping && (
               <div style={styles.typingContainer}>
                 <span style={styles.typingText}>Assistant is typing...</span>
@@ -268,6 +286,9 @@ const FAQChatbotScreen = () => {
               </button>
             ))}
           </div>
+          <span style={{ marginTop: 10, fontSize: 12, color: '#9ca3af', fontStyle: 'italic', display: 'block' }}>
+            Current Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+          </span>
         </div>
 
         {/* Input Area */}
