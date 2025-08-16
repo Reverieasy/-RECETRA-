@@ -12,18 +12,23 @@ import {
 } from 'react-native';
 import Layout from '../components/Layout';
 
+type UserRole = 'admin' | 'encoder' | 'viewer';
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
   timestamp: Date;
 }
-
-const FAQChatbotScreen: React.FC = () => {
+interface FAQChatbotScreenProps {
+  userRole?: UserRole;
+}
+const FAQChatbotScreen: React.FC<FAQChatbotScreenProps> = ({
+  userRole = 'viewer',
+}) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! I\'m your RECETRA assistant. How can I help you today?',
+      text: "Hello! I'm your RECETRA assistant. How can I help you today?",
       isUser: false,
       timestamp: new Date(),
     },
@@ -40,43 +45,65 @@ const FAQChatbotScreen: React.FC = () => {
     'Contact support',
   ];
 
-  const faqResponses: { [key: string]: string } = {
-    'how do i issue a receipt': 'To issue a receipt, go to the "Issue Receipt" section, fill in the payer details, amount, purpose, select a category and template, then submit the form. The system will generate a unique receipt number and QR code.',
-    'how to verify a receipt': 'You can verify a receipt by scanning its QR code or manually entering the receipt number in the "Receipt Verification" section. This will show you all the receipt details and confirm its authenticity.',
-    'what are the different user roles': 'There are three roles: Admin (full system access), Encoder (can issue receipts), and Viewer (read-only access to view and verify receipts).',
-    'how to use qr codes': 'QR codes are automatically generated for each receipt. You can scan them using the verification feature to quickly access receipt details and verify authenticity.',
-    'contact support': 'For technical support, please contact the system administrator or your organization\'s IT department.',
+   const faqResponses: { [key: string]: (role: UserRole) => string } = {
+    'how do i issue a receipt': (role) => {
+      if (role === 'admin' || role === 'encoder') {
+        return 'To issue a receipt, go to the "Issue Receipt" section, fill in the payer details, amount, purpose, select a category and template, then submit the form. The system will generate a unique receipt number and QR code.';
+      } else {
+        return 'Issuing receipts is only available to Admin and Encoder roles. You have read-only access.';
+      }
+    },
+    'how to verify a receipt': (_) =>
+      'You can verify a receipt by scanning its QR code or manually entering the receipt number in the "Receipt Verification" section. This will show you all the receipt details and confirm its authenticity.',
+    'what are the different user roles': (_) =>
+      'There are three roles: Admin (full system access), Encoder (can issue receipts), and Viewer (read-only access to view and verify receipts).',
+    'how to use qr codes': (role) => {
+      if (role === 'viewer') {
+        return 'As a Viewer, you can use the QR code to quickly access receipt details and verify authenticity.';
+      }
+      return 'QR codes are automatically generated for each receipt. You can scan them using the verification feature to quickly access receipt details and verify authenticity.';
+    },
+    'contact support': (_) =>
+      "For technical support, please contact the system administrator or your organization's IT department.",
   };
 
-  const generateResponse = (userMessage: string): string => {
+ const generateResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
-    
-    // Check for exact matches
-    for (const [question, answer] of Object.entries(faqResponses)) {
+
+    for (const [question, answerFn] of Object.entries(faqResponses)) {
       if (lowerMessage.includes(question)) {
-        return answer;
+        return answerFn(userRole);
       }
     }
 
     // Check for keywords
-    if (lowerMessage.includes('receipt') && lowerMessage.includes('issue')) {
-      return faqResponses['how do i issue a receipt'];
+     if (lowerMessage.includes('receipt') && lowerMessage.includes('issue')) {
+      return faqResponses['how do i issue a receipt'](userRole);
     }
     if (lowerMessage.includes('verify') || lowerMessage.includes('check')) {
-      return faqResponses['how to verify a receipt'];
+      return faqResponses['how to verify a receipt'](userRole);
     }
-    if (lowerMessage.includes('role') || lowerMessage.includes('admin') || lowerMessage.includes('encoder')) {
-      return faqResponses['what are the different user roles'];
+    if (
+      lowerMessage.includes('role') ||
+      lowerMessage.includes('admin') ||
+      lowerMessage.includes('encoder')
+    ) {
+      return faqResponses['what are the different user roles'](userRole);
     }
     if (lowerMessage.includes('qr') || lowerMessage.includes('scan')) {
-      return faqResponses['how to use qr codes'];
+      return faqResponses['how to use qr codes'](userRole);
     }
-    if (lowerMessage.includes('help') || lowerMessage.includes('support') || lowerMessage.includes('contact')) {
-      return faqResponses['contact support'];
+    if (
+      lowerMessage.includes('help') ||
+      lowerMessage.includes('support') ||
+      lowerMessage.includes('contact')
+    ) {
+      return faqResponses['contact support'](userRole);
     }
 
-    return 'I\'m not sure I understand. Could you please rephrase your question or try one of the quick questions below?';
+    return "I'm not sure I understand. Could you please rephrase your question or try one of the quick questions below?";
   };
+
 
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
@@ -88,7 +115,7 @@ const FAQChatbotScreen: React.FC = () => {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
 
@@ -101,7 +128,7 @@ const FAQChatbotScreen: React.FC = () => {
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, botMessage]);
+       setMessages((prev) => [...prev, botMessage]);
       setIsTyping(false);
     }, 1000);
   };
@@ -119,22 +146,31 @@ const FAQChatbotScreen: React.FC = () => {
   }, [messages]);
 
   const renderMessage = ({ item }: { item: Message }) => (
-    <View style={[
-      styles.messageContainer,
-      item.isUser ? styles.userMessage : styles.botMessage
-    ]}>
-      <View style={[
-        styles.messageBubble,
-        item.isUser ? styles.userBubble : styles.botBubble
-      ]}>
-        <Text style={[
-          styles.messageText,
-          item.isUser ? styles.userText : styles.botText
-        ]}>
+    <View
+      style={[
+        styles.messageContainer,
+        item.isUser ? styles.userMessage : styles.botMessage,
+      ]}
+    >
+      <View
+        style={[
+          styles.messageBubble,
+          item.isUser ? styles.userBubble : styles.botBubble,
+        ]}
+      >
+        <Text
+          style={[
+            styles.messageText,
+            item.isUser ? styles.userText : styles.botText,
+          ]}
+        >
           {item.text}
         </Text>
         <Text style={styles.timestamp}>
-          {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {item.timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </Text>
       </View>
     </View>
@@ -156,7 +192,7 @@ const FAQChatbotScreen: React.FC = () => {
             style={styles.messagesList}
             showsVerticalScrollIndicator={false}
           />
-          
+
           {isTyping && (
             <View style={styles.typingContainer}>
               <Text style={styles.typingText}>Assistant is typing...</Text>
@@ -180,10 +216,13 @@ const FAQChatbotScreen: React.FC = () => {
               ))}
             </View>
           </ScrollView>
+          <Text style={{ marginTop: 10, fontSize: 12, color: '#9ca3af', fontStyle: 'italic' }}>
+            Current Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+          </Text>
         </View>
 
         {/* Input Area */}
-        <View style={styles.inputContainer}>
+         <View style={styles.inputContainer}>
           <TextInput
             style={styles.textInput}
             value={inputText}
@@ -193,7 +232,10 @@ const FAQChatbotScreen: React.FC = () => {
             maxLength={500}
           />
           <TouchableOpacity
-            style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+            style={[
+              styles.sendButton,
+              !inputText.trim() && styles.sendButtonDisabled,
+            ]}
             onPress={() => sendMessage(inputText)}
             disabled={!inputText.trim()}
           >
@@ -204,6 +246,7 @@ const FAQChatbotScreen: React.FC = () => {
     </Layout>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,11 +23,39 @@ const ProfileScreen = () => {
     organization: user?.organization || '',
   });
 
+  // New: State for profile photo preview
+  const [profilePhoto, setProfilePhoto] = useState('https://via.placeholder.com/120x120/1e3a8a/ffffff?text=👤');
+  const fileInputRef = useRef(null);
+
+  // New: State for password change modal
+  const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   /**
    * Handles change password action
    */
   const handleChangePassword = () => {
-    alert('Change Password\n\nPassword change functionality would be implemented here with proper security measures including current password verification.');
+    setPasswordModalOpen(true);
+  };
+
+  const handleSubmitPassword = (e) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('Please fill all fields.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+    // Here, you would call your API to change the password.
+    setPasswordModalOpen(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    alert('Password changed successfully!');
   };
 
   /**
@@ -47,7 +75,19 @@ const ProfileScreen = () => {
    * Handles change profile photo action
    */
   const handleChangePhoto = () => {
-    alert('Change Profile Photo\n\nPhoto upload functionality would be implemented here using file input or camera access.');
+    fileInputRef.current.click();
+  };
+
+  // New: Handler for file input
+  const handlePhotoSelected = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfilePhoto(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   /**
@@ -86,13 +126,20 @@ const ProfileScreen = () => {
           <div style={styles.photoSection}>
             <div style={styles.photoContainer} onClick={handleChangePhoto}>
               <img
-                src="https://via.placeholder.com/120x120/1e3a8a/ffffff?text=👤"
+                src={profilePhoto}
                 alt="Profile"
                 style={styles.profilePhoto}
               />
               <div style={styles.photoOverlay}>
                 <span style={styles.photoOverlayText}>Change</span>
               </div>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                ref={fileInputRef}
+                onChange={handlePhotoSelected}
+              />
             </div>
           </div>
 
@@ -200,6 +247,60 @@ const ProfileScreen = () => {
             </div>
           </div>
 
+          {/* Password Change Modal */}
+          {isPasswordModalOpen && (
+            <div style={modalStyles.overlay}>
+              <div style={modalStyles.modal}>
+                <h3 style={{ marginBottom: 10 }}>Change Password</h3>
+                <form onSubmit={handleSubmitPassword}>
+                  <div style={modalStyles.formRow}>
+                    <label style={modalStyles.label}>Current Password</label>
+                    <input
+                      type="password"
+                      style={modalStyles.input}
+                      value={currentPassword}
+                      onChange={e => setCurrentPassword(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div style={modalStyles.formRow}>
+                    <label style={modalStyles.label}>New Password</label>
+                    <input
+                      type="password"
+                      style={modalStyles.input}
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div style={modalStyles.formRow}>
+                    <label style={modalStyles.label}>Confirm New Password</label>
+                    <input
+                      type="password"
+                      style={modalStyles.input}
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                  <div style={modalStyles.buttonRow}>
+                    <button
+                      type="submit"
+                      style={modalStyles.saveButton}
+                    >
+                      Submit
+                    </button>
+                    <button
+                      type="button"
+                      style={modalStyles.cancelButton}
+                      onClick={() => setPasswordModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           {/* Role Information */}
           <div style={styles.roleSection}>
             <h3 style={styles.roleTitle}>Role Information</h3>
@@ -244,6 +345,66 @@ const ProfileScreen = () => {
       </div>
     </Layout>
   );
+};
+
+// Modal styles for the password change dialog
+const modalStyles = {
+  overlay: {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    zIndex: 1000,
+    display: 'flex', alignItems: 'center', justifyContent: 'center'
+  },
+  modal: {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+    minWidth: '320px',
+    maxWidth: '90vw'
+  },
+  formRow: {
+    marginBottom: '14px'
+  },
+  label: {
+    display: 'block',
+    marginBottom: '4px',
+    fontSize: '14px',
+    color: '#374151',
+    fontWeight: 600
+  },
+  input: {
+    width: '100%',
+    padding: '8px 10px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '14px'
+  },
+  buttonRow: {
+    display: 'flex',
+    gap: '10px',
+    justifyContent: 'flex-end',
+    marginTop: '20px'
+  },
+  saveButton: {
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '8px 18px',
+    fontWeight: 600,
+    cursor: 'pointer'
+  },
+  cancelButton: {
+    backgroundColor: '#9ca3af',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '8px 18px',
+    fontWeight: 600,
+    cursor: 'pointer'
+  }
 };
 
 /**

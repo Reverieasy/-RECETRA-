@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
+import Modal from 'react-native-modal';
 
 /**
  * Profile Screen Component
@@ -33,22 +35,83 @@ const ProfileScreen: React.FC = () => {
     organization: user?.organization || '',
   });
 
+  // For changing password modal
+  const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // For changing photo modal
+  const [isPhotoModalVisible, setPhotoModalVisible] = useState(false);
+  const [profilePhotoUri, setProfilePhotoUri] = useState<string>('https://via.placeholder.com/120x120/1e3a8a/ffffff?text=U');
+
   /**
    * Handles change password action
    */
   const handleChangePassword = () => {
+    setPasswordModalVisible(true);
+  };
+
+  const handleSubmitPassword = () => {
+    // Dummy validation example. Replace this with your API call.
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Please fill all fields.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Passwords do not match.');
+      return;
+    }
+    // TODO: Call your API endpoint here. Example:
+    // await api.changePassword({ currentPassword, newPassword })
+    setPasswordModalVisible(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    Alert.alert('Password changed successfully!');
   };
 
   /**
    * Handles edit profile action
    */
   const handleEditProfile = () => {
+    if (isEditing) {
+      // Save changes logic here (e.g., call API to save profileData)
+      // TODO: Call your API to save profile info
+      setIsEditing(false);
+      Alert.alert('Profile updated!');
+    } else {
+      setIsEditing(true);
+    }
   };
 
   /**
    * Handles change profile photo action
    */
   const handleChangePhoto = () => {
+    setPhotoModalVisible(true);
+  };
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission denied", "We need permission to access your photos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    // For expo-image-picker v14+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setProfilePhotoUri(result.assets[0].uri);
+      setPhotoModalVisible(false);
+      Alert.alert("Profile photo updated!");
+    }
   };
 
   /**
@@ -77,16 +140,76 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.photoSection}>
             <TouchableOpacity onPress={handleChangePhoto}>
               <View style={styles.photoContainer}>
-                <Image
-                  source={{ uri: 'https://via.placeholder.com/120x120/1e3a8a/ffffff?text=U' }}
-                  style={styles.profilePhoto}
-                />
+                <Image source={{ uri: profilePhotoUri }} style={styles.profilePhoto} />
                 <View style={styles.photoOverlay}>
                   <Text style={styles.photoOverlayText}>Change</Text>
                 </View>
               </View>
             </TouchableOpacity>
           </View>
+          
+          {/* Photo Modal */}
+          <Modal
+            isVisible={isPhotoModalVisible}
+            onBackdropPress={() => setPhotoModalVisible(false)}
+          >
+            <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>
+                Change Profile Photo
+              </Text>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handlePickImage}
+              >
+                <Text style={styles.saveButtonText}>Choose from Gallery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: '#6b7280', marginTop: 10 }]}
+                onPress={() => setPhotoModalVisible(false)}
+              >
+                <Text style={styles.saveButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+
+          {/* Password Modal */}
+          <Modal
+            isVisible={isPasswordModalVisible}
+            onBackdropPress={() => setPasswordModalVisible(false)}
+          >
+            <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>
+                Change Password
+              </Text>
+              <TextInput
+                placeholder="Current Password"
+                secureTextEntry
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                style={styles.infoInput}
+              />
+              <TextInput
+                placeholder="New Password"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+                style={styles.infoInput}
+              />
+              <TextInput
+                placeholder="Confirm New Password"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                style={styles.infoInput}
+              />
+              <TouchableOpacity
+                style={[styles.saveButton, { marginTop: 16 }]}
+                onPress={handleSubmitPassword}
+              >
+                <Text style={styles.saveButtonText}>Submit</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
 
           {/* Profile Information */}
           <View style={styles.infoSection}>
@@ -110,7 +233,7 @@ const ProfileScreen: React.FC = () => {
                   <TextInput
                     style={styles.infoInput}
                     value={profileData.fullName}
-                    onChangeText={(text) => setProfileData({...profileData, fullName: text})}
+                    onChangeText={(text) => setProfileData({ ...profileData, fullName: text })}
                     placeholder="Enter full name"
                   />
                 ) : (
@@ -125,7 +248,7 @@ const ProfileScreen: React.FC = () => {
                   <TextInput
                     style={styles.infoInput}
                     value={profileData.email}
-                    onChangeText={(text) => setProfileData({...profileData, email: text})}
+                    onChangeText={(text) => setProfileData({ ...profileData, email: text })}
                     placeholder="Enter email"
                     keyboardType="email-address"
                   />
@@ -141,7 +264,7 @@ const ProfileScreen: React.FC = () => {
                   <TextInput
                     style={styles.infoInput}
                     value={profileData.phone}
-                    onChangeText={(text) => setProfileData({...profileData, phone: text})}
+                    onChangeText={(text) => setProfileData({ ...profileData, phone: text })}
                     placeholder="Enter phone number"
                     keyboardType="phone-pad"
                   />
@@ -161,9 +284,10 @@ const ProfileScreen: React.FC = () => {
                 <Text style={styles.infoLabel}>Role</Text>
                 <View style={styles.roleContainer}>
                   <Text style={styles.roleText}>{getRoleDisplayName(user?.role || '')}</Text>
-                  <View style={[styles.roleBadge, { backgroundColor: 
-                    user?.role === 'Admin' ? '#ef4444' : 
-                    user?.role === 'Encoder' ? '#f59e0b' : '#10b981' 
+                  <View style={[styles.roleBadge, {
+                    backgroundColor:
+                      user?.role === 'Admin' ? '#ef4444' :
+                        user?.role === 'Encoder' ? '#f59e0b' : '#10b981'
                   }]}>
                     <Text style={styles.roleBadgeText}>{user?.role}</Text>
                   </View>
@@ -193,13 +317,13 @@ const ProfileScreen: React.FC = () => {
           {/* Account Actions */}
           <View style={styles.actionsSection}>
             <Text style={styles.sectionTitle}>Account Actions</Text>
-            
+
             <TouchableOpacity style={styles.actionButton} onPress={handleChangePassword}>
               <Text style={styles.actionButtonText}>Change Password</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.dangerButton]} 
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.dangerButton]}
               onPress={logout}
             >
               <Text style={styles.dangerButtonText}>Logout</Text>
@@ -251,23 +375,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  
+
   // Content area
   content: {
     padding: 16,
   },
-  
+
   // Profile photo section
   photoSection: {
     alignItems: 'center',
     marginBottom: 24,
   },
-  
+
   // Photo container
   photoContainer: {
     position: 'relative',
   },
-  
+
   // Profile photo
   profilePhoto: {
     width: 120,
@@ -276,7 +400,7 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: '#1e3a8a',
   },
-  
+
   // Photo overlay for change button
   photoOverlay: {
     position: 'absolute',
@@ -287,14 +411,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  
+
   // Photo overlay text
   photoOverlayText: {
     color: 'white',
     fontSize: 10,
     fontWeight: '600',
   },
-  
+
   // Information section
   infoSection: {
     backgroundColor: 'white',
@@ -310,7 +434,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  
+
   // Information header
   infoHeader: {
     flexDirection: 'row',
@@ -318,14 +442,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  
+
   // Information title
   infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#374151',
   },
-  
+
   // Edit button
   editButton: {
     backgroundColor: '#1e3a8a',
@@ -333,19 +457,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },
-  
+
   // Edit button text
   editButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
-  
+
   // Information container
   infoContainer: {
     marginBottom: 16,
   },
-  
+
   // Information row
   infoRow: {
     flexDirection: 'row',
@@ -355,7 +479,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
-  
+
   // Information label
   infoLabel: {
     fontSize: 14,
@@ -363,7 +487,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     flex: 1,
   },
-  
+
   // Information value
   infoValue: {
     fontSize: 14,
@@ -371,7 +495,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
   },
-  
+
   // Information input (for editing)
   infoInput: {
     fontSize: 14,
@@ -385,7 +509,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     backgroundColor: 'white',
   },
-  
+
   // Role container
   roleContainer: {
     flexDirection: 'row',
@@ -393,42 +517,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
   },
-  
+
   // Role text
   roleText: {
     fontSize: 14,
     color: '#374151',
     marginRight: 8,
   },
-  
+
   // Role badge
   roleBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  
+
   // Role badge text
   roleBadgeText: {
     fontSize: 10,
     fontWeight: '600',
     color: 'white',
   },
-  
+
   // Status badge
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  
+
   // Status text
   statusText: {
     fontSize: 12,
     fontWeight: '600',
     color: 'white',
   },
-  
+
   // Save button
   saveButton: {
     backgroundColor: '#10b981',
@@ -436,14 +560,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  
+
   // Save button text
   saveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
-  
+
   // Actions section
   actionsSection: {
     backgroundColor: 'white',
@@ -459,7 +583,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  
+
   // Section title
   sectionTitle: {
     fontSize: 18,
@@ -467,7 +591,7 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 16,
   },
-  
+
   // Action button
   actionButton: {
     backgroundColor: '#f3f4f6',
@@ -476,26 +600,26 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     alignItems: 'center',
   },
-  
+
   // Action button text
   actionButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#374151',
   },
-  
+
   // Danger button
   dangerButton: {
     backgroundColor: '#fee2e2',
   },
-  
+
   // Danger button text
   dangerButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#dc2626',
   },
-  
+
   // Role information section
   roleInfoSection: {
     backgroundColor: 'white',
@@ -510,14 +634,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  
+
   // Role information container
   roleInfoContainer: {
     backgroundColor: '#f8fafc',
     borderRadius: 8,
     padding: 16,
   },
-  
+
   // Role information text
   roleInfoText: {
     fontSize: 14,
