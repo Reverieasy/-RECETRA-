@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext';
  * - Profile customization options
  */
 const ProfileScreen = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     fullName: user?.fullName || '',
@@ -22,6 +22,21 @@ const ProfileScreen = () => {
     phone: user?.phone || '',
     organization: user?.organization || '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Sync profileData with user data when user changes
+  React.useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        organization: user.organization || '',
+      });
+    }
+  }, [user]);
 
   /**
    * Handles change password action
@@ -33,13 +48,57 @@ const ProfileScreen = () => {
   /**
    * Handles edit profile action
    */
-  const handleEditProfile = () => {
+  const handleEditProfile = async () => {
     if (isEditing) {
       // Save changes
-      alert('Profile Updated\n\nYour profile changes have been saved successfully.');
-      setIsEditing(false);
+      setIsLoading(true);
+      setError('');
+      setSuccessMessage('');
+      
+      try {
+        // Validate required fields
+        if (!profileData.fullName.trim()) {
+          setError('Full name is required');
+          return;
+        }
+        
+        if (!profileData.email.trim()) {
+          setError('Email is required');
+          return;
+        }
+        
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(profileData.email)) {
+          setError('Please enter a valid email address');
+          return;
+        }
+        
+        // Update profile
+        const success = await updateProfile({
+          fullName: profileData.fullName.trim(),
+          email: profileData.email.trim(),
+          phone: profileData.phone.trim() || undefined,
+        });
+        
+        if (success) {
+          setSuccessMessage('Profile updated successfully!');
+          setIsEditing(false);
+          // Clear success message after 3 seconds
+          setTimeout(() => setSuccessMessage(''), 3000);
+        } else {
+          setError('Failed to update profile. Please try again.');
+        }
+      } catch (error) {
+        setError('An error occurred while updating your profile.');
+        console.error('Profile update error:', error);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setIsEditing(true);
+      setError('');
+      setSuccessMessage('');
     }
   };
 
@@ -100,18 +159,66 @@ const ProfileScreen = () => {
           <div style={styles.infoSection}>
             <div style={styles.infoHeader}>
               <h3 style={styles.infoTitle}>Personal Information</h3>
-              <button
-                style={styles.editButton}
-                onClick={handleEditProfile}
-              >
-                {isEditing ? 'Save Changes' : 'Edit Profile'}
-              </button>
+              <div style={styles.editButtons}>
+                {isEditing ? (
+                  <>
+                    <button
+                      style={isLoading ? styles.cancelButtonDisabled : styles.cancelButton}
+                      onClick={() => {
+                        setIsEditing(false);
+                        setProfileData({
+                          fullName: user?.fullName || '',
+                          email: user?.email || '',
+                          phone: user?.phone || '',
+                          organization: user?.organization || '',
+                        });
+                        setError('');
+                        setSuccessMessage(''); // Clear success message on cancel
+                      }}
+                      disabled={isLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      style={isLoading ? styles.editButtonDisabled : styles.editButton}
+                      onClick={handleEditProfile}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    style={styles.editButton}
+                    onClick={handleEditProfile}
+                  >
+                    Edit Profile
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Error Display */}
+            {error && (
+              <div style={styles.errorContainer}>
+                <span style={styles.errorText}>{error}</span>
+              </div>
+            )}
+
+            {/* Success Message Display */}
+            {successMessage && (
+              <div style={styles.successContainer}>
+                <span style={styles.successText}>{successMessage}</span>
+              </div>
+            )}
 
             <div style={styles.infoContainer}>
               {/* Full Name */}
               <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>Full Name</span>
+                <span style={styles.infoLabel}>
+                  Full Name
+                  <span style={styles.requiredIndicator}> *</span>
+                </span>
                 {isEditing ? (
                   <input
                     type="text"
@@ -119,6 +226,9 @@ const ProfileScreen = () => {
                     value={profileData.fullName}
                     onChange={(e) => setProfileData({...profileData, fullName: e.target.value})}
                     placeholder="Enter full name"
+                    required
+                    onFocus={(e) => e.target.style.borderColor = '#1e3a8a'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 ) : (
                   <span style={styles.infoValue}>{user?.fullName}</span>
@@ -127,7 +237,10 @@ const ProfileScreen = () => {
 
               {/* Email */}
               <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>Email</span>
+                <span style={styles.infoLabel}>
+                  Email
+                  <span style={styles.requiredIndicator}> *</span>
+                </span>
                 {isEditing ? (
                   <input
                     type="email"
@@ -135,6 +248,9 @@ const ProfileScreen = () => {
                     value={profileData.email}
                     onChange={(e) => setProfileData({...profileData, email: e.target.value})}
                     placeholder="Enter email"
+                    required
+                    onFocus={(e) => e.target.style.borderColor = '#1e3a8a'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 ) : (
                   <span style={styles.infoValue}>{user?.email}</span>
@@ -151,6 +267,8 @@ const ProfileScreen = () => {
                     value={profileData.phone}
                     onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                     placeholder="Enter phone number"
+                    onFocus={(e) => e.target.style.borderColor = '#1e3a8a'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 ) : (
                   <span style={styles.infoValue}>{user?.phone || 'Not provided'}</span>
@@ -331,6 +449,50 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
+  },
+
+  editButtonDisabled: {
+    backgroundColor: '#9ca3af',
+    color: '#6b7280',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'not-allowed',
+    transition: 'background-color 0.2s ease',
+  },
+
+  cancelButton: {
+    backgroundColor: '#f3f4f6',
+    color: '#374151',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginRight: '10px',
+    transition: 'background-color 0.2s ease',
+  },
+
+  cancelButtonDisabled: {
+    backgroundColor: '#f3f4f6',
+    color: '#9ca3af',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'not-allowed',
+    marginRight: '10px',
+    transition: 'background-color 0.2s ease',
+  },
+  
+  editButtons: {
+    display: 'flex',
+    gap: '10px',
   },
   
   infoContainer: {
@@ -366,6 +528,12 @@ const styles = {
     fontSize: '14px',
     backgroundColor: 'white',
     minWidth: '200px',
+    transition: 'border-color 0.2s ease',
+    outline: 'none',
+    ':focus': {
+      borderColor: '#1e3a8a',
+      boxShadow: '0 0 0 3px rgba(30, 58, 138, 0.1)',
+    },
   },
   
   statusBadge: {
@@ -379,6 +547,36 @@ const styles = {
     fontSize: '12px',
     fontWeight: '600',
     color: 'white',
+  },
+
+  errorContainer: {
+    backgroundColor: '#fef3f2',
+    border: '1px solid #fca5a5',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    marginTop: '16px',
+    marginBottom: '16px',
+  },
+
+  errorText: {
+    fontSize: '14px',
+    color: '#991b1b',
+    fontWeight: '500',
+  },
+
+  successContainer: {
+    backgroundColor: '#e0f2f7',
+    border: '1px solid #90cdf4',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    marginTop: '16px',
+    marginBottom: '16px',
+  },
+
+  successText: {
+    fontSize: '14px',
+    color: '#2b6cb0',
+    fontWeight: '500',
   },
   
   actionsSection: {
@@ -484,6 +682,12 @@ const styles = {
     fontSize: '14px',
     color: '#6b7280',
     lineHeight: '1.4',
+  },
+
+  requiredIndicator: {
+    color: 'red',
+    fontSize: '14px',
+    fontWeight: '600',
   },
 };
 

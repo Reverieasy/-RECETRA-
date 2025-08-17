@@ -1,24 +1,48 @@
 {
   "expo": {
-    
+    "name": "RECETRA",
+    "slug": "recetra-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/LogoIcon.png",
-   
-    "newArchEnabled": true,
-    
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/LogoIcon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.recetra.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to scan QR codes for receipt verification."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        
+        "foregroundImage": "./assets/LogoIcon.png",
+        "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.recetra.mobile",
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/LogoIcon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow RECETRA to access your camera to scan QR codes."
+        }
+      ]
+    ]
   }
+}
 

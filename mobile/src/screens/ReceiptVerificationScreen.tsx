@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,25 +7,38 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Modal,
+  Platform,
+  StatusBar,
 } from 'react-native';
+import { CameraView, Camera } from 'expo-camera';
 import Layout from '../components/Layout';
 import { mockReceipts } from '../data/mockData';
+import QRCode from 'react-native-qrcode-svg';
+
 
 /**
  * Receipt Verification Screen Component
  * Allows users to verify receipt authenticity through QR scanning or manual entry
  * 
  * Features:
- * - QR code scanning simulation
+ * - QR code scanning with camera
  * - Manual receipt number entry
  * - Complete receipt details display
  * - Payment and notification status tracking
  * - Interactive verification process
  */
 const ReceiptVerificationScreen: React.FC = () => {
-  const [receiptNumber, setReceiptNumber] = useState('');
+    const [receiptNumber, setReceiptNumber] = useState('');
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  
+  // QR Scanner state
+  const [showScanner, setShowScanner] = useState(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showQRPopup, setShowQRPopup] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
 
   /**
    * Handles manual receipt verification
@@ -47,15 +60,66 @@ const ReceiptVerificationScreen: React.FC = () => {
   };
 
   /**
-   * Simulates QR code scanning functionality
-   * In a real app, this would open the camera and scan QR codes
+   * Opens the QR code scanner
    */
-  const handleQRScan = () => {
+  const handleQRScan = async () => {
+    try {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+      
+      if (status === 'granted') {
+        setShowScanner(true);
+      } else {
+        Alert.alert(
+          'Camera Permission',
+          'Camera access is required to scan QR codes. Please enable it in Settings.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.log('Permission request failed:', error);
+      Alert.alert('Error', 'Failed to request camera permission');
+    }
+  };
+
+  /**
+   * Handles successful QR code scan
+   */
+  const handleBarCodeScanned = ({ data }: { data: string }) => {
+    // Prevent multiple scans
+    if (isScanning) return;
+    
+    setIsScanning(true);
+    setShowScanner(false);
+    setReceiptNumber(data);
+    
     Alert.alert(
-      'QR Code Scanner',
-      'QR code scanning functionality would be implemented here. For now, please use manual entry.',
-      [{ text: 'OK' }]
+      'QR Code Scanned!',
+      `Receipt number: ${data}`,
+      [
+        { text: 'Cancel', style: 'cancel', onPress: () => setIsScanning(false) },
+        { text: 'Verify', onPress: () => {
+          setIsScanning(false);
+          handleManualVerification();
+        }}
+      ]
     );
+  };
+
+  /**
+   * Shows QR code popup for a receipt
+   */
+  const showReceiptQR = (receipt: any) => {
+    setSelectedReceipt(receipt);
+    setShowQRPopup(true);
+  };
+
+  /**
+   * Closes the QR popup
+   */
+  const closeQRPopup = () => {
+    setShowQRPopup(false);
+    setSelectedReceipt(null);
   };
 
   /**
@@ -198,6 +262,105 @@ const ReceiptVerificationScreen: React.FC = () => {
             </View>
           </View>
 
+
+
+          {/* QR Scanner Modal */}
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={showScanner}
+            onRequestClose={() => {
+              setShowScanner(false);
+              setIsScanning(false);
+            }}
+          >
+            <View style={{ flex: 1, backgroundColor: 'black' }}>
+              {hasPermission === null ? (
+                <Text style={{ textAlign: 'center', marginTop: 40, color: 'white' }}>Requesting camera permission...</Text>
+              ) : hasPermission === false ? (
+                <Text style={{ textAlign: 'center', marginTop: 40, color: 'red' }}>
+                  No access to camera. Please allow camera permissions in settings.
+                </Text>
+              ) : (
+                <View style={{ flex: 1 }}>
+                  <CameraView
+                    style={{ flex: 1 }}
+                    facing="back"
+                    onBarcodeScanned={handleBarCodeScanned}
+                  />
+                  {/* Scanning overlay */}
+                  <View style={styles.scanningOverlay}>
+                    <View style={styles.scanningFrame}>
+                      <View style={[styles.scanningCorner, styles.scanningCornerTopLeft]} />
+                      <View style={[styles.scanningCorner, styles.scanningCornerTopRight]} />
+                      <View style={[styles.scanningCorner, styles.scanningCornerBottomLeft]} />
+                      <View style={[styles.scanningCorner, styles.scanningCornerBottomRight]} />
+                    </View>
+                    <Text style={styles.scanningText}>Point camera at QR code</Text>
+                  </View>
+                </View>
+              )}
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 40,
+                  right: 24,
+                  backgroundColor: '#1e3a8a',
+                  padding: 12,
+                  borderRadius: 24,
+                  zIndex: 999,
+                }}
+                onPress={() => {
+                  setShowScanner(false);
+                  setIsScanning(false);
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+
+          {/* QR Code Popup Modal */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={showQRPopup}
+            onRequestClose={closeQRPopup}
+          >
+            <View style={styles.qrPopupOverlay}>
+              <View style={styles.qrPopupContent}>
+                <View style={styles.qrPopupHeader}>
+                  <Text style={styles.qrPopupTitle}>Receipt QR Code</Text>
+                  <TouchableOpacity style={styles.qrPopupCloseButton} onPress={closeQRPopup}>
+                    <Text style={styles.qrPopupCloseText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {selectedReceipt && (
+                  <View style={styles.qrPopupBody}>
+                    <Text style={styles.qrPopupReceiptTitle}>{selectedReceipt.receiptNumber}</Text>
+                    <Text style={styles.qrPopupReceiptDetails}>
+                      {selectedReceipt.payer} • ₱{selectedReceipt.amount.toLocaleString()}
+                    </Text>
+                    
+                    <View style={styles.qrPopupCodeWrapper}>
+                      <QRCode 
+                        value={selectedReceipt.receiptNumber}
+                        size={150}
+                        color="black"
+                        backgroundColor="white"
+                      />
+                    </View>
+                    
+                    <Text style={styles.qrPopupNote}>
+                      Scan this QR code to verify receipt authenticity
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </Modal>
+
           {/* Manual Entry Form */}
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Enter Receipt Number</Text>
@@ -227,6 +390,31 @@ const ReceiptVerificationScreen: React.FC = () => {
           {/* Verification Result */}
           {verificationResult && <VerificationResult receipt={verificationResult} />}
           {verificationResult === null && receiptNumber && !isVerifying && <InvalidResult />}
+
+          {/* Sample Receipt Numbers */}
+          <View style={styles.samplesContainer}>
+            <Text style={styles.samplesTitle}>Sample Receipt Numbers</Text>
+            <Text style={styles.samplesDescription}>Try these receipt numbers for testing:</Text>
+            
+            <View style={styles.samplesList}>
+              {mockReceipts.slice(0, 3).map((receipt) => (
+                <TouchableOpacity
+                  key={receipt.id}
+                  style={styles.sampleItem}
+                  onPress={() => {
+                    setReceiptNumber(receipt.receiptNumber);
+                    setVerificationResult(null);
+                    showReceiptQR(receipt);
+                  }}
+                >
+                  <Text style={styles.sampleNumber}>{receipt.receiptNumber}</Text>
+                  <Text style={styles.sampleDetails}>
+                    {receipt.payer} • ₱{receipt.amount.toLocaleString()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
           {/* Information */}
           <View style={styles.infoContainer}>
@@ -499,6 +687,169 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     lineHeight: 18,
+  },
+  
+  // Scanning overlay styles
+  scanningOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanningFrame: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderColor: '#4f46e5',
+    borderRadius: 20,
+    backgroundColor: 'transparent',
+  },
+  scanningCorner: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    backgroundColor: '#4f46e5',
+    borderRadius: 10,
+  },
+  scanningCornerTopLeft: {
+    top: -10,
+    left: -10,
+  },
+  scanningCornerTopRight: {
+    top: -10,
+    right: -10,
+  },
+  scanningCornerBottomLeft: {
+    bottom: -10,
+    left: -10,
+  },
+  scanningCornerBottomRight: {
+    bottom: -10,
+    right: -10,
+  },
+  scanningText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  
+  // QR Popup styles
+  qrPopupOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrPopupContent: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxWidth: 350,
+    alignItems: 'center',
+  },
+  qrPopupHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  qrPopupTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1e3a8a',
+  },
+  qrPopupCloseButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrPopupCloseText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  qrPopupBody: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  qrPopupReceiptTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e3a8a',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  qrPopupReceiptDetails: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  qrPopupCodeWrapper: {
+    marginBottom: 20,
+  },
+  qrPopupNote: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  
+  // Sample Receipts styles
+  samplesContainer: {
+    marginTop: 24,
+    marginBottom: 24,
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  samplesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e3a8a',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  samplesDescription: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  samplesList: {
+    gap: 12,
+  },
+  sampleItem: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    alignItems: 'center',
+  },
+  sampleNumber: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e3a8a',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  sampleDetails: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
   },
 });
 

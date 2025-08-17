@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { mockReceipts } from '../data/mockData';
+import QRCode from 'qrcode.react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 /**
  * Receipt Verification Screen Component
@@ -17,6 +19,10 @@ const ReceiptVerificationScreen = () => {
   const [receiptNumber, setReceiptNumber] = useState('');
   const [verificationResult, setVerificationResult] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showQRPopup, setShowQRPopup] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const scannerRef = useRef(null);
 
   /**
    * Handles manual receipt verification
@@ -38,12 +44,97 @@ const ReceiptVerificationScreen = () => {
   };
 
   /**
-   * Simulates QR code scanning functionality
-   * In a real app, this would open the camera and scan QR codes
+   * Handles QR code scanning functionality
+   * Opens camera to scan QR codes using Html5QrcodeScanner
    */
   const handleQRScan = () => {
-    alert('QR Code Scanner\n\nQR code scanning functionality would be implemented here using the device camera. For this demo, please use manual entry with one of these receipt numbers:\n\n• OR-2024-001\n• OR-2024-002\n• OR-2024-003');
+    setShowQRScanner(true);
   };
+
+  /**
+   * Handles when a QR code is detected
+   */
+  const handleQRDetected = (qrValue) => {
+    // Find receipt by QR value
+    const receipt = mockReceipts.find(r => r.receiptNumber === qrValue);
+    if (receipt) {
+      setVerificationResult(receipt);
+      setShowQRScanner(false);
+      alert(`QR Code Scanned!\n\nReceipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount.toLocaleString()}`);
+    } else {
+      alert('QR Code scanned but receipt not found. Please try again.');
+    }
+  };
+
+  /**
+   * Closes the QR scanner modal
+   */
+  const closeQRScanner = () => {
+    if (scannerRef.current) {
+      scannerRef.current.clear();
+      scannerRef.current = null;
+    }
+    setShowQRScanner(false);
+  };
+
+  /**
+   * Shows QR code popup for a receipt
+   */
+  const showReceiptQR = (receipt) => {
+    setSelectedReceipt(receipt);
+    setShowQRPopup(true);
+  };
+
+  /**
+   * Closes the QR popup
+   */
+  const closeQRPopup = () => {
+    setShowQRPopup(false);
+    setSelectedReceipt(null);
+  };
+
+  /**
+   * Initialize Html5QrcodeScanner when modal opens
+   */
+  useEffect(() => {
+    if (showQRScanner && !scannerRef.current) {
+      const scanner = new Html5QrcodeScanner('reader', {
+        qrbox: { width: 250, height: 250 },
+        fps: 10,
+      });
+      
+      scanner.render((decodedText) => {
+        handleQRDetected(decodedText);
+      }, (error) => {
+        console.warn(error);
+      });
+      
+      scannerRef.current = scanner;
+    }
+    
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear();
+        scannerRef.current = null;
+      }
+    };
+  }, [showQRScanner]);
+
+  /**
+   * Handles escape key to close modal
+   */
+  React.useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showQRScanner) {
+        closeQRScanner();
+      }
+    };
+
+    if (showQRScanner) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showQRScanner]);
 
   /**
    * Resets the verification form and results
@@ -142,6 +233,26 @@ const ReceiptVerificationScreen = () => {
           </div>
         </div>
       </div>
+      
+      {/* QR Code Section */}
+      <div style={styles.qrCodeSection}>
+        <h4 style={styles.qrCodeTitle}>Receipt QR Code</h4>
+        <p style={styles.qrCodeDescription}>
+          This QR code contains the receipt information and can be scanned for verification
+        </p>
+        <div style={styles.qrCodeContainer}>
+          <QRCode 
+            value={receipt.receiptNumber}
+            size={120}
+            level="M"
+            includeMargin={true}
+            style={styles.qrCode}
+          />
+          <p style={styles.qrCodeNote}>
+            Scan this QR code to verify receipt authenticity
+          </p>
+        </div>
+      </div>
     </div>
   );
 
@@ -210,6 +321,8 @@ const ReceiptVerificationScreen = () => {
               <button style={styles.qrButton} onClick={handleQRScan}>
                 <span style={styles.qrButtonText}>📷 Scan QR Code</span>
               </button>
+              
+
             </div>
           </div>
 
@@ -228,6 +341,79 @@ const ReceiptVerificationScreen = () => {
             </div>
           )}
 
+          {/* QR Scanner Modal */}
+          {showQRScanner && (
+            <div style={styles.modalOverlay}>
+              <div style={styles.modalContent}>
+                <div style={styles.modalHeader}>
+                  <h3 style={styles.modalTitle}>QR Code Scanner</h3>
+                  <button style={styles.closeButton} onClick={closeQRScanner}>
+                    ✕
+                  </button>
+                </div>
+                
+                <div style={styles.modalBody}>
+                  <p style={styles.modalDescription}>
+                    Point your camera at a QR code to scan it automatically.
+                  </p>
+                  
+                  {/* Html5QrcodeScanner */}
+                  <div id="reader" style={styles.scannerContainer}></div>
+                  
+                  <div style={styles.cameraInstructions}>
+                    <p style={styles.instructionText}>
+                      • Hold your device steady
+                    </p>
+                    <p style={styles.instructionText}>
+                      • Point camera at QR code
+                    </p>
+                    <p style={styles.instructionText}>
+                      • QR code will be detected automatically
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+
+
+          {/* QR Code Popup Modal */}
+          {showQRPopup && selectedReceipt && (
+            <div style={styles.modalOverlay}>
+              <div style={styles.modalContent}>
+                <div style={styles.modalHeader}>
+                  <h3 style={styles.modalTitle}>Receipt QR Code</h3>
+                  <button style={styles.closeButton} onClick={closeQRPopup}>
+                    ✕
+                  </button>
+                </div>
+                
+                <div style={styles.modalBody}>
+                  <div style={styles.qrPopupContent}>
+                    <h4 style={styles.qrPopupReceiptTitle}>{selectedReceipt.receiptNumber}</h4>
+                    <p style={styles.qrPopupReceiptDetails}>
+                      {selectedReceipt.payer} • ₱{selectedReceipt.amount.toLocaleString()}
+                    </p>
+                    
+                    <div style={styles.qrPopupCodeWrapper}>
+                      <QRCode 
+                        value={selectedReceipt.receiptNumber}
+                        size={200}
+                        level="M"
+                        includeMargin={true}
+                      />
+                    </div>
+                    
+                    <p style={styles.qrPopupNote}>
+                      Scan this QR code to verify receipt authenticity
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Sample Receipt Numbers */}
           <div style={styles.samplesContainer}>
             <h3 style={styles.samplesTitle}>Sample Receipt Numbers</h3>
@@ -241,6 +427,7 @@ const ReceiptVerificationScreen = () => {
                     onClick={() => {
                       setReceiptNumber(receipt.receiptNumber);
                       setVerificationResult(null);
+                      showReceiptQR(receipt);
                     }}
                   >
                     <span style={styles.sampleNumber}>{receipt.receiptNumber}</span>
@@ -248,6 +435,7 @@ const ReceiptVerificationScreen = () => {
                       {receipt.payer} • ₱{receipt.amount.toLocaleString()}
                     </span>
                   </button>
+
                 </div>
               ))}
             </div>
@@ -523,6 +711,10 @@ const styles = {
     alignItems: 'center',
   },
   
+  sampleContent: {
+    flex: 1,
+  },
+  
   sampleNumber: {
     fontSize: '14px',
     fontWeight: '600',
@@ -533,13 +725,13 @@ const styles = {
     fontSize: '12px',
     color: '#6b7280',
   },
-  
-  instructionsContainer: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '24px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  },
+   
+   instructionsContainer: {
+     backgroundColor: 'white',
+     borderRadius: '12px',
+     padding: '24px',
+     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+   },
   
   instructionsTitle: {
     fontSize: '18px',
@@ -560,6 +752,170 @@ const styles = {
     marginBottom: '8px',
     lineHeight: '1.5',
   },
+
+  // New styles for QR Scanner Modal
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '32px',
+    width: '90%',
+    maxWidth: '500px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+    position: 'relative',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
+    paddingBottom: '16px',
+    borderBottom: '2px solid #e5e7eb',
+  },
+  modalTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#374151',
+    margin: 0,
+  },
+  closeButton: {
+    backgroundColor: '#ef4444',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    fontSize: '20px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBody: {
+    marginBottom: '24px',
+    paddingBottom: '24px',
+    borderBottom: '2px solid #e5e7eb',
+  },
+  modalDescription: {
+    fontSize: '16px',
+    color: '#6b7280',
+    marginBottom: '16px',
+    margin: '0 0 16px 0',
+  },
+  scannerContainer: {
+    width: '100%',
+    minHeight: '300px',
+    marginBottom: '20px',
+  },
+
+  cameraInstructions: {
+    textAlign: 'center',
+    color: '#6b7280',
+    fontSize: '14px',
+    marginTop: '10px',
+  },
+  
+  // CSS Animation for loading spinner
+  '@keyframes spin': {
+    '0%': { transform: 'rotate(0deg)' },
+    '100%': { transform: 'rotate(360deg)' },
+  },
+  
+
+  qrPopupContent: {
+    textAlign: 'center',
+  },
+  qrPopupReceiptTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#1e3a8a',
+    marginBottom: '8px',
+    margin: '0 0 8px 0',
+  },
+  qrPopupReceiptDetails: {
+    fontSize: '16px',
+    color: '#6b7280',
+    marginBottom: '20px',
+    margin: '0 0 20px 0',
+  },
+  qrPopupCodeWrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '20px',
+  },
+  qrPopupNote: {
+    fontSize: '14px',
+    color: '#6b7280',
+    margin: '0',
+    fontStyle: 'italic',
+  },
+  instructionText: {
+    marginBottom: '5px',
+  },
+
+  // New styles for QR Code Section
+  qrCodeSection: {
+    marginTop: '24px',
+    paddingTop: '24px',
+    borderTop: '2px solid #e5e7eb',
+  },
+  qrCodeTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: '12px',
+    margin: '0 0 12px 0',
+  },
+  qrCodeDescription: {
+    fontSize: '14px',
+    color: '#6b7280',
+    marginBottom: '16px',
+    margin: '0 0 16px 0',
+  },
+  qrCodeContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '20px',
+  },
+  qrCode: {
+    marginBottom: '10px',
+  },
+  qrCodeNote: {
+    fontSize: '12px',
+    color: '#6b7280',
+    textAlign: 'center',
+  },
 };
+
+// Add CSS keyframes for loading animation
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  
+  .scanning-dot-1 { animation: pulse 1.2s ease-in-out infinite; }
+  .scanning-dot-2 { animation: pulse 1.2s ease-in-out infinite 0.2s; }
+  .scanning-dot-3 { animation: pulse 1.2s ease-in-out infinite 0.4s; }
+`;
+document.head.appendChild(styleSheet);
 
 export default ReceiptVerificationScreen;
