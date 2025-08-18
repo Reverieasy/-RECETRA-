@@ -290,3 +290,31 @@ export const getReceiptsByOrganization = (organization) => {
 export const getReceiptsByUser = (issuedBy) => {
   return mockReceipts.filter(receipt => receipt.issuedBy === issuedBy);
 };
+
+/**
+ * Updates a user's profile information
+ * @param {string} userId - User's ID
+ * @param {Object} updates - Object containing fields to update
+ * @returns {Object|null} Updated user object if successful, null otherwise
+ */
+export const updateUser = (userId, updates) => {
+  const userIndex = mockUsers.findIndex(user => user.id === userId);
+  if (userIndex === -1) return null;
+  
+  // Update the user with new data
+  mockUsers[userIndex] = { ...mockUsers[userIndex], ...updates };
+  
+  // Also update localStorage if user exists there
+  try {
+    const localUsers = JSON.parse(localStorage.getItem('mockUsers') || '[]');
+    const localUserIndex = localUsers.findIndex(user => user.id === userId);
+    if (localUserIndex !== -1) {
+      localUsers[localUserIndex] = { ...localUsers[localUserIndex], ...updates };
+      localStorage.setItem('mockUsers', JSON.stringify(localUsers));
+    }
+  } catch (error) {
+    console.error('Error updating local user:', error);
+  }
+  
+  return mockUsers[userIndex];
+};

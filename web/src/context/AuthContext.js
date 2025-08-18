@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { findUserByCredentials } from '../data/mockData';
+import { findUserByCredentials, updateUser } from '../data/mockData';
 
 /**
  * Authentication context type definition
@@ -112,12 +112,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Updates the current user's profile information
+   * @param {Object} updates - Object containing fields to update
+   * @returns {Promise<boolean>} - True if update successful, false otherwise
+   */
+  const updateProfile = async (updates) => {
+    try {
+      if (!user || !user.id) return false;
+      
+      // Update user in mock data
+      const updatedUser = updateUser(user.id, updates);
+      if (!updatedUser) return false;
+      
+      // Update current user state
+      const newUserData = { ...user, ...updates };
+      setUser(newUserData);
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(newUserData));
+      
+      return true;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return false;
+    }
+  };
+
   // Context value containing all auth-related state and methods
   const value = {
     user,
     isLoading,
     login,
     logout,
+    updateProfile,
   };
 
   return (
