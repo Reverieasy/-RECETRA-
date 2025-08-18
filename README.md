@@ -5,8 +5,7 @@ A comprehensive receipt management system built with React Native (mobile) and R
 ### Prerequisites
 - Node.js (v18+)
 - Expo CLI
-- Android Studio / Xcode (for device testing)
-
+  
 ##  Web App (React.js)
 ### Prerequisites
 - Node.js (v18+)
@@ -30,30 +29,30 @@ cd mobile && npm start
 
 ```
 RECETRA_/
-├── mobile/                 # React Native mobile app
+├── mobile/                  # React Native mobile app
 │   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── screens/        # App screens
-│   │   ├── context/        # Authentication context
-│   │   ├── data/          # Mock data and interfaces
-│   │   └── services/      # API services
-│   ├── App.tsx            # Main app component
-│   └── package.json       # Mobile dependencies
-├── web/                    # React.js web app
+│   │   ├── components/      # Reusable components
+│   │   ├── screens/         # App screens
+│   │   ├── context/         # Authentication context
+│   │   ├── data/            # Mock data and interfaces
+│   │   └── services/        # API services
+│   ├── App.tsx              # Main app component
+│   └── package.json         # Mobile dependencies
+├── web/                     # React.js web app
 │   ├── src/
-│   │   ├── components/     # Web components
-│   │   ├── screens/        # Web screens
-│   │   ├── context/        # Auth context
-│   │   ├── data/          # Mock data
-│   │   └── services/      # API services
-│   ├── App.js             # Main web app
-│   └── package.json       # Web dependencies
-├── start-dev.ps1          # PowerShell server manager
-├── start-dev.bat          # Batch file server manager
-├── Start Both Servers.bat # Quick start both servers
-├── Start Web Server.bat   # Quick start web server
-├── Start Mobile Server.bat # Quick start mobile server
-└── README.md              # This file
+│   │   ├── components/      # Web components
+│   │   ├── screens/         # Web screens
+│   │   ├── context/         # Auth context
+│   │   ├── data/            # Mock data
+│   │   └── services/        # API services
+│   ├── App.js               # Main web app
+│   └── package.json         # Web dependencies
+├── start-dev.ps1            # PowerShell server manager
+├── start-dev.bat            # Batch file server manager
+├── Start Both Servers.bat   # Quick start both servers
+├── Start Web Server.bat     # Quick start web server
+├── Start Mobile Server.bat  # Quick start mobile server
+└── README.md                # T
 ```
 
 ##  User Roles
@@ -135,7 +134,7 @@ RECETRA_/
 - **Styling**: StyleSheet (mobile), Inline styles (web)
 - **Development**: PowerShell scripts, Batch files
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch
