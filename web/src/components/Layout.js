@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+
 /**
  * Main Layout Component
  * Provides the consistent layout structure for all screens including:
@@ -148,25 +149,93 @@ const Layout = ({ children, title, showBackButton = false }) => {
           <div style={styles.sidebar}>
             {/* Sidebar Header */}
             <div style={styles.sidebarHeader}>
-              <h2 style={styles.sidebarTitle}>RECETRA</h2>
-              <p style={styles.sidebarSubtitle}>NU Dasma</p>
+              <img className="sidebarLogo" src='../../assets/Logo_with_Color.png' alt='Logo' style={styles.sidebarLogo} />
+              
             </div>
             
             {/* Navigation Menu Items */}
-            <div style={styles.menuContainer}>
-              {getMenuItems().map((item, index) => (
-                <button
-                  key={index}
-                  style={{
-                    ...styles.menuItem,
-                    backgroundColor: location.pathname === item.path ? '#f3f4f6' : 'transparent'
-                  }}
-                  onClick={() => handleNavigation(item.path)}
-                >
-                  <span style={styles.menuItemText}>{item.label}</span>
-                </button>
-              ))}
-            </div>
+<div style={styles.menuContainer}>
+  {getMenuItems().map((item, index) => (
+    <button
+      key={index}
+      style={{
+        ...styles.menuItem,
+        backgroundColor: location.pathname === item.path ? '#f3f4f6' : 'transparent',
+        display: 'flex',
+        alignItems: 'center'
+      }}
+      onClick={() => handleNavigation(item.path)}
+    >
+      {/* Render icon based on item label */}
+      {item.label === 'Home' && (
+        <img
+          src="/assets/home-icon.png"
+          alt="home"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'User Management' && (
+        <img
+          src="/assets/user-management.png"
+          alt="user-management"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'Template Management' && (
+        <img
+          src="/assets/template.png"
+          alt="template"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'Receipt Verification' && (
+        <img
+          src="/assets/receipt-ver.png"
+          alt="receipt-ver"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'FAQ Chatbot' && (
+        <img
+          src="/assets/chat.png"
+          alt="chat"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'Profile' && (
+        <img
+          src="/assets/profile.png"
+          alt="profile"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'Issue Receipt' && (
+        <img
+          src="/assets/Receipt-issue.png"
+          alt="issue-receipt"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'Transaction Archive' && (
+        <img
+          src="/assets/archive.png"
+          alt="archive"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+      {item.label === 'Payment Gateway' && (
+        <img
+          src="/assets/payment.png"
+          alt="payment"
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+      )}
+
+      <span style={styles.menuItemText}>{item.label}</span>
+    </button>
+  ))}
+</div>
+
             
             {/* Logout Button */}
             <button
@@ -275,7 +344,15 @@ const styles = {
     bottom: 0,
     zIndex: 1000,
   },
-  
+
+  sidebarLogo: {
+     width: 250, 
+     height: 250, 
+     marginTop: -30, 
+     marginBottom: -80, 
+     alignSelf: 'center'
+  },
+
   // Backdrop (semi-transparent overlay)
   sidebarBackdrop: {
     position: 'absolute',
@@ -298,11 +375,18 @@ const styles = {
     boxShadow: '2px 0 8px rgba(0, 0, 0, 0.25)',
     display: 'flex',
     flexDirection: 'column',
+    padding: '20px',
+    '&:hover': {
+      backgroundColor: '#a5c1f8ff',
+      transition: 'background-color 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+    },
   },
   
   // Sidebar header section
   sidebarHeader: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#ffffffff',
     padding: '20px',
   },
   sidebarTitle: {
@@ -313,7 +397,7 @@ const styles = {
     margin: 0,
   },
   sidebarSubtitle: {
-    color: '#bfdbfe',
+    color: '#7cb6fdff',
     fontSize: '14px',
     margin: 0,
   },
@@ -322,6 +406,7 @@ const styles = {
   menuContainer: {
     flex: 1,
     paddingTop: '20px',
+  
   },
   
   // Individual menu item
@@ -334,10 +419,11 @@ const styles = {
     border: 'none',
     textAlign: 'left',
     cursor: 'pointer',
+    
   },
   menuItemText: {
     fontSize: '16px',
-    color: '#374151',
+    color: '#19191aff',
     fontWeight: '500',
   },
   
@@ -349,6 +435,8 @@ const styles = {
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
+    marginBottom: '50px',
+   
   },
   logoutButtonText: {
     color: 'white',

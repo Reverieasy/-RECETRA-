@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Image,
   View,
   Text,
   TextInput,
@@ -64,11 +65,15 @@ const LoginScreen: React.FC = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.content}>
+     <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>RECETRA</Text>
-          <Text style={styles.subtitle}>NU Dasma Receipt Management</Text>
+          <Image
+            source={require('../../assets/Logo_with_Color.png')}
+            style={{ width: 1080, height: 300, marginTop: 50, marginBottom: -100, alignContent: 'center' }}
+            resizeMode="contain"
+          />
+    
         </View>
 
         {/* Login Form */}
