@@ -1,3 +1,5 @@
+import { Image } from 'react-native';
+
 import React, { useState } from 'react';
 import {
   View,
@@ -151,10 +153,11 @@ const Layout: React.FC<LayoutProps> = ({ children, title, showBackButton = false
           {/* Sidebar Content */}
           <View style={styles.sidebar}>
             {/* Sidebar Header */}
-            <View style={styles.sidebarHeader}>
-              <Text style={styles.sidebarTitle}>RECETRA</Text>
-              <Text style={styles.sidebarSubtitle}>NU Dasma</Text>
-            </View>
+              <Image
+                source={require('../../assets/Logo_with_Color.png')}
+                style={{ width: 300, height: 200, marginTop: 0, marginBottom: -110, alignSelf: 'center', }}
+                resizeMode="contain"
+              />
             
             {/* Navigation Menu Items */}
             <View style={styles.menuContainer}>
@@ -163,8 +166,74 @@ const Layout: React.FC<LayoutProps> = ({ children, title, showBackButton = false
                   key={index}
                   style={styles.menuItem}
                   onPress={() => handleNavigation(item.screen)}
+
                 >
-                  <Text style={styles.menuItemText}>{item.label}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {item.label === 'Home' && (
+                      <Image
+                        source={require('../../assets/home-icon.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'User Management' && (
+                      <Image
+                        source={require('../../assets/user-management.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'Template Management' && (
+                      <Image
+                        source={require('../../assets/template.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'Receipt Verification' && (
+                      <Image
+                        source={require('../../assets/receipt-ver.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'FAQ Chatbot' && (
+                      <Image
+                        source={require('../../assets/chat.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'Profile' && (
+                      <Image
+                        source={require('../../assets/profile.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'Issue Receipt' && (
+                      <Image
+                        source={require('../../assets/Receipt-issue.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'Transaction Archive' && (
+                      <Image
+                        source={require('../../assets/archive.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    {item.label === 'Payment Gateway' && (
+                      <Image
+                        source={require('../../assets/payment.png')}
+                        style={{ width: 20, height: 20, marginRight: 8 }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    <Text style={styles.menuItemText}>{item.label}</Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>

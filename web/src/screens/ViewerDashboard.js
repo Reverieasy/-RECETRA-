@@ -4,31 +4,11 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { getReceiptsByOrganization } from '../data/mockData';
 
-/**
- * Viewer Dashboard Component
- * Provides read-only access to receipt information for viewers
- * 
- * Features:
- * - Organization statistics overview
- * - Recent receipts list (read-only)
- * - Quick actions for viewers
- * - Information about viewer role capabilities
- * 
- * This dashboard is only accessible to users with 'Viewer' role
- */
 const ViewerDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const organizationReceipts = user ? getReceiptsByOrganization(user.organization) : [];
 
-  /**
-   * StatCard Component
-   * Reusable component for displaying statistics in a card format
-   * @param {Object} props - Component props
-   * @param {string} props.title - The title of the statistic
-   * @param {string|number} props.value - The value to display
-   * @param {string} props.subtitle - Optional subtitle for additional context
-   */
   const StatCard = ({ title, value, subtitle }) => (
     <div style={styles.statCard}>
       <h3 style={styles.statTitle}>{title}</h3>
@@ -37,10 +17,6 @@ const ViewerDashboard = () => {
     </div>
   );
 
-  /**
-   * Calculates organization statistics for the viewer
-   * @returns {Object} Object containing various statistics
-   */
   const calculateStats = () => {
     const totalReceipts = organizationReceipts.length;
     const totalAmount = organizationReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
@@ -68,33 +44,17 @@ const ViewerDashboard = () => {
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>{user?.organization} Statistics</h2>
           <div style={styles.statsGrid}>
-            <StatCard
-              title="Total Receipts"
-              value={stats.totalReceipts}
-              subtitle="Organization total"
-            />
-            <StatCard
-              title="Total Amount"
-              value={`₱${stats.totalAmount.toLocaleString()}`}
-              subtitle="All time"
-            />
-            <StatCard
-              title="This Month"
-              value={stats.thisMonthReceipts}
-              subtitle={`₱${stats.thisMonthAmount.toLocaleString()}`}
-            />
-            <StatCard
-              title="Organization"
-              value={user?.organization || 'N/A'}
-              subtitle="Current org"
-            />
+            <StatCard title="Total Receipts" value={stats.totalReceipts} subtitle="Organization total" />
+            <StatCard title="Total Amount" value={`₱${stats.totalAmount.toLocaleString()}`} subtitle="All time" />
+            <StatCard title="This Month" value={stats.thisMonthReceipts} subtitle={`₱${stats.thisMonthAmount.toLocaleString()}`} />
+            <StatCard title="Organization" value={user?.organization || 'N/A'} subtitle="Current org" />
           </div>
         </div>
 
         {/* Recent Receipts */}
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Recent Receipts</h2>
-          <div style={styles.listContainer}>
+          <div style={styles.card}>
             {organizationReceipts.slice(0, 5).map((receipt) => (
               <div 
                 key={receipt.id} 
@@ -137,23 +97,14 @@ const ViewerDashboard = () => {
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Quick Actions</h2>
           <div style={styles.actionGrid}>
-            <button
-              style={styles.actionButton}
-              onClick={() => navigate('/viewer/payment')}
-            >
-              <span style={styles.actionButtonText}>Payment Gateway</span>
+            <button style={styles.actionButton} onClick={() => navigate('/viewer/payment')}>
+              Payment Gateway
             </button>
-            <button
-              style={styles.actionButton}
-              onClick={() => navigate('/viewer/verify')}
-            >
-              <span style={styles.actionButtonText}>Verify Receipt</span>
+            <button style={styles.actionButton} onClick={() => navigate('/viewer/verify')}>
+              Verify Receipt
             </button>
-            <button
-              style={styles.actionButton}
-              onClick={() => navigate('/viewer/faq')}
-            >
-              <span style={styles.actionButtonText}>Get Help</span>
+            <button style={styles.actionButton} onClick={() => navigate('/viewer/faq')}>
+              Get Help
             </button>
           </div>
         </div>
@@ -161,20 +112,20 @@ const ViewerDashboard = () => {
         {/* Information */}
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Viewer Information</h2>
-          <div style={styles.infoContainer}>
-            <div style={styles.infoItem}>
+          <div style={styles.infoGrid}>
+            <div style={styles.infoCard}>
               <h4 style={styles.infoTitle}>📋 View Only Access</h4>
               <p style={styles.infoText}>You can view receipts and statistics but cannot create or modify them</p>
             </div>
-            <div style={styles.infoItem}>
+            <div style={styles.infoCard}>
               <h4 style={styles.infoTitle}>💳 Payment Processing</h4>
               <p style={styles.infoText}>Use the payment gateway to process payments for existing receipts</p>
             </div>
-            <div style={styles.infoItem}>
+            <div style={styles.infoCard}>
               <h4 style={styles.infoTitle}>Receipt Verification</h4>
               <p style={styles.infoText}>Verify receipt authenticity using QR codes or receipt numbers</p>
             </div>
-            <div style={styles.infoItem}>
+            <div style={styles.infoCard}>
               <h4 style={styles.infoTitle}>Need Help?</h4>
               <p style={styles.infoText}>Contact your organization's admin or use the FAQ chatbot for assistance</p>
             </div>
@@ -185,105 +136,79 @@ const ViewerDashboard = () => {
   );
 };
 
-/**
- * Styles for the ViewerDashboard component
- */
 const styles = {
   container: {
-    backgroundColor: '#f5f5f5',
-    minHeight: '100%',
+    backgroundColor: '#f9fafb',
+    minHeight: '100vh',
+    padding: '32px',
   },
-  
   section: {
-    marginBottom: '24px',
+    marginBottom: '32px',
   },
-  
   sectionTitle: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#374151',
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#1f2937',
     marginBottom: '16px',
-    margin: '0 0 16px 0',
   },
-  
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px',
-    marginBottom: '8px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '20px',
   },
-  
   statCard: {
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#ffffff',
+    padding: '24px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
     textAlign: 'center',
   },
-  
   statTitle: {
     fontSize: '14px',
     fontWeight: '600',
     color: '#6b7280',
     marginBottom: '8px',
-    margin: '0 0 8px 0',
   },
-  
   statValue: {
     fontSize: '24px',
     fontWeight: 'bold',
     color: '#1e3a8a',
     marginBottom: '4px',
-    margin: '0 0 4px 0',
   },
-  
   statSubtitle: {
     fontSize: '12px',
     color: '#9ca3af',
-    margin: 0,
   },
-  
-  listContainer: {
+  card: {
     backgroundColor: 'white',
-    borderRadius: '12px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
-  
   listItem: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '16px 20px',
+    padding: '20px',
     borderBottom: '1px solid #f3f4f6',
     cursor: 'pointer',
   },
-  
-  listItemContent: {
-    flex: 1,
-  },
-  
+  listItemContent: { flex: 1 },
   listItemTitle: {
     fontSize: '16px',
     fontWeight: '600',
     color: '#374151',
     marginBottom: '4px',
-    margin: '0 0 4px 0',
   },
-  
   listItemSubtitle: {
     fontSize: '14px',
     color: '#6b7280',
     marginBottom: '2px',
-    margin: '0 0 2px 0',
   },
-  
   listItemDate: {
     fontSize: '12px',
     color: '#9ca3af',
-    margin: 0,
   },
-  
   listItemRight: {
     textAlign: 'right',
     display: 'flex',
@@ -291,94 +216,73 @@ const styles = {
     alignItems: 'flex-end',
     gap: '4px',
   },
-  
   listItemAmount: {
     fontSize: '16px',
     fontWeight: '600',
     color: '#374151',
-    margin: 0,
   },
-  
   statusBadge: {
-    padding: '4px 8px',
+    padding: '4px 10px',
     borderRadius: '12px',
     minWidth: '70px',
     textAlign: 'center',
   },
-  
   statusText: {
     fontSize: '12px',
     fontWeight: '600',
     color: 'white',
     textTransform: 'capitalize',
   },
-  
   emptyState: {
     padding: '40px 20px',
     textAlign: 'center',
   },
-  
   emptyStateText: {
     fontSize: '16px',
     color: '#6b7280',
     marginBottom: '4px',
-    margin: '0 0 4px 0',
   },
-  
   emptyStateSubtext: {
     fontSize: '14px',
     color: '#9ca3af',
-    margin: 0,
   },
-
   actionGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px',
-    marginBottom: '16px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '20px',
   },
-
   actionButton: {
     backgroundColor: '#1e3a8a',
     color: 'white',
     padding: '16px',
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: 'none',
     cursor: 'pointer',
     fontSize: '16px',
     fontWeight: '600',
+    transition: 'background 0.2s',
   },
-
-  actionButtonText: {
-    color: 'white',
-  },
-  
-  infoContainer: {
+  infoGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '16px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: '20px',
   },
-  
-  infoItem: {
+  infoCard: {
     backgroundColor: 'white',
-    padding: '16px',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    padding: '20px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
   },
-  
   infoTitle: {
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: '600',
     color: '#374151',
     marginBottom: '8px',
-    margin: '0 0 8px 0',
   },
-  
   infoText: {
-    fontSize: '12px',
+    fontSize: '13px',
     color: '#6b7280',
-    lineHeight: '1.4',
-    margin: 0,
+    lineHeight: '1.5',
   },
 };
 
