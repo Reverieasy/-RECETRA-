@@ -1,13 +1,7 @@
 # RECETRA 
 A comprehensive receipt management system built with React Native (mobile) and React.js (web), designed for NU Dasma orgs.
 
-## 🚀 Recent Updates
-- **Redesigned UI/UX** with modern interface improvements
-- **FAQ Chatbot removed** from Admin role for cleaner dashboard
-- **Enhanced navigation** with improved back button functionality
-- **Updated dependencies** for better performance and security
-
-## 📱 Mobile App (React Native)
+##  Mobile App (React Native)
 ### Prerequisites
 - Node.js (v18+)
 - Expo CLI (`npm install -g @expo/cli`)
@@ -28,7 +22,7 @@ npm install
 - Camera and barcode scanning capabilities
 - QR code generation and scanning
 
-## 🌐 Web App (React.js)
+##  Web App (React.js)
 ### Prerequisites
 - Node.js (v18+)
 - npm or yarn
@@ -62,7 +56,7 @@ cd web && npm run dev
 cd mobile && npm start
 ```
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 RECETRA_/
@@ -89,10 +83,10 @@ RECETRA_/
 ├── Start Both Servers.bat   # Quick start both servers
 ├── Start Web Server.bat     # Quick start web server
 ├── Start Mobile Server.bat  # Quick start mobile server
-└── README.md                # This file
+└── README.md              
 ```
 
-## 👥 User Roles
+##  User Roles
 
 ### Admin
 - Full system access
@@ -114,7 +108,7 @@ RECETRA_/
 - Payment gateway access
 - FAQ chatbot support
 
-## 🚀 Installation & Setup
+##  Installation & Setup
 
 ### 1. Clone the repository
 ```bash
@@ -188,7 +182,7 @@ npm install
 - **Development**: PowerShell scripts, Batch files
 - **QR Code**: Multiple libraries for generation and scanning
 
-## 📝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -196,7 +190,7 @@ npm install
 4. Test thoroughly
 5. Submit a pull request
 
-## 🔄 Recent Changes
+##  Recent Changes
 
 ### v2.0 - Redesign Update
 - **Website redesign by Ivan** - Modernized UI/UX design
@@ -213,7 +207,7 @@ npm install
 
 ---
 
-## 📞 Support
+##  Support
 
 For issues or questions:
 1. Check the troubleshooting section above
