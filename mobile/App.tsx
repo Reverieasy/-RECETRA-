@@ -121,7 +121,6 @@ const AppContent: React.FC = () => {
             <Stack.Screen name="UserManagement" component={UserManagementScreen} />
             <Stack.Screen name="TemplateManagement" component={TemplateManagementScreen} />
             <Stack.Screen name="ReceiptVerification" component={ReceiptVerificationScreen} />
-            <Stack.Screen name="FAQChatbot" component={FAQChatbotScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
           </>
         )}

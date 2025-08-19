@@ -60,7 +60,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title, showBackButton = false
           { label: 'User Management', screen: 'UserManagement' },
           { label: 'Template Management', screen: 'TemplateManagement' },
           { label: 'Receipt Verification', screen: 'ReceiptVerification' },
-          { label: 'FAQ Chatbot', screen: 'FAQChatbot' },
           { label: 'Profile', screen: 'Profile' },
         ];
       case 'Encoder':
@@ -99,6 +98,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, showBackButton = false
    * Handles back button press
    */
   const handleBackPress = () => {
+    navigation.goBack();
   };
 
   /**

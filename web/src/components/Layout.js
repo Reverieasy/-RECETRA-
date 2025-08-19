@@ -55,7 +55,6 @@ const Layout = ({ children, title, showBackButton = false }) => {
           { label: 'User Management', path: '/admin/users' },
           { label: 'Template Management', path: '/admin/templates' },
           { label: 'Receipt Verification', path: '/admin/verify' },
-          { label: 'FAQ Chatbot', path: '/admin/faq' },
           { label: 'Profile', path: '/admin/profile' },
         ];
       case 'Encoder':

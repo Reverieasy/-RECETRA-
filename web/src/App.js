@@ -54,7 +54,6 @@ const AppContent = () => {
             <Route path="/admin/users" element={<UserManagementScreen />} />
             <Route path="/admin/templates" element={<TemplateManagementScreen />} />
             <Route path="/admin/verify" element={<ReceiptVerificationScreen />} />
-            <Route path="/admin/faq" element={<FAQChatbotScreen />} />
             <Route path="/admin/profile" element={<ProfileScreen />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </>
