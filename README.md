@@ -93,7 +93,7 @@ RECETRA_/
 - User management
 - Template management
 - System administration
-- **Note**: FAQ chatbot access removed for cleaner interface
+- **Note**: FAQ chatbot access removed 
 
 ### Encoder
 - Issue receipts
@@ -193,12 +193,12 @@ npm install
 ##  Recent Changes
 
 ### v2.0 - Redesign Update
-- **Website redesign by Ivan** - Modernized UI/UX design
-- Improved navigation and back button functionality
+- **Website redesign by Ivan**
+- Improved navigation and functionalities 
 - Enhanced mobile responsiveness
 - Updated to latest React and React Native versions
-- FAQ chatbot removed from Admin role for better focus
-
+- FAQ chatbot removed from Admin role
+  
 ### Dependencies Updated
 - React Native upgraded to 0.79.5
 - Expo SDK updated to 53
