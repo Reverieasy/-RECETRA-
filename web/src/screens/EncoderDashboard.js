@@ -41,9 +41,9 @@ const EncoderDashboard = () => {
     <Layout title="Encoder Dashboard">
       <div style={styles.container}>
         <div style={styles.innerContainer}>
-          {/* Personal Statistics */}
+          {/* Performance Statistics */}
           <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>My Statistics</h2>
+            <h2 style={styles.sectionTitle}>Performance Statistics</h2>
             <div style={styles.statsGrid}>
               <StatCard
                 title="Total Receipts"
@@ -144,7 +144,7 @@ const EncoderDashboard = () => {
                 <p style={styles.tipText}>Always use the format OR-YYYY-XXX for consistency</p>
               </div>
               <div style={styles.tipItem}>
-                <h4 style={styles.tipTitle}>📧 Email Notifications</h4>
+                <h4 style={styles.tipTitle}>Email Notifications</h4>
                 <p style={styles.tipText}>Double-check email addresses before sending receipts</p>
               </div>
               <div style={styles.tipItem}>

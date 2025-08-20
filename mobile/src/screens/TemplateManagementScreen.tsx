@@ -5,871 +5,371 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TextInput,
   Alert,
-  Modal,
+  TextInput,
 } from 'react-native';
-import Layout from '../components/Layout';
-import { mockReceiptTemplates, mockOrganizations } from '../data/mockData';
 
-/**
- * Template Management Screen Component
- * Allows administrators to manage receipt templates and assign them to organizations
- * 
- * Features:
- * - View all receipt templates
- * - Add new templates
- * - Edit template details
- * - Remove templates from organizations
- * - Assign templates to organizations
- * - Template status management
- */
-const TemplateManagementScreen: React.FC = () => {
-  const [templates, setTemplates] = useState(mockReceiptTemplates);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-  const [filterOrg, setFilterOrg] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+const TemplateManagementScreen = () => {
+  const [templates, setTemplates] = useState([
+    {
+      id: '1',
+      name: 'Standard Receipt',
+      description: 'Basic receipt template for general use',
+      isActive: true,
+      createdAt: '2024-01-01',
+    },
+    {
+      id: '2',
+      name: 'Professional Receipt',
+      description: 'Formal receipt template for business transactions',
+      isActive: true,
+      createdAt: '2024-01-02',
+    },
+    {
+      id: '3',
+      name: 'Simple Receipt',
+      description: 'Minimal receipt template for quick transactions',
+      isActive: false,
+      createdAt: '2024-01-03',
+    },
+  ]);
+
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
-    organization: '',
-    isActive: true,
-    templateType: 'standard',
   });
 
-  /**
-   * Filters templates based on selected organization and status
-   * @returns Filtered list of templates
-   */
-  const getFilteredTemplates = () => {
-    return templates.filter(template => {
-      const orgMatch = filterOrg === 'all' || template.organization === filterOrg;
-      const statusMatch = filterStatus === 'all' || 
-        (filterStatus === 'active' && template.isActive) ||
-        (filterStatus === 'inactive' && !template.isActive);
-      return orgMatch && statusMatch;
-    });
-  };
+  const [isAddingTemplate, setIsAddingTemplate] = useState(false);
 
-  /**
-   * Handles adding a new template
-   * Validates input and adds template to the list
-   */
   const handleAddTemplate = () => {
-    if (!newTemplate.name.trim() || !newTemplate.organization.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!newTemplate.name || !newTemplate.description) {
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    const template = {
-      id: `template_${Date.now()}`,
+    if (templates.find(t => t.name === newTemplate.name)) {
+      Alert.alert('Error', 'Template name already exists');
+      return;
+    }
+
+    const templateToAdd = {
       ...newTemplate,
+      id: Date.now().toString(),
+      isActive: true,
+      createdAt: new Date().toISOString(),
     };
 
-    setTemplates([...templates, template]);
+    setTemplates([...templates, templateToAdd]);
     setNewTemplate({
       name: '',
       description: '',
-      organization: '',
-      isActive: true,
-      templateType: 'standard',
     });
-    setShowAddModal(false);
-    Alert.alert('Success', 'Template added successfully!');
+    setIsAddingTemplate(false);
+
+    Alert.alert('Success', 'Template added successfully');
   };
 
-  /**
-   * Handles editing an existing template
-   * Updates template information in the list
-   */
-  const handleEditTemplate = () => {
-    if (!selectedTemplate) return;
-
-    const updatedTemplates = templates.map(template =>
-      template.id === selectedTemplate.id ? { ...template, ...selectedTemplate } : template
-    );
-    setTemplates(updatedTemplates);
-    setShowEditModal(false);
-    setSelectedTemplate(null);
-    Alert.alert('Success', 'Template updated successfully!');
-  };
-
-  /**
-   * Handles removing a template from the system
-   * Shows confirmation dialog before removal
-   */
-  const handleRemoveTemplate = (template: any) => {
-    Alert.alert(
-      'Remove Template',
-      `Are you sure you want to remove "${template.name}"? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            const updatedTemplates = templates.filter(t => t.id !== template.id);
-            setTemplates(updatedTemplates);
-            Alert.alert('Success', 'Template removed successfully!');
+  const handleEditTemplate = (templateId: string) => {
+    const templateToEdit = templates.find(t => t.id === templateId);
+    if (templateToEdit) {
+      Alert.alert(
+        'Edit Template',
+        `Edit template: ${templateToEdit.name}`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: 'Edit',
+            onPress: () => {
+              Alert.alert('Edit Template', 'Edit functionality would be implemented here');
+            },
+          },
+        ]
+      );
+    }
   };
 
-  /**
-   * Opens the edit modal for a specific template
-   * @param template - Template to edit
-   */
-  const openEditModal = (template: any) => {
-    setSelectedTemplate({ ...template });
-    setShowEditModal(true);
+  const handleRemoveTemplate = (templateId: string) => {
+    const templateToRemove = templates.find(t => t.id === templateId);
+    if (templateToRemove) {
+      Alert.alert(
+        'Remove Template',
+        `Are you sure you want to remove ${templateToRemove.name}?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Remove',
+            style: 'destructive',
+            onPress: () => {
+              setTemplates(templates.filter(t => t.id !== templateId));
+              Alert.alert('Success', 'Template removed successfully');
+            },
+          },
+        ]
+      );
+    }
   };
 
-  /**
-   * Gets the template type display with color coding
-   * @param type - Template type
-   * @returns Formatted type display
-   */
-  const getTypeDisplay = (type: string) => {
-    const colors = {
-      standard: '#10b981',
-      custom: '#f59e0b',
-      premium: '#ef4444',
-    };
-    
-    return (
-      <View style={[styles.typeBadge, { backgroundColor: colors[type as keyof typeof colors] }]}>
-        <Text style={styles.typeBadgeText}>{type}</Text>
-      </View>
-    );
+  const handleToggleTemplateStatus = (templateId: string) => {
+    setTemplates(templates.map(t => 
+      t.id === templateId ? { ...t, isActive: !t.isActive } : t
+    ));
   };
-
-  const filteredTemplates = getFilteredTemplates();
 
   return (
-    <Layout title="Template Management" showBackButton={true}>
-      <ScrollView style={styles.container}>
-        <View style={styles.content}>
-          {/* Header Actions */}
-          <View style={styles.header}>
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Template Management</Text>
+        
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Receipt Templates</Text>
             <TouchableOpacity
               style={styles.addButton}
-              onPress={() => setShowAddModal(true)}
+              onPress={() => setIsAddingTemplate(!isAddingTemplate)}
             >
-              <Text style={styles.addButtonText}>Add New Template</Text>
+              <Text style={styles.addButtonText}>
+                {isAddingTemplate ? 'Cancel' : 'Add Template'}
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Filters */}
-          <View style={styles.filtersContainer}>
-            <View style={styles.filterRow}>
-              <Text style={styles.filterLabel}>Filter by Organization:</Text>
-              <View style={styles.filterButtons}>
-                {['all', ...mockOrganizations.map(org => org.name)].map(org => (
-                  <TouchableOpacity
-                    key={org}
-                    style={[
-                      styles.filterButton,
-                      filterOrg === org && styles.filterButtonActive
-                    ]}
-                    onPress={() => setFilterOrg(org)}
-                  >
-                    <Text style={[
-                      styles.filterButtonText,
-                      filterOrg === org && styles.filterButtonTextActive
-                    ]}>
-                      {org === 'all' ? 'All' : org}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+          {isAddingTemplate && (
+            <View style={styles.addTemplateForm}>
+              <TextInput
+                style={styles.input}
+                placeholder="Template Name"
+                value={newTemplate.name}
+                onChangeText={(text) => setNewTemplate({ ...newTemplate, name: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Description"
+                value={newTemplate.description}
+                onChangeText={(text) => setNewTemplate({ ...newTemplate, description: text })}
+                multiline
+                numberOfLines={3}
+              />
+              <TouchableOpacity style={styles.submitButton} onPress={handleAddTemplate}>
+                <Text style={styles.submitButtonText}>Add Template</Text>
+              </TouchableOpacity>
             </View>
+          )}
 
-            <View style={styles.filterRow}>
-              <Text style={styles.filterLabel}>Filter by Status:</Text>
-              <View style={styles.filterButtons}>
-                {['all', 'active', 'inactive'].map(status => (
-                  <TouchableOpacity
-                    key={status}
-                    style={[
-                      styles.filterButton,
-                      filterStatus === status && styles.filterButtonActive
-                    ]}
-                    onPress={() => setFilterStatus(status)}
-                  >
-                    <Text style={[
-                      styles.filterButtonText,
-                      filterStatus === status && styles.filterButtonTextActive
-                    ]}>
-                      {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          {/* Templates List */}
-          <View style={styles.templatesContainer}>
-            <Text style={styles.sectionTitle}>
-              Templates ({filteredTemplates.length})
-            </Text>
-            
-            {filteredTemplates.map(template => (
-              <TouchableOpacity
-                key={template.id}
-                style={styles.templateCard}
-                onPress={() => openEditModal(template)}
-              >
+          <View style={styles.templatesList}>
+            {templates.map((template) => (
+              <View key={template.id} style={styles.templateCard}>
                 <View style={styles.templateInfo}>
-                  <View style={styles.templateHeader}>
-                    <Text style={styles.templateName}>{template.name}</Text>
-                    {getTypeDisplay(template.templateType)}
-                  </View>
-                  
+                  <Text style={styles.templateName}>{template.name}</Text>
                   <Text style={styles.templateDescription}>{template.description}</Text>
-                  <Text style={styles.templateOrg}>{template.organization}</Text>
-                  
-                  <View style={styles.templateStatus}>
+                  <View style={styles.templateDetails}>
                     <View style={[
                       styles.statusBadge,
-                      { backgroundColor: template.isActive ? '#10b981' : '#ef4444' }
+                      { backgroundColor: template.isActive ? '#10b981' : '#6b7280' }
                     ]}>
                       <Text style={styles.statusText}>
                         {template.isActive ? 'Active' : 'Inactive'}
                       </Text>
                     </View>
+                    <Text style={styles.templateDate}>{template.createdAt}</Text>
                   </View>
                 </View>
                 
                 <View style={styles.templateActions}>
                   <TouchableOpacity
+                    style={[styles.statusButton, { backgroundColor: template.isActive ? '#10b981' : '#6b7280' }]}
+                    onPress={() => handleToggleTemplateStatus(template.id)}
+                  >
+                    <Text style={styles.statusButtonText}>
+                      {template.isActive ? 'Active' : 'Inactive'}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
                     style={styles.editButton}
-                    onPress={() => openEditModal(template)}
+                    onPress={() => handleEditTemplate(template.id)}
                   >
                     <Text style={styles.editButtonText}>Edit</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity
                     style={styles.removeButton}
-                    onPress={() => handleRemoveTemplate(template)}
+                    onPress={() => handleRemoveTemplate(template.id)}
                   >
                     <Text style={styles.removeButtonText}>Remove</Text>
                   </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
+              </View>
             ))}
-            
-            {filteredTemplates.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No templates found</Text>
-                <Text style={styles.emptyStateSubtext}>
-                  Try adjusting your filters or add a new template
-                </Text>
-              </View>
-            )}
           </View>
         </View>
-      </ScrollView>
-
-      {/* Add Template Modal */}
-      <Modal
-        visible={showAddModal}
-        animationType="slide"
-        transparent={true}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add New Template</Text>
-            
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Template Name"
-              value={newTemplate.name}
-              onChangeText={(text) => setNewTemplate({...newTemplate, name: text})}
-            />
-            
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Description"
-              value={newTemplate.description}
-              onChangeText={(text) => setNewTemplate({...newTemplate, description: text})}
-              multiline
-              numberOfLines={3}
-            />
-            
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Organization:</Text>
-              <View style={styles.modalSelect}>
-                {mockOrganizations.map(org => (
-                  <TouchableOpacity
-                    key={org.name}
-                    style={[
-                      styles.selectOption,
-                      newTemplate.organization === org.name && styles.selectOptionActive
-                    ]}
-                    onPress={() => setNewTemplate({...newTemplate, organization: org.name})}
-                  >
-                    <Text style={[
-                      styles.selectOptionText,
-                      newTemplate.organization === org.name && styles.selectOptionTextActive
-                    ]}>
-                      {org.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            
-            <View style={styles.modalRow}>
-              <Text style={styles.modalLabel}>Template Type:</Text>
-              <View style={styles.modalSelect}>
-                {['standard', 'custom', 'premium'].map(type => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[
-                      styles.selectOption,
-                      newTemplate.templateType === type && styles.selectOptionActive
-                    ]}
-                    onPress={() => setNewTemplate({...newTemplate, templateType: type})}
-                  >
-                    <Text style={[
-                      styles.selectOptionText,
-                      newTemplate.templateType === type && styles.selectOptionTextActive
-                    ]}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButtonCancel}
-                onPress={() => setShowAddModal(false)}
-              >
-                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.modalButtonSave}
-                onPress={handleAddTemplate}
-              >
-                <Text style={styles.modalButtonTextSave}>Add Template</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Edit Template Modal */}
-      <Modal
-        visible={showEditModal}
-        animationType="slide"
-        transparent={true}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Template</Text>
-            
-            {selectedTemplate && (
-              <>
-                <TextInput
-                  style={styles.modalInput}
-                  placeholder="Template Name"
-                  value={selectedTemplate.name}
-                  onChangeText={(text) => setSelectedTemplate({...selectedTemplate, name: text})}
-                />
-                
-                <TextInput
-                  style={styles.modalInput}
-                  placeholder="Description"
-                  value={selectedTemplate.description}
-                  onChangeText={(text) => setSelectedTemplate({...selectedTemplate, description: text})}
-                  multiline
-                  numberOfLines={3}
-                />
-                
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Organization:</Text>
-                  <View style={styles.modalSelect}>
-                    {mockOrganizations.map(org => (
-                      <TouchableOpacity
-                        key={org.name}
-                        style={[
-                          styles.selectOption,
-                          selectedTemplate.organization === org.name && styles.selectOptionActive
-                        ]}
-                        onPress={() => setSelectedTemplate({...selectedTemplate, organization: org.name})}
-                      >
-                        <Text style={[
-                          styles.selectOptionText,
-                          selectedTemplate.organization === org.name && styles.selectOptionTextActive
-                        ]}>
-                          {org.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Template Type:</Text>
-                  <View style={styles.modalSelect}>
-                    {['standard', 'custom', 'premium'].map(type => (
-                      <TouchableOpacity
-                        key={type}
-                        style={[
-                          styles.selectOption,
-                          selectedTemplate.templateType === type && styles.selectOptionActive
-                        ]}
-                        onPress={() => setSelectedTemplate({...selectedTemplate, templateType: type})}
-                      >
-                        <Text style={[
-                          styles.selectOptionText,
-                          selectedTemplate.templateType === type && styles.selectOptionTextActive
-                        ]}>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Status:</Text>
-                  <TouchableOpacity
-                    style={[
-                      styles.statusToggle,
-                      { backgroundColor: selectedTemplate.isActive ? '#10b981' : '#ef4444' }
-                    ]}
-                    onPress={() => setSelectedTemplate({...selectedTemplate, isActive: !selectedTemplate.isActive})}
-                  >
-                    <Text style={styles.statusToggleText}>
-                      {selectedTemplate.isActive ? 'Active' : 'Inactive'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                
-                <View style={styles.modalButtons}>
-                  <TouchableOpacity
-                    style={styles.modalButtonCancel}
-                    onPress={() => setShowEditModal(false)}
-                  >
-                    <Text style={styles.modalButtonTextCancel}>Cancel</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    style={styles.modalButtonSave}
-                    onPress={handleEditTemplate}
-                  >
-                    <Text style={styles.modalButtonTextSave}>Save Changes</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-    </Layout>
+      </View>
+    </ScrollView>
   );
 };
 
-/**
- * Styles for the TemplateManagementScreen component
- * Uses a clean, professional design with consistent spacing and colors
- */
 const styles = StyleSheet.create({
-  // Main container
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  
-  // Content area
   content: {
-    padding: 16,
+    padding: 20,
   },
-  
-  // Header section
-  header: {
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  section: {
     marginBottom: 20,
   },
-  
-  // Add button
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
   addButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  addTemplateForm: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: 'white',
+    marginBottom: 15,
+  },
+  submitButton: {
+    backgroundColor: '#34C759',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  
-  // Add button text
-  addButtonText: {
+  submitButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  
-  // Filters container
-  filtersContainer: {
+  templatesList: {
+    gap: 15,
+  },
+  templateCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    borderRadius: 10,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  
-  // Filter row
-  filterRow: {
-    marginBottom: 12,
+  templateInfo: {
+    marginBottom: 15,
   },
-  
-  // Filter label
-  filterLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  
-  // Filter buttons container
-  filterButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  
-  // Filter button
-  filterButton: {
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  
-  // Active filter button
-  filterButtonActive: {
-    backgroundColor: '#1e3a8a',
-  },
-  
-  // Filter button text
-  filterButtonText: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  
-  // Active filter button text
-  filterButtonTextActive: {
-    color: 'white',
-  },
-  
-  // Templates container
-  templatesContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  
-  // Section title
-  sectionTitle: {
+  templateName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#374151',
-    marginBottom: 16,
+    color: '#333',
+    marginBottom: 5,
   },
-  
-  // Template card
-  templateCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  
-  // Template info
-  templateInfo: {
-    flex: 1,
-  },
-  
-  // Template header
-  templateHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  
-  // Template name
-  templateName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  
-  // Type badge
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  
-  // Type badge text
-  typeBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: 'white',
-  },
-  
-  // Template description
   templateDescription: {
     fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 2,
+    color: '#666',
+    marginBottom: 10,
   },
-  
-  // Template organization
-  templateOrg: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginBottom: 8,
+  templateDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
-  
-  // Template status
-  templateStatus: {
-    marginTop: 4,
-  },
-  
-  // Status badge
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    alignSelf: 'flex-start',
   },
-  
-  // Status text
   statusText: {
-    fontSize: 10,
-    fontWeight: '600',
     color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
-  
-  // Template actions
+  templateDate: {
+    fontSize: 12,
+    color: '#999',
+  },
   templateActions: {
     flexDirection: 'row',
+    gap: 10,
   },
-  
-  // Edit button
-  editButton: {
-    backgroundColor: '#1e3a8a',
+  statusButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    marginRight: 8,
   },
-  
-  // Edit button text
+  statusButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  editButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
   editButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
   },
-  
-  // Remove button
   removeButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#FF3B30',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
   },
-  
-  // Remove button text
   removeButtonText: {
     color: 'white',
     fontSize: 12,
-    fontWeight: '600',
-  },
-  
-  // Empty state
-  emptyState: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  
-  // Empty state text
-  emptyStateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6b7280',
-    marginBottom: 8,
-  },
-  
-  // Empty state subtitle
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: '#9ca3af',
-    textAlign: 'center',
-  },
-  
-  // Modal overlay
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  // Modal content
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    width: '90%',
-    maxHeight: '80%',
-  },
-  
-  // Modal title
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#374151',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  
-  // Modal input
-  modalInput: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: 'white',
-  },
-  
-  // Modal row
-  modalRow: {
-    marginBottom: 16,
-  },
-  
-  // Modal label
-  modalLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  
-  // Modal select
-  modalSelect: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  
-  // Select option
-  selectOption: {
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  
-  // Active select option
-  selectOptionActive: {
-    backgroundColor: '#1e3a8a',
-  },
-  
-  // Select option text
-  selectOptionText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  
-  // Active select option text
-  selectOptionTextActive: {
-    color: 'white',
-  },
-  
-  // Status toggle
-  statusToggle: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  
-  // Status toggle text
-  statusToggleText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  
-  // Modal buttons
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  
-  // Modal button cancel
-  modalButtonCancel: {
-    backgroundColor: '#f3f4f6',
-    padding: 12,
-    borderRadius: 8,
-    flex: 1,
-    marginRight: 8,
-    alignItems: 'center',
-  },
-  
-  // Modal button save
-  modalButtonSave: {
-    backgroundColor: '#10b981',
-    padding: 12,
-    borderRadius: 8,
-    flex: 1,
-    marginLeft: 8,
-    alignItems: 'center',
-  },
-  
-  // Modal button text cancel
-  modalButtonTextCancel: {
-    color: '#374151',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  
-  // Modal button text save
-  modalButtonTextSave: {
-    color: 'white',
-    fontSize: 16,
     fontWeight: '600',
   },
 });

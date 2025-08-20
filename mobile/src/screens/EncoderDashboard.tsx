@@ -74,9 +74,9 @@ const EncoderDashboard: React.FC = () => {
   return (
     <Layout title="Encoder Dashboard">
       <ScrollView style={styles.container}>
-        {/* Personal Statistics */}
+        {/* Performance Statistics */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Statistics</Text>
+          <Text style={styles.sectionTitle}>Performance Statistics</Text>
           <View style={styles.statsGrid}>
             <StatCard
               title="Total Receipts"

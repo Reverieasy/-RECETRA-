@@ -39,7 +39,7 @@ const ProfileScreen = () => {
   }, [user]);
 
   // New: State for profile photo preview
-  const [profilePhoto, setProfilePhoto] = useState('https://via.placeholder.com/120x120/1e3a8a/ffffff?text=👤');
+  const [profilePhoto, setProfilePhoto] = useState('/assets/LogoIcon.png');
   const fileInputRef = useRef(null);
 
   // New: State for password change modal
@@ -184,11 +184,14 @@ const ProfileScreen = () => {
           {/* Profile Photo Section */}
           <div style={styles.photoSection}>
             <div style={styles.photoContainer} onClick={handleChangePhoto}>
-              <img
-                src={profilePhoto}
-                alt="Profile"
-                style={styles.profilePhoto}
-              />
+             <img
+            src={profilePhoto}
+            alt="Profile"
+            style={styles.profilePhoto}
+            onError={(e) => {
+            e.target.src = '/assets/LogoIcon.png'; 
+  }}
+/>
               <div style={styles.photoOverlay}>
                 <span style={styles.photoOverlayText}>Change</span>
               </div>
@@ -352,15 +355,15 @@ const ProfileScreen = () => {
             
             <div style={styles.actionsList}>
               <button style={styles.actionButton} onClick={handleChangePassword}>
-                <span style={styles.actionButtonText}>🔒 Change Password</span>
+                <span style={styles.actionButtonText}>Change Password</span>
               </button>
               
               <button style={styles.actionButton} onClick={handleChangePhoto}>
-                <span style={styles.actionButtonText}>📸 Update Profile Photo</span>
+                <span style={styles.actionButtonText}>Update Profile Photo</span>
               </button>
               
               <button style={styles.logoutButton} onClick={handleLogout}>
-                <span style={styles.logoutButtonText}>🚪 Logout</span>
+                <span style={styles.logoutButtonText}>Logout</span>
               </button>
             </div>
           </div>

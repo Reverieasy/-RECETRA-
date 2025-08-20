@@ -20,13 +20,13 @@ const AdminDashboard = () => {
         
         {/* Header Section */}
         <div style={styles.headerCard}>
-          <h2 style={styles.headerTitle}>Welcome back, Admin 👋</h2>
+          <h2 style={styles.headerTitle}>Welcome back, Admin</h2>
           <p style={styles.headerSubtitle}>Here’s what’s happening in your system today</p>
         </div>
 
-        {/* System Statistics */}
+        {/* System Analytics */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>System Statistics</h2>
+          <h2 style={styles.sectionTitle}>System Analytics</h2>
           <div style={styles.statsGrid}>
             <StatCard
               title="Total Receipts"
@@ -202,8 +202,8 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px 20px',
-    borderBottom: '1px solid #f3f4f6',
+    padding: '16px',
+    borderBottom: '1px solid #e5e7eb',
     cursor: 'pointer',
   },
   listItemTitle: {

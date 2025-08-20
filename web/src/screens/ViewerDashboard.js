@@ -40,14 +40,14 @@ const ViewerDashboard = () => {
   return (
     <Layout title="Viewer Dashboard">
       <div style={styles.container}>
-        {/* Organization Statistics */}
+        {/* Transaction Records */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>{user?.organization} Statistics</h2>
+          <h2 style={styles.sectionTitle}>Transaction Records</h2>
           <div style={styles.statsGrid}>
-            <StatCard title="Total Receipts" value={stats.totalReceipts} subtitle="Organization total" />
-            <StatCard title="Total Amount" value={`₱${stats.totalAmount.toLocaleString()}`} subtitle="All time" />
+            <StatCard title="Total Receipts" value={stats.totalReceipts} subtitle="My receipts" />
+            <StatCard title="Total Amount" value={`₱${stats.totalAmount.toLocaleString()}`} subtitle="My payments" />
             <StatCard title="This Month" value={stats.thisMonthReceipts} subtitle={`₱${stats.thisMonthAmount.toLocaleString()}`} />
-            <StatCard title="Organization" value={user?.organization || 'N/A'} subtitle="Current org" />
+            <StatCard title="Organization" value={user?.organization || 'N/A'} subtitle="My org" />
           </div>
         </div>
 
@@ -114,11 +114,11 @@ const ViewerDashboard = () => {
           <h2 style={styles.sectionTitle}>Viewer Information</h2>
           <div style={styles.infoGrid}>
             <div style={styles.infoCard}>
-              <h4 style={styles.infoTitle}>📋 View Only Access</h4>
+              <h4 style={styles.infoTitle}>View Only Access</h4>
               <p style={styles.infoText}>You can view receipts and statistics but cannot create or modify them</p>
             </div>
             <div style={styles.infoCard}>
-              <h4 style={styles.infoTitle}>💳 Payment Processing</h4>
+              <h4 style={styles.infoTitle}>Payment Processing</h4>
               <p style={styles.infoText}>Use the payment gateway to process payments for existing receipts</p>
             </div>
             <div style={styles.infoCard}>

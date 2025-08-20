@@ -74,19 +74,19 @@ const ViewerDashboard: React.FC = () => {
   return (
     <Layout title="Viewer Dashboard">
       <ScrollView style={styles.container}>
-        {/* Organization Statistics */}
+        {/* Personal Records */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{user?.organization} Statistics</Text>
+          <Text style={styles.sectionTitle}>Transaction Records</Text>
           <View style={styles.statsGrid}>
             <StatCard
               title="Total Receipts"
               value={stats.totalReceipts}
-              subtitle="Organization total"
+              subtitle="My receipts"
             />
             <StatCard
               title="Total Amount"
               value={`₱${stats.totalAmount.toLocaleString()}`}
-              subtitle="All time"
+              subtitle="My payments"
             />
             <StatCard
               title="This Month"
@@ -96,7 +96,7 @@ const ViewerDashboard: React.FC = () => {
             <StatCard
               title="Organization"
               value={user?.organization || 'N/A'}
-              subtitle="Current org"
+              subtitle="My org"
             />
           </View>
         </View>

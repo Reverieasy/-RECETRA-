@@ -319,7 +319,7 @@ const ReceiptVerificationScreen = () => {
               <p style={styles.methodDescription}>Scan QR code from receipt</p>
               
               <button style={styles.qrButton} onClick={handleQRScan}>
-                <span style={styles.qrButtonText}>📷 Scan QR Code</span>
+                <span style={styles.qrButtonText}>Scan QR Code</span>
               </button>
               
 

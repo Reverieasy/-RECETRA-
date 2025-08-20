@@ -6,650 +6,445 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  TextInput,
 } from 'react-native';
-import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
-import { mockReceipts, getReceiptsByOrganization } from '../data/mockData';
 
-/**
- * Transaction Archive Screen Component
- * Allows encoders to view and track all transactions including Paymongo payments and manual receipts
- * 
- * Features:
- * - View all transactions for the organization
- * - Filter by transaction type (Paymongo vs Manual)
- * - Filter by payment status
- * - View transaction details
- * - Track notification status
- * - Export transaction data
- */
-const TransactionArchiveScreen: React.FC = () => {
-  const { user } = useAuth();
-  const [filterType, setFilterType] = useState('all');
+const TransactionArchiveScreen = () => {
+  const [transactions] = useState([
+    {
+      id: '1',
+      receiptNumber: 'OR-2024-001',
+      customerName: 'John Doe',
+      amount: 1500,
+      date: '2024-01-15',
+      status: 'completed',
+      paymentMethod: 'Cash',
+    },
+    {
+      id: '2',
+      receiptNumber: 'OR-2024-002',
+      customerName: 'Jane Smith',
+      amount: 2300,
+      date: '2024-01-16',
+      status: 'completed',
+      paymentMethod: 'Credit Card',
+    },
+    {
+      id: '3',
+      receiptNumber: 'OR-2024-003',
+      customerName: 'Bob Johnson',
+      amount: 800,
+      date: '2024-01-17',
+      status: 'pending',
+      paymentMethod: 'Bank Transfer',
+    },
+  ]);
+
+  const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
-  /**
-   * Gets all transactions for the user's organization
-   * @returns Array of transactions
-   */
-  const getTransactions = () => {
-    if (!user) return [];
-    return getReceiptsByOrganization(user.organization);
-  };
-
-  /**
-   * Filters transactions based on selected filters
-   * @returns Filtered list of transactions
-   */
-  const getFilteredTransactions = () => {
-    const transactions = getTransactions();
-    
-    return transactions.filter(transaction => {
-      const typeMatch = filterType === 'all' || 
-        (filterType === 'paymongo' && transaction.paymentMethod === 'Paymongo') ||
-        (filterType === 'manual' && transaction.paymentMethod !== 'Paymongo');
-      
-      const statusMatch = filterStatus === 'all' || transaction.paymentStatus === filterStatus;
-      
-      return typeMatch && statusMatch;
-    });
-  };
-
-  /**
-   * Gets transaction type display name
-   * @param transaction - Transaction object
-   * @returns Formatted transaction type
-   */
-  const getTransactionType = (transaction: any) => {
-    return transaction.paymentMethod === 'Paymongo' ? 'Paymongo Payment' : 'Manual Receipt';
-  };
-
-  /**
-   * Gets transaction type color
-   * @param transaction - Transaction object
-   * @returns Color for transaction type badge
-   */
-  const getTransactionTypeColor = (transaction: any) => {
-    return transaction.paymentMethod === 'Paymongo' ? '#10b981' : '#f59e0b';
-  };
-
-  /**
-   * Handles viewing transaction details
-   * @param transaction - Transaction to view
-   */
   const handleViewTransaction = (transaction: any) => {
-    setSelectedTransaction(transaction);
     Alert.alert(
       'Transaction Details',
-      `Receipt: ${transaction.receiptNumber}\n` +
-      `Payer: ${transaction.payer}\n` +
-      `Amount: ₱${transaction.amount.toLocaleString()}\n` +
-      `Purpose: ${transaction.purpose}\n` +
-      `Category: ${transaction.category}\n` +
-      `Payment Method: ${transaction.paymentMethod}\n` +
-      `Status: ${transaction.paymentStatus}\n` +
-      `Issued By: ${transaction.issuedBy}\n` +
-      `Date: ${new Date(transaction.issuedAt).toLocaleDateString()}\n` +
-      `Email Status: ${transaction.emailStatus}\n` +
-      `SMS Status: ${transaction.smsStatus}`,
-      [{ text: 'OK' }]
-    );
-  };
-
-  /**
-   * Handles resending notifications
-   * @param transaction - Transaction to resend notifications for
-   */
-  const handleResendNotifications = (transaction: any) => {
-    Alert.alert(
-      'Resend Notifications',
-      `Resend email and SMS notifications for receipt ${transaction.receiptNumber}?`,
+      `Receipt Number: ${transaction.receiptNumber}\nCustomer: ${transaction.customerName}\nAmount: $${transaction.amount}\nDate: ${transaction.date}\nStatus: ${transaction.status}\nPayment Method: ${transaction.paymentMethod}`,
       [
-        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Resend',
+          text: 'Resend Notification',
           onPress: () => {
-            // Simulate resending notifications
-            setTimeout(() => {
-              Alert.alert('Success', 'Notifications have been resent successfully!');
-            }, 1000);
+            Alert.alert('Success', 'Notification resent successfully');
           },
+        },
+        {
+          text: 'OK',
+          style: 'default',
         },
       ]
     );
   };
 
-  /**
-   * Handles exporting transaction data
-   */
   const handleExportData = () => {
     Alert.alert(
       'Export Data',
-      'Export transaction data to CSV format?',
+      'Choose export format:',
       [
-        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Export',
+          text: 'CSV',
           onPress: () => {
-            Alert.alert('Success', 'Transaction data has been exported successfully!');
+            Alert.alert('Success', 'Data exported to CSV successfully');
           },
+        },
+        {
+          text: 'PDF',
+          onPress: () => {
+            Alert.alert('Success', 'Data exported to PDF successfully');
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
         },
       ]
     );
   };
 
-  /**
-   * Component to display transaction item
-   * @param transaction - Transaction to display
-   */
-  const TransactionItem: React.FC<{ transaction: any }> = ({ transaction }) => (
-    <TouchableOpacity
-      style={styles.transactionItem}
-      onPress={() => handleViewTransaction(transaction)}
-    >
-      <View style={styles.transactionHeader}>
-        <Text style={styles.transactionNumber}>{transaction.receiptNumber}</Text>
-        <View style={[
-          styles.typeBadge,
-          { backgroundColor: getTransactionTypeColor(transaction) }
-        ]}>
-          <Text style={styles.typeBadgeText}>
-            {getTransactionType(transaction)}
-          </Text>
-        </View>
-      </View>
-      
-      <View style={styles.transactionDetails}>
-        <Text style={styles.transactionPayer}>{transaction.payer}</Text>
-        <Text style={styles.transactionAmount}>₱{transaction.amount.toLocaleString()}</Text>
-      </View>
-      
-      <View style={styles.transactionInfo}>
-        <Text style={styles.transactionPurpose}>{transaction.purpose}</Text>
-        <Text style={styles.transactionDate}>
-          {new Date(transaction.issuedAt).toLocaleDateString()}
-        </Text>
-      </View>
-      
-      <View style={styles.transactionStatus}>
-        <View style={[
-          styles.statusBadge,
-          { backgroundColor: transaction.paymentStatus === 'completed' ? '#10b981' : 
-            transaction.paymentStatus === 'pending' ? '#f59e0b' : '#ef4444' }
-        ]}>
-          <Text style={styles.statusText}>{transaction.paymentStatus}</Text>
-        </View>
-        
-        <View style={styles.notificationStatus}>
-          <View style={[
-            styles.notificationDot,
-            { backgroundColor: transaction.emailStatus === 'sent' ? '#10b981' : '#ef4444' }
-          ]} />
-          <View style={[
-            styles.notificationDot,
-            { backgroundColor: transaction.smsStatus === 'sent' ? '#10b981' : '#ef4444' }
-          ]} />
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  const getFilteredTransactions = () => {
+    let filtered = transactions;
+
+    if (searchQuery) {
+      filtered = filtered.filter(transaction =>
+        transaction.receiptNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transaction.customerName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(transaction => transaction.status === filterStatus);
+    }
+
+    return filtered;
+  };
+
+  const getTransactionType = (transaction: any) => {
+    if (transaction.paymentMethod === 'Credit Card' || transaction.paymentMethod === 'Debit Card') {
+      return 'Card Payment';
+    } else if (transaction.paymentMethod === 'Bank Transfer') {
+      return 'Bank Transfer';
+    } else {
+      return 'Cash Payment';
+    }
+  };
+
+  const getTransactionTypeColor = (transaction: any) => {
+    if (transaction.paymentMethod === 'Credit Card' || transaction.paymentMethod === 'Debit Card') {
+      return '#007AFF';
+    } else if (transaction.paymentMethod === 'Bank Transfer') {
+      return '#34C759';
+    } else {
+      return '#FF9500';
+    }
+  };
 
   const filteredTransactions = getFilteredTransactions();
 
+  const totalAmount = filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const completedTransactions = filteredTransactions.filter(transaction => transaction.status === 'completed').length;
+  const pendingTransactions = filteredTransactions.filter(transaction => transaction.status === 'pending').length;
+
   return (
-    <Layout title="Transaction Archive" showBackButton={true}>
-      <ScrollView style={styles.container}>
-        <View style={styles.content}>
-          {/* Header Actions */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.exportButton}
-              onPress={handleExportData}
-            >
-              <Text style={styles.exportButtonText}>Export Data</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Transaction Archive</Text>
+        
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{filteredTransactions.length}</Text>
+            <Text style={styles.statLabel}>Total Transactions</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>${totalAmount}</Text>
+            <Text style={styles.statLabel}>Total Amount</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{completedTransactions}</Text>
+            <Text style={styles.statLabel}>Completed</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{pendingTransactions}</Text>
+            <Text style={styles.statLabel}>Pending</Text>
+          </View>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search transactions..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+
+        <View style={styles.filterContainer}>
+          <Text style={styles.filterLabel}>Filter by Status:</Text>
+          <View style={styles.filterButtons}>
+            {['all', 'completed', 'pending'].map(status => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.filterButton,
+                  filterStatus === status && styles.filterButtonActive
+                ]}
+                onPress={() => setFilterStatus(status)}
+              >
+                <Text style={[
+                  styles.filterButtonText,
+                  filterStatus === status && styles.filterButtonTextActive
+                ]}>
+                  {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.transactionsContainer}>
+          <View style={styles.transactionsHeader}>
+            <Text style={styles.transactionsTitle}>Transactions</Text>
+            <TouchableOpacity style={styles.exportButton} onPress={handleExportData}>
+              <Text style={styles.exportButtonText}>Export</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Filters */}
-          <View style={styles.filtersContainer}>
-            <View style={styles.filterRow}>
-              <Text style={styles.filterLabel}>Filter by Type:</Text>
-              <View style={styles.filterButtons}>
-                {['all', 'paymongo', 'manual'].map(type => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[
-                      styles.filterButton,
-                      filterType === type && styles.filterButtonActive
-                    ]}
-                    onPress={() => setFilterType(type)}
-                  >
-                    <Text style={[
-                      styles.filterButtonText,
-                      filterType === type && styles.filterButtonTextActive
-                    ]}>
-                      {type === 'all' ? 'All' : 
-                       type === 'paymongo' ? 'Paymongo' : 'Manual'}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+          {filteredTransactions.map((transaction) => (
+            <TouchableOpacity
+              key={transaction.id}
+              style={styles.transactionCard}
+              onPress={() => handleViewTransaction(transaction)}
+            >
+              <View style={styles.transactionHeader}>
+                <Text style={styles.receiptNumber}>{transaction.receiptNumber}</Text>
+                <View style={[
+                  styles.statusBadge,
+                  { backgroundColor: transaction.status === 'completed' ? '#10b981' : '#f59e0b' }
+                ]}>
+                  <Text style={styles.statusText}>{transaction.status}</Text>
+                </View>
               </View>
-            </View>
-
-            <View style={styles.filterRow}>
-              <Text style={styles.filterLabel}>Filter by Status:</Text>
-              <View style={styles.filterButtons}>
-                {['all', 'completed', 'pending', 'failed'].map(status => (
-                  <TouchableOpacity
-                    key={status}
-                    style={[
-                      styles.filterButton,
-                      filterStatus === status && styles.filterButtonActive
-                    ]}
-                    onPress={() => setFilterStatus(status)}
-                  >
-                    <Text style={[
-                      styles.filterButtonText,
-                      filterStatus === status && styles.filterButtonTextActive
-                    ]}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+              
+              <View style={styles.transactionDetails}>
+                <Text style={styles.customerName}>{transaction.customerName}</Text>
+                <Text style={styles.amount}>${transaction.amount}</Text>
               </View>
-            </View>
-          </View>
-
-          {/* Statistics */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{filteredTransactions.length}</Text>
-              <Text style={styles.statLabel}>Total Transactions</Text>
-            </View>
-            
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                ₱{filteredTransactions.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
-              </Text>
-              <Text style={styles.statLabel}>Total Amount</Text>
-            </View>
-            
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                {filteredTransactions.filter(t => t.paymentMethod === 'Paymongo').length}
-              </Text>
-              <Text style={styles.statLabel}>Paymongo Payments</Text>
-            </View>
-            
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                {filteredTransactions.filter(t => t.paymentMethod !== 'Paymongo').length}
-              </Text>
-              <Text style={styles.statLabel}>Manual Receipts</Text>
-            </View>
-          </View>
-
-          {/* Transactions List */}
-          <View style={styles.transactionsContainer}>
-            <Text style={styles.sectionTitle}>
-              Transactions ({filteredTransactions.length})
-            </Text>
-            
-            {filteredTransactions.map(transaction => (
-              <TransactionItem key={transaction.id} transaction={transaction} />
-            ))}
-            
-            {filteredTransactions.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No transactions found</Text>
-                <Text style={styles.emptyStateSubtext}>
-                  Try adjusting your filters or check back later
-                </Text>
+              
+              <View style={styles.transactionFooter}>
+                <Text style={styles.date}>{transaction.date}</Text>
+                <View style={[
+                  styles.typeBadge,
+                  { backgroundColor: getTransactionTypeColor(transaction) }
+                ]}>
+                  <Text style={styles.typeText}>{getTransactionType(transaction)}</Text>
+                </View>
               </View>
-            )}
-          </View>
+            </TouchableOpacity>
+          ))}
 
-          {/* Information */}
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoTitle}>Transaction Archive</Text>
-            <Text style={styles.infoText}>
-              • View all transactions for your organization{'\n'}
-              • Track Paymongo payments and manual receipts{'\n'}
-              • Monitor notification status (email/SMS){'\n'}
-              • Export transaction data for reporting{'\n'}
-              • Filter by transaction type and status
-            </Text>
-          </View>
+          {filteredTransactions.length === 0 && (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>No transactions found</Text>
+              <Text style={styles.emptyStateSubtext}>
+                Try adjusting your search or filters
+              </Text>
+            </View>
+          )}
         </View>
-      </ScrollView>
-    </Layout>
+      </View>
+    </ScrollView>
   );
 };
 
-/**
- * Styles for the TransactionArchiveScreen component
- * Uses a clean, professional design with consistent spacing and colors
- */
 const styles = StyleSheet.create({
-  // Main container
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  
-  // Content area
   content: {
-    padding: 16,
+    padding: 20,
   },
-  
-  // Header section
-  header: {
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 20,
+    textAlign: 'center',
   },
-  
-  // Export button
-  exportButton: {
-    backgroundColor: '#1e3a8a',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  
-  // Export button text
-  exportButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  
-  // Filters container
-  filtersContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  
-  // Filter row
-  filterRow: {
-    marginBottom: 12,
-  },
-  
-  // Filter label
-  filterLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  
-  // Filter buttons container
-  filterButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  
-  // Filter button
-  filterButton: {
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  
-  // Active filter button
-  filterButtonActive: {
-    backgroundColor: '#1e3a8a',
-  },
-  
-  // Filter button text
-  filterButtonText: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  
-  // Active filter button text
-  filterButtonTextActive: {
-    color: 'white',
-  },
-  
-  // Statistics container
   statsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  
-  // Stat card
   statCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    width: '48%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
-  },
-  
-  // Stat value
-  statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginBottom: 4,
-  },
-  
-  // Stat label
-  statLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-  
-  // Transactions container
-  transactionsContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    flex: 1,
+    marginHorizontal: 5,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  
-  // Section title
-  sectionTitle: {
+  statNumber: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#374151',
-    marginBottom: 16,
+    color: '#007AFF',
+    marginBottom: 5,
   },
-  
-  // Transaction item
-  transactionItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+  statLabel: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
   },
-  
-  // Transaction header
+  searchContainer: {
+    marginBottom: 20,
+  },
+  searchInput: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 15,
+    fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  filterContainer: {
+    marginBottom: 20,
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  filterButton: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  filterButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  filterButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  filterButtonTextActive: {
+    color: 'white',
+  },
+  transactionsContainer: {
+    marginBottom: 20,
+  },
+  transactionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  transactionsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  exportButton: {
+    backgroundColor: '#34C759',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  exportButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  transactionCard: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   transactionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  
-  // Transaction number
-  transactionNumber: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  
-  // Type badge
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  
-  // Type badge text
-  typeBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: 'white',
-  },
-  
-  // Transaction details
-  transactionDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  
-  // Transaction payer
-  transactionPayer: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  
-  // Transaction amount
-  transactionAmount: {
+  receiptNumber: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#333',
   },
-  
-  // Transaction info
-  transactionInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  
-  // Transaction purpose
-  transactionPurpose: {
-    fontSize: 12,
-    color: '#9ca3af',
-    flex: 1,
-  },
-  
-  // Transaction date
-  transactionDate: {
-    fontSize: 12,
-    color: '#9ca3af',
-  },
-  
-  // Transaction status
-  transactionStatus: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  
-  // Status badge
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  
-  // Status text
   statusText: {
-    fontSize: 10,
-    fontWeight: '600',
     color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
-  
-  // Notification status
-  notificationStatus: {
+  transactionDetails: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  
-  // Notification dot
-  notificationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginLeft: 4,
+  customerName: {
+    fontSize: 14,
+    color: '#666',
   },
-  
-  // Empty state
-  emptyState: {
-    padding: 32,
+  amount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF',
+  },
+  transactionFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  
-  // Empty state text
+  date: {
+    fontSize: 12,
+    color: '#999',
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  typeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+  },
   emptyStateText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6b7280',
-    marginBottom: 8,
+    color: '#666',
+    marginBottom: 5,
   },
-  
-  // Empty state subtitle
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#999',
     textAlign: 'center',
-  },
-  
-  // Information container
-  infoContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  
-  // Information title
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  
-  // Information text
-  infoText: {
-    fontSize: 12,
-    color: '#6b7280',
-    lineHeight: 18,
   },
 });
 
