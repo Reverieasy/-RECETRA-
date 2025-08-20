@@ -80,6 +80,36 @@ const Layout = ({ children, title, showBackButton = false }) => {
   };
 
   /**
+   * Returns an icon element based on the menu item label
+   * @param {string} label - The label of the menu item
+   * @returns {React.ReactNode} - An icon element (img or span)
+   */
+  const getMenuItemIcon = (label) => {
+    switch (label) {
+      case 'Home':
+        return <img src="/assets/home-icon.png" alt="home" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'User Management':
+        return <img src="/assets/user-management.png" alt="user-management" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'Template Management':
+        return <img src="/assets/template.png" alt="template" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'Receipt Verification':
+        return <img src="/assets/receipt-ver.png" alt="receipt-ver" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'FAQ Chatbot':
+        return <img src="/assets/chat.png" alt="chat" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'Profile':
+        return <img src="/assets/profile.png" alt="profile" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'Issue Receipt':
+        return <img src="/assets/Receipt-issue.png" alt="issue-receipt" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'Transaction Archive':
+        return <img src="/assets/archive.png" alt="archive" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      case 'Payment Gateway':
+        return <img src="/assets/payment.png" alt="payment" style={{ width: 20, height: 20, marginRight: 8 }} />;
+      default:
+        return null;
+    }
+  };
+
+  /**
    * Handles navigation to a specific path
    * @param {string} path - Path to navigate to
    */
@@ -106,149 +136,86 @@ const Layout = ({ children, title, showBackButton = false }) => {
   return (
     <div style={styles.container}>
       {/* Top Navigation Bar */}
-      <div style={styles.topBar}>
-        {/* Back Button - Only shown when showBackButton is true */}
+      <div style={styles.topBar} className="topBar">
+        {/* Back Button */}
         {showBackButton && (
           <button
             style={styles.backButton}
             onClick={handleBackPress}
+            className="backButton"
           >
-            <span style={styles.backButtonText}>Back</span>
+            <span style={styles.backButtonText} className="backButtonText">←</span>
           </button>
-          )}
-        
-        {/* Menu Button - Toggles sidebar */}
+        )}
+
+        {/* Menu Button */}
         <button
           style={styles.menuButton}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
+          onClick={() => setSidebarOpen(true)}
+          className="menuButton"
         >
-          <span style={styles.menuButtonText}>Menu</span>
+          <span style={styles.menuButtonText} className="menuButtonText">☰</span>
         </button>
-        
-        {/* Page Title - Centered */}
-        <h1 style={styles.title}>{title}</h1>
-        
+
+        {/* Page Title */}
+        <h1 style={styles.title} className="title">{title}</h1>
+
         {/* User Information - Right side */}
-        <div style={styles.userInfo}>
-          <span style={styles.userName}>{user?.fullName}</span>
-          <span style={styles.userRole}>{user?.role}</span>
+        <div style={styles.userInfo} className="userInfo">
+          <span style={styles.userName} className="userName">{user?.fullName}</span>
+          <span style={styles.userRole} className="userRole">{user?.role}</span>
         </div>
       </div>
 
-      {/* Sidebar Overlay - Appears when sidebar is open */}
+      {/* Sidebar Overlay */}
       {sidebarOpen && (
-        <div style={styles.sidebarOverlay}>
-          {/* Backdrop - Closes sidebar when clicked */}
-          <div
-            style={styles.sidebarBackdrop}
-            onClick={() => setSidebarOpen(false)}
-          />
+        <div style={styles.sidebarOverlay} className="sidebarOverlay">
+          {/* Backdrop */}
+          <div style={styles.sidebarBackdrop} onClick={() => setSidebarOpen(false)} />
           
-          {/* Sidebar Content */}
-          <div style={styles.sidebar}>
+          {/* Sidebar */}
+          <div style={styles.sidebar} className="sidebar">
             {/* Sidebar Header */}
-            <div style={styles.sidebarHeader}>
-              <img className="sidebarLogo" src='../../assets/Logo_with_Color.png' alt='Logo' style={styles.sidebarLogo} />
-              
+            <div style={styles.sidebarHeader} className="sidebarHeader">
+              <img
+                src="/assets/LogoIcon.png"
+                alt="RECETRA Logo"
+                style={styles.sidebarLogo}
+                className="sidebarLogo"
+              />
+              <h2 style={styles.sidebarTitle} className="sidebarTitle">RECETRA</h2>
+              <p style={styles.sidebarSubtitle} className="sidebarSubtitle">Receipt Management System</p>
             </div>
-            
-            {/* Navigation Menu Items */}
-<div style={styles.menuContainer}>
-  {getMenuItems().map((item, index) => (
-    <button
-      key={index}
-      style={{
-        ...styles.menuItem,
-        backgroundColor: location.pathname === item.path ? '#f3f4f6' : 'transparent',
-        display: 'flex',
-        alignItems: 'center'
-      }}
-      onClick={() => handleNavigation(item.path)}
-    >
-      {/* Render icon based on item label */}
-      {item.label === 'Home' && (
-        <img
-          src="/assets/home-icon.png"
-          alt="home"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'User Management' && (
-        <img
-          src="/assets/user-management.png"
-          alt="user-management"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'Template Management' && (
-        <img
-          src="/assets/template.png"
-          alt="template"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'Receipt Verification' && (
-        <img
-          src="/assets/receipt-ver.png"
-          alt="receipt-ver"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'FAQ Chatbot' && (
-        <img
-          src="/assets/chat.png"
-          alt="chat"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'Profile' && (
-        <img
-          src="/assets/profile.png"
-          alt="profile"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'Issue Receipt' && (
-        <img
-          src="/assets/Receipt-issue.png"
-          alt="issue-receipt"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'Transaction Archive' && (
-        <img
-          src="/assets/archive.png"
-          alt="archive"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
-      {item.label === 'Payment Gateway' && (
-        <img
-          src="/assets/payment.png"
-          alt="payment"
-          style={{ width: 20, height: 20, marginRight: 8 }}
-        />
-      )}
 
-      <span style={styles.menuItemText}>{item.label}</span>
-    </button>
-  ))}
-</div>
-
+            {/* Menu Items */}
+            <div style={styles.menuContainer} className="menuContainer">
+              {getMenuItems().map((item) => (
+                <button
+                  key={item.path}
+                  style={styles.menuItem}
+                  className="menuItem"
+                  onClick={() => handleNavigation(item.path)}
+                >
+                  {getMenuItemIcon(item.label)}
+                  <span style={styles.menuItemText} className="menuItemText">{item.label}</span>
+                </button>
+              ))}
+            </div>
             
             {/* Logout Button */}
             <button
               style={styles.logoutButton}
               onClick={handleLogout}
+              className="logoutButton"
             >
-              <span style={styles.logoutButtonText}>Logout</span>
+              <span style={styles.logoutButtonText} className="logoutButtonText">Logout</span>
             </button>
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
-      <div style={styles.content}>
+      <div style={styles.content} className="content">
         {children}
       </div>
     </div>
@@ -258,6 +225,7 @@ const Layout = ({ children, title, showBackButton = false }) => {
 /**
  * Styles for the Layout component
  * Uses a consistent blue/white theme throughout the application
+ * Responsive design for all device sizes
  */
 const styles = {
   // Main container
@@ -274,9 +242,9 @@ const styles = {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3a8a',  // Primary blue color
-    padding: '16px',
+    padding: '12px 16px',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    minHeight: '64px',
+    minHeight: '56px',
   },
   
   // Back button
@@ -289,7 +257,7 @@ const styles = {
   },
   backButtonText: {
     color: 'white',
-    fontSize: '20px',
+    fontSize: '18px',
     fontWeight: 'bold',
   },
   
@@ -302,7 +270,7 @@ const styles = {
   },
   menuButtonText: {
     color: 'white',
-    fontSize: '20px',
+    fontSize: '18px',
     fontWeight: 'bold',
   },
   
@@ -310,7 +278,7 @@ const styles = {
   title: {
     flex: 1,
     color: 'white',
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: '600',
     textAlign: 'center',
     margin: 0,
@@ -324,13 +292,13 @@ const styles = {
   },
   userName: {
     color: 'white',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: '500',
     margin: 0,
   },
   userRole: {
     color: '#bfdbfe',  // Light blue
-    fontSize: '10px',
+    fontSize: '9px',
     margin: 0,
   },
   
@@ -345,11 +313,11 @@ const styles = {
   },
 
   sidebarLogo: {
-     width: 250, 
-     height: 250, 
-     marginTop: -30, 
-     marginBottom: -80, 
-     alignSelf: 'center'
+     width: 200, 
+     height: 200, 
+     marginTop: -20, 
+     marginBottom: -60, 
+     alignSelf: 'center',
   },
 
   // Backdrop (semi-transparent overlay)
@@ -367,86 +335,77 @@ const styles = {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '80%',
-    maxWidth: '300px',
+    width: '85%',
+    maxWidth: '280px',
     height: '100%',
     backgroundColor: 'white',
     boxShadow: '2px 0 8px rgba(0, 0, 0, 0.25)',
     display: 'flex',
     flexDirection: 'column',
-    padding: '20px',
-    '&:hover': {
-      backgroundColor: '#a5c1f8ff',
-      transition: 'background-color 0.3s ease',
-      display: 'flex',
-      alignItems: 'center',
-    },
+    padding: '16px',
   },
   
   // Sidebar header section
   sidebarHeader: {
     backgroundColor: '#ffffffff',
-    padding: '20px',
+    padding: '16px',
   },
   sidebarTitle: {
     color: 'white',
-    fontSize: '20px',
+    fontSize: '18px',
     fontWeight: 'bold',
     marginBottom: '4px',
     margin: 0,
   },
   sidebarSubtitle: {
     color: '#7cb6fdff',
-    fontSize: '14px',
+    fontSize: '13px',
     margin: 0,
   },
   
   // Menu items container
   menuContainer: {
     flex: 1,
-    paddingTop: '20px',
-  
+    paddingTop: '16px',
   },
   
   // Individual menu item
   menuItem: {
     display: 'block',
     width: '100%',
-    padding: '16px 20px',
+    padding: '14px 16px',
     borderBottom: '1px solid #f3f4f6',
     backgroundColor: 'transparent',
     border: 'none',
     textAlign: 'left',
     cursor: 'pointer',
-    
   },
   menuItemText: {
-    fontSize: '16px',
+    fontSize: '15px',
     color: '#19191aff',
     fontWeight: '500',
   },
   
   // Logout button
   logoutButton: {
-    margin: '20px',
+    margin: '16px',
     backgroundColor: '#ef4444',  // Red color for logout
-    padding: '16px',
+    padding: '14px',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
-    marginBottom: '50px',
-   
+    marginBottom: '40px',
   },
   logoutButtonText: {
     color: 'white',
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '600',
   },
   
   // Main content area
   content: {
     flex: 1,
-    padding: '16px',
+    padding: '12px',
     overflow: 'auto',
   },
 };

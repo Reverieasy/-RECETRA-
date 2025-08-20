@@ -179,21 +179,22 @@ const ProfileScreen = () => {
 
   return (
     <Layout title="Profile" showBackButton={true}>
-      <div style={styles.container}>
-        <div style={styles.content}>
+      <div style={styles.container} className="container">
+        <div style={styles.content} className="content">
           {/* Profile Photo Section */}
-          <div style={styles.photoSection}>
-            <div style={styles.photoContainer} onClick={handleChangePhoto}>
-             <img
-            src={profilePhoto}
-            alt="Profile"
-            style={styles.profilePhoto}
-            onError={(e) => {
-            e.target.src = '/assets/LogoIcon.png'; 
-  }}
-/>
-              <div style={styles.photoOverlay}>
-                <span style={styles.photoOverlayText}>Change</span>
+          <div style={styles.photoSection} className="photoSection">
+            <div style={styles.photoContainer} onClick={handleChangePhoto} className="photoContainer">
+              <img
+                src={profilePhoto}
+                alt="Profile"
+                style={styles.profilePhoto}
+                className="profilePhoto"
+                onError={(e) => {
+                  e.target.src = '/assets/LogoIcon.png'; // Fallback to default
+                }}
+              />
+              <div style={styles.photoOverlay} className="photoOverlay">
+                <span style={styles.photoOverlayText} className="photoOverlayText">Change</span>
               </div>
               <input
                 type="file"
@@ -206,10 +207,10 @@ const ProfileScreen = () => {
           </div>
 
           {/* Profile Information */}
-          <div style={styles.infoSection}>
-            <div style={styles.infoHeader}>
-              <h3 style={styles.infoTitle}>Personal Information</h3>
-              <div style={styles.editButtons}>
+          <div style={styles.infoSection} className="infoSection">
+            <div style={styles.infoHeader} className="infoHeader">
+              <h3 style={styles.infoTitle} className="infoTitle">Personal Information</h3>
+              <div style={styles.editButtons} className="editButtons">
                 {isEditing ? (
                   <>
                     <button
@@ -250,29 +251,30 @@ const ProfileScreen = () => {
 
             {/* Error Display */}
             {error && (
-              <div style={styles.errorContainer}>
-                <span style={styles.errorText}>{error}</span>
+              <div style={styles.errorContainer} className="errorContainer">
+                <span style={styles.errorText} className="errorText">{error}</span>
               </div>
             )}
 
             {/* Success Message Display */}
             {successMessage && (
-              <div style={styles.successContainer}>
-                <span style={styles.successText}>{successMessage}</span>
+              <div style={styles.successContainer} className="successContainer">
+                <span style={styles.successText} className="successText">{successMessage}</span>
               </div>
             )}
 
-            <div style={styles.infoContainer}>
+            <div style={styles.infoContainer} className="infoContainer">
               {/* Full Name */}
-              <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>
+              <div style={styles.infoRow} className="infoRow">
+                <span style={styles.infoLabel} className="infoLabel">
                   Full Name
-                  <span style={styles.requiredIndicator}> *</span>
+                  <span style={styles.requiredIndicator} className="requiredIndicator"> *</span>
                 </span>
                 {isEditing ? (
                   <input
                     type="text"
                     style={styles.infoInput}
+                    className="infoInput"
                     value={profileData.fullName}
                     onChange={(e) => setProfileData({...profileData, fullName: e.target.value})}
                     placeholder="Enter full name"
@@ -281,7 +283,7 @@ const ProfileScreen = () => {
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 ) : (
-                  <span style={styles.infoValue}>{user?.fullName}</span>
+                  <div style={styles.infoValue} className="infoValue">{user?.fullName || 'Not set'}</div>
                 )}
               </div>
 
@@ -533,173 +535,189 @@ const modalStyles = {
  */
 const styles = {
   container: {
-    backgroundColor: '#f5f5f5',
-    minHeight: '100%',
+    padding: '16px',
+    '@media (min-width: 768px)': {
+      padding: '24px',
+    },
+    '@media (min-width: 1024px)': {
+      padding: '32px',
+    },
   },
-  
   content: {
     maxWidth: '800px',
     margin: '0 auto',
   },
-  
   photoSection: {
     textAlign: 'center',
-    marginBottom: '32px',
+    marginBottom: '24px',
+    '@media (min-width: 768px)': {
+      marginBottom: '32px',
+    },
   },
-  
   photoContainer: {
     position: 'relative',
     display: 'inline-block',
     cursor: 'pointer',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    '@media (max-width: 480px)': {
+      width: '120px',
+      height: '120px',
+    },
+    '@media (min-width: 481px) and (max-width: 767px)': {
+      width: '140px',
+      height: '140px',
+    },
+    '@media (min-width: 768px)': {
+      width: '160px',
+      height: '160px',
+    },
   },
-  
   profilePhoto: {
-    width: '120px',
-    height: '120px',
-    borderRadius: '60px',
-    border: '4px solid #1e3a8a',
+    width: '100%',
+    height: '100%',
     objectFit: 'cover',
   },
-  
   photoOverlay: {
     position: 'absolute',
-    bottom: '0',
-    left: '0',
-    right: '0',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(30, 58, 138, 0.8)',
-    color: 'white',
-    padding: '8px',
-    borderBottomLeftRadius: '60px',
-    borderBottomRightRadius: '60px',
-    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
   },
-  
   photoOverlayText: {
-    fontSize: '12px',
-    fontWeight: '600',
     color: 'white',
+    fontSize: '14px',
+    fontWeight: '600',
   },
-  
   infoSection: {
     backgroundColor: 'white',
     borderRadius: '12px',
-    padding: '24px',
-    marginBottom: '24px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    padding: '20px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
   },
-  
   infoHeader: {
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '24px',
-    paddingBottom: '12px',
-    borderBottom: '2px solid #e5e7eb',
+    alignItems: 'flex-start',
+    marginBottom: '20px',
   },
-  
   infoTitle: {
-    fontSize: '20px',
-    fontWeight: 'bold',
+    fontSize: '18px',
+    fontWeight: '600',
     color: '#374151',
-    margin: 0,
+    margin: '0 0 16px 0',
   },
-  
+  editButtons: {
+    display: 'flex',
+    gap: '12px',
+    flexDirection: 'row',
+  },
   editButton: {
     backgroundColor: '#1e3a8a',
     color: 'white',
-    padding: '8px 16px',
-    borderRadius: '6px',
+    padding: '10px 20px',
+    borderRadius: '8px',
     border: 'none',
+    cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer',
     transition: 'background-color 0.2s ease',
   },
-
   editButtonDisabled: {
     backgroundColor: '#9ca3af',
-    color: '#6b7280',
-    padding: '8px 16px',
-    borderRadius: '6px',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
     border: 'none',
+    cursor: 'not-allowed',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'not-allowed',
-    transition: 'background-color 0.2s ease',
   },
-
   cancelButton: {
-    backgroundColor: '#f3f4f6',
-    color: '#374151',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
-    fontSize: '14px',
-    fontWeight: '600',
+    backgroundColor: '#6b7280',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
     cursor: 'pointer',
-    marginRight: '10px',
-    transition: 'background-color 0.2s ease',
-  },
-
-  cancelButtonDisabled: {
-    backgroundColor: '#f3f4f6',
-    color: '#9ca3af',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'not-allowed',
-    marginRight: '10px',
     transition: 'background-color 0.2s ease',
   },
-  
-  editButtons: {
-    display: 'flex',
-    gap: '10px',
+  cancelButtonDisabled: {
+    backgroundColor: '#9ca3af',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'not-allowed',
+    fontSize: '14px',
+    fontWeight: '600',
   },
-  
+  errorContainer: {
+    backgroundColor: '#fef2f2',
+    border: '1px solid #fecaca',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '16px',
+  },
+  errorText: {
+    color: '#dc2626',
+    fontSize: '14px',
+  },
+  successContainer: {
+    backgroundColor: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '16px',
+  },
+  successText: {
+    color: '#16a34a',
+    fontSize: '14px',
+  },
   infoContainer: {
     display: 'grid',
-    gap: '16px',
+    gridTemplateColumns: '1fr',
+    gap: '20px',
   },
-  
   infoRow: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 0',
-    borderBottom: '1px solid #f3f4f6',
+    flexDirection: 'column',
   },
-  
   infoLabel: {
     fontSize: '14px',
-    fontWeight: '600',
-    color: '#6b7280',
-    minWidth: '120px',
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: '8px',
   },
-  
+  requiredIndicator: {
+    color: '#dc2626',
+  },
+  infoInput: {
+    padding: '10px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '14px',
+    transition: 'border-color 0.2s ease',
+  },
   infoValue: {
     fontSize: '14px',
     color: '#374151',
-    fontWeight: '500',
+    padding: '10px 12px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb',
   },
-  
-  infoInput: {
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    padding: '8px 12px',
-    fontSize: '14px',
-    backgroundColor: 'white',
-    minWidth: '200px',
-    transition: 'border-color 0.2s ease',
-    outline: 'none',
-    ':focus': {
-      borderColor: '#1e3a8a',
-      boxShadow: '0 0 0 3px rgba(30, 58, 138, 0.1)',
-    },
-  },
-  
   statusBadge: {
     backgroundColor: '#10b981',
     padding: '4px 12px',
@@ -713,36 +731,6 @@ const styles = {
     color: 'white',
   },
 
-  errorContainer: {
-    backgroundColor: '#fef3f2',
-    border: '1px solid #fca5a5',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginTop: '16px',
-    marginBottom: '16px',
-  },
-
-  errorText: {
-    fontSize: '14px',
-    color: '#991b1b',
-    fontWeight: '500',
-  },
-
-  successContainer: {
-    backgroundColor: '#e0f2f7',
-    border: '1px solid #90cdf4',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginTop: '16px',
-    marginBottom: '16px',
-  },
-
-  successText: {
-    fontSize: '14px',
-    color: '#2b6cb0',
-    fontWeight: '500',
-  },
-  
   actionsSection: {
     backgroundColor: 'white',
     borderRadius: '12px',
