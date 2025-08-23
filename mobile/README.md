@@ -2,7 +2,7 @@
 
 A comprehensive React Native mobile application for NU Dasma student organizations to manage official receipts, donations, and membership fees with role-based access control.
 
-## 🚀 Features
+## Features
 
 ### **Authentication & Authorization**
 - Secure login/signup system
@@ -50,7 +50,7 @@ A comprehensive React Native mobile application for NU Dasma student organizatio
 - **AsyncStorage** for session management
 - **Context API** for state management
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
@@ -58,7 +58,7 @@ A comprehensive React Native mobile application for NU Dasma student organizatio
 - iOS Simulator or Android Emulator (optional)
 - Expo Go app for mobile testing
 
-## 🚀 Installation
+## Installation
 
 1. **Clone the repository**
    ```bash
@@ -81,7 +81,7 @@ A comprehensive React Native mobile application for NU Dasma student organizatio
    - Scan the QR code with Expo Go
    - Or press 'i' for iOS simulator, 'a' for Android emulator
 
-## 👥 Test Accounts
+##  Test Accounts
 
 Use these accounts to test different roles:
 
@@ -91,7 +91,7 @@ Use these accounts to test different roles:
 | Encoder | encoder | password |
 | Viewer | viewer | password |
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 RECETRA/
