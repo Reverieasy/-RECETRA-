@@ -1,255 +1,265 @@
 import React, { useState } from 'react';
 import {
+  Image,
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
-  Image,
-  SafeAreaView,
 } from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 
-const LoginScreen = ({ navigation }: any) => {
-  const [formData, setFormData] = useState({
+/**
+ * Login Screen Component
+ * Provides user authentication with username/password
+ * 
+ * Features:
+ * - Username and password input
+ * - Form validation
+ * - Loading states
+ * - Test account display
+ * - Navigation to signup
+ */
+const LoginScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<any>>();
+  const { login } = useAuth();
+  const [credentials, setCredentials] = useState({
     username: '',
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useAuth();
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
+  /**
+   * Handles login form submission
+   * Validates input and attempts authentication
+   */
   const handleLogin = async () => {
-    if (!formData.username.trim() || !formData.password.trim()) {
+    if (!credentials.username.trim() || !credentials.password.trim()) {
       Alert.alert('Error', 'Please enter both username and password');
       return;
     }
 
     setIsLoading(true);
+    
     try {
-      await login(formData.username, formData.password);
+      await login(credentials.username, credentials.password);
     } catch (error) {
-      Alert.alert('Error', 'Invalid username or password');
+      Alert.alert('Login Failed', 'Invalid username or password');
     } finally {
       setIsLoading(false);
     }
   };
 
+  /**
+   * Handles navigation to signup screen
+   */
+  const handleGoToSignup = () => {
+    navigation.navigate('Signup');
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-                           {/* Header with Logo */}
-                 <View style={styles.header}>
-                   <Image
-                     source={require('../../assets/Logo_with_Color.png')}
-                     style={styles.logo}
-                     resizeMode="contain"
-                   />
-                 </View>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+     <View style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/Logo_with_Color.png')}
+            style={{ width: 1080, height: 300, marginTop: 50, marginBottom: -100, alignContent: 'center' }}
+            resizeMode="contain"
+          />
+    
+        </View>
 
-          {/* Login Form */}
-          <View style={styles.formContainer}>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                value={formData.username}
-                onChangeText={(value) => handleInputChange('username', value)}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="username"
-                returnKeyType="next"
-                blurOnSubmit={false}
-              />
-            </View>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                value={formData.password}
-                onChangeText={(value) => handleInputChange('password', value)}
-                secureTextEntry
-                autoComplete="password"
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
-            </View>
-
-            <TouchableOpacity 
-              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
-              onPress={handleLogin}
-              disabled={isLoading}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </Text>
-            </TouchableOpacity>
+        {/* Login Form */}
+        <View style={styles.formContainer}>
+          <Text style={styles.formTitle}>Sign In</Text>
+          
+          {/* Username Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.username}
+              onChangeText={(text) => setCredentials({...credentials, username: text})}
+              placeholder="Enter your username"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           </View>
 
-          {/* Sign Up Link */}
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')} activeOpacity={0.7}>
-              <Text style={styles.signupLink}>Sign Up</Text>
-            </TouchableOpacity>
+          {/* Password Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.password}
+              onChangeText={(text) => setCredentials({...credentials, password: text})}
+              placeholder="Enter your password"
+              secureTextEntry
+            />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {/* Login Button */}
+          <TouchableOpacity
+            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            <Text style={styles.loginButtonText}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+
+
+        {/* Signup Link */}
+        <View style={styles.signupContainer}>
+          <Text style={styles.signupText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={handleGoToSignup}>
+            <Text style={styles.signupLink}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
+/**
+ * Styles for the LoginScreen component
+ * Uses a clean, professional design with consistent spacing and colors
+ */
 const styles = StyleSheet.create({
+  // Main container
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f5f5',
   },
-  keyboardView: {
+  
+  // Content area
+  content: {
     flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: 40,
+    padding: 20,
     justifyContent: 'center',
-    minHeight: '100%',
   },
+  
+  // Header section
   header: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: Platform.OS === 'ios' ? 5 : 15,
-    paddingBottom: 0,
-    paddingHorizontal: 20,
+    marginBottom: 40,
   },
-  logo: {
-    width: 320,
-    height: 320,
-    marginBottom: 0,
-    alignSelf: 'center',
-  },
-  welcomeText: {
-    fontSize: 28,
+  
+  // Title
+  title: {
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#1e3a8a',
     marginBottom: 8,
-    textAlign: 'center',
   },
-  subtitleText: {
+  
+  // Subtitle
+  subtitle: {
     fontSize: 16,
     color: '#6b7280',
     textAlign: 'center',
-    lineHeight: 22,
   },
+  
+  // Form container
   formContainer: {
     backgroundColor: 'white',
-    marginHorizontal: 20,
-    padding: 16,
-    borderRadius: 16,
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-    marginBottom: 20,
-    marginTop: -60,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
+  
+  // Form title
   formTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#374151',
     marginBottom: 24,
     textAlign: 'center',
-    color: '#1e3a8a',
   },
+  
+  // Input group
   inputGroup: {
     marginBottom: 20,
   },
+  
+  // Label
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
     color: '#374151',
+    marginBottom: 8,
   },
+  
+  // Input field
   input: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#d1d5db',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
     backgroundColor: 'white',
-    minHeight: 52,
-    color: '#374151',
   },
+  
+  // Login button
   loginButton: {
     backgroundColor: '#1e3a8a',
-    padding: 18,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
-    minHeight: 56,
-    shadowColor: '#1e3a8a',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
+  
+  // Disabled login button
   loginButtonDisabled: {
     backgroundColor: '#9ca3af',
-    shadowOpacity: 0,
-    elevation: 0,
   },
+  
+  // Login button text
   loginButtonText: {
     color: 'white',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
   },
+  
+
+  
+  // Signup container
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
+  
+  // Signup text
   signupText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6b7280',
   },
+  
+  // Signup link
   signupLink: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#1e3a8a',
     fontWeight: '600',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
   },
 });
 

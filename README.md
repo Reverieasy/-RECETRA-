@@ -1,223 +1,221 @@
-# RECETRA 
-A comprehensive receipt management system built with React Native (mobile) and React.js (web), designed for NU Dasma orgs.
+# RECETRA - NU Dasma Receipt Management System
 
-## 🚀 Recent Updates
-- **Redesigned UI/UX** with modern interface improvements
-- **FAQ Chatbot removed** from Admin role for cleaner dashboard
-- **Enhanced navigation** with improved back button functionality
-- **Updated dependencies** for better performance and security
+A comprehensive receipt management system for NU Dasma student organizations, featuring both web and mobile applications with role-based access control, QR code verification, and payment gateway integration.
 
-## 📱 Mobile App (React Native)
-### Prerequisites
-- Node.js (v18+)
-- Expo CLI (`npm install -g @expo/cli`)
-- Android Studio (for Android development)
-- Xcode (for iOS development, macOS only)
+## 🏗️ Project Structure Overview
 
-### Dependencies
-```bash
-cd mobile
-npm install
-```
-
-**Key Mobile Dependencies:**
-- React Native 0.79.5
-- Expo SDK 53
-- React Navigation 7
-- TypeScript support
-- Camera and barcode scanning capabilities
-- QR code generation and scanning
-
-## 🌐 Web App (React.js)
-### Prerequisites
-- Node.js (v18+)
-- npm or yarn
-
-### Dependencies
-```bash
-cd web
-npm install
-```
-
-**Key Web Dependencies:**
-- React 18.2.0
-- Vite 7.1.2
-- React Router DOM 6.8.0
-- QR code libraries (html5-qrcode, jsqr, qrcode)
-- Modern ES modules support
-
-## 🎯 Quick Start
-
-### Batch Files (Quick Start)
-- **`Start Both Servers.bat`** - Double-click to start both servers
-- **`Start Web Server.bat`** - Double-click to start web server only
-- **`Start Mobile Server.bat`** - Double-click to start mobile server only
-
-### Manual Commands
-```bash
-# Web Server
-cd web && npm run dev
-
-# Mobile Server
-cd mobile && npm start
-```
-
-## 🏗️ Project Structure
+This project contains **two separate applications** - a **web application** and a **mobile application** - both designed to work together as a complete receipt management system.
 
 ```
-RECETRA_/
-├── mobile/                  # React Native mobile app
-│   ├── src/
-│   │   ├── components/      # Reusable components
-│   │   ├── screens/         # App screens
-│   │   ├── context/         # Authentication context
-│   │   ├── data/            # Mock data and interfaces
-│   │   └── services/        # API services
-│   ├── App.tsx              # Main app component
-│   └── package.json         # Mobile dependencies
-├── web/                     # React.js web app
-│   ├── src/
-│   │   ├── components/      # Web components
-│   │   ├── screens/         # Web screens
-│   │   ├── context/         # Auth context
-│   │   ├── data/            # Mock data
-│   │   └── services/        # API services
-│   ├── App.js               # Main web app
-│   └── package.json         # Web dependencies
-├── start-dev.ps1            # PowerShell server manager
-├── start-dev.bat            # Batch file server manager
-├── Start Both Servers.bat   # Quick start both servers
-├── Start Web Server.bat     # Quick start web server
-├── Start Mobile Server.bat  # Quick start mobile server
-└── README.md                # This file
+Recetra_/
+├── assets/                     # 📁 Shared assets folder
+│   ├── archive.png            # 📄 Archive icon for transaction history
+│   ├── chat.png               # 💬 Chat icon for FAQ chatbot
+│   ├── home-icon.png          # 🏠 Home navigation icon
+│   ├── Logo_with_Color.png    # 🎨 Main application logo (colored)
+│   ├── LogoIcon.png           # 🖼️ Logo icon for profile pictures
+│   ├── Office_background.jpg  # 🏢 Background image for login/signup
+│   ├── payment.png            # 💳 Payment icon for payment gateway
+│   ├── profile.png            # 👤 Profile icon for user management
+│   ├── Receipt-issue.png      # 📝 Receipt issuance icon
+│   ├── receipt-ver.png        # ✅ Receipt verification icon
+│   └── template.png           # 📋 Template management icon
+├── mobile/                     # 📱 React Native Mobile Application
+├── web/                        # 🌐 React Web Application
+└── batch script/               # ⚡ Windows batch scripts for easy startup
 ```
 
-## 👥 User Roles
+## 🌐 Web Application (`/web`)
 
-### Admin
-- Full system access
-- User management
-- Template management
-- System administration
-- **Note**: FAQ chatbot access removed for cleaner interface
+**Purpose**: Desktop/web-based interface for administrators and encoders to manage the receipt system from computers.
 
-### Encoder
-- Issue receipts
-- Manage transactions
-- Receipt verification
-- Archive management
-- FAQ chatbot support
+**What it's for**:
+- **Admin Management**: Full system control, user management, analytics
+- **Encoder Operations**: Receipt issuance, template management, bulk operations
+- **Desktop Access**: Better for data entry, reporting, and administrative tasks
+- **Cross-Platform**: Works on Windows, Mac, Linux through web browsers
 
-### Viewer
-- Read-only access
-- Receipt verification
-- Payment gateway access
-- FAQ chatbot support
+**Technology Stack**:
+- React.js with JSX
+- Vite build system
+- CSS3 with modern styling
+- Responsive design for different screen sizes
 
-## 🚀 Installation & Setup
+## 📱 Mobile Application (`/mobile`)
 
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd RECETRA_
+**Purpose**: Mobile-first interface for encoders and viewers to use the system on-the-go.
+
+**What it's for**:
+- **Field Operations**: Issue receipts during events, meetings, or on-site
+- **QR Code Scanning**: Use device camera for receipt verification
+- **Mobile Payments**: Process payments through mobile payment gateways
+- **Portable Access**: Work from anywhere with mobile devices
+
+**Technology Stack**:
+- React Native with Expo
+- TypeScript for type safety
+- React Navigation for mobile navigation
+- Native device features (camera, storage, etc.)
+
+## 🔑 Key Features
+
+### **Role-Based Access Control**
+- **Admin Role**: Full system access, user management, analytics
+- **Encoder Role**: Receipt issuance, template management, transaction processing
+- **Viewer Role**: Receipt verification, payment gateway access, read-only operations
+
+### **Receipt Management System**
+- **Digital Receipts**: Generate official receipts with unique numbers
+- **QR Code Integration**: Each receipt gets a scannable QR code for verification
+- **Template System**: Customizable receipt templates for different purposes
+- **Transaction Archive**: Complete history of all receipts and payments
+
+### **Payment Gateway**
+- **PayMongo Integration**: Secure online payment processing
+- **Multiple Payment Methods**: Credit cards, digital wallets, bank transfers
+- **Automatic Receipt Generation**: Receipts created automatically after successful payments
+
+### **User Experience Features**
+- **FAQ Chatbot**: Interactive help system for users
+- **Responsive Design**: Works on all device sizes
+- **Intuitive Navigation**: Easy-to-use interface for all user types
+- **Real-time Updates**: Live data synchronization across platforms
+
+## 🚀 Getting Started
+
+### **Prerequisites**
+- Node.js (v16 or higher)
+- npm or yarn package manager
+- Git for version control
+
+### **Quick Start**
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Recetra_
+   ```
+
+2. **Start Web Application**
+   ```bash
+   cd web
+   npm install
+   npm run dev
+   ```
+   Web app will be available at `http://localhost:5173`
+
+3. **Start Mobile Application**
+   ```bash
+   cd mobile
+   npm install
+   npx expo start
+   ```
+   Use Expo Go app to scan QR code and run on mobile device
+
+### **Using Batch Scripts (Windows)**
+- **`Start Both Servers.bat`**: Starts both web and mobile servers simultaneously
+- **`Start Web Server.bat`**: Starts only the web application
+- **`Start Mobile Server.bat`**: Starts only the mobile application
+- **`start-dev.bat`**: Alternative startup script with development settings
+
+## 📊 Data Flow
+
+```
+User Input → Authentication → Role Verification → Feature Access → Data Processing → Storage/Display
+    ↓
+Receipt Generation → QR Code Creation → Email Delivery → Payment Processing → Transaction Recording
 ```
 
-### 2. Install dependencies
-```bash
-# Install web dependencies
-cd web && npm install && cd ..
+## 🔧 Development Workflow
 
-# Install mobile dependencies
-cd mobile && npm install && cd ..
-```
+### **Web Development**
+- Edit files in `/web/src/`
+- Use `.jsx` extension for React components
+- Styles in `/web/src/styles/`
+- Run `npm run build` for production build
 
-### 3. Start development servers
-```bash
-# Use the convenient script
-.\start-dev.ps1 both
+### **Mobile Development**
+- Edit files in `/mobile/src/`
+- Use `.tsx` extension for TypeScript components
+- Assets in `/mobile/assets/`
+- Run `npx expo start` for development
 
-# Or double-click the batch files
-# Start Both Servers.bat
-```
+### **Shared Assets**
+- Place common images, icons, and resources in root `/assets/` folder
+- Both applications reference this shared folder
+- Maintains consistency across platforms
 
-### 4. Access your apps
-- **Web App**: http://localhost:5173
-- **Mobile App**: Scan QR code from Expo terminal
+## 🧪 Testing
 
-### Quick Restarts
-- **Web only**: `.\start-dev.ps1 web` or double-click `Start Web Server.bat`
-- **Mobile only**: `.\start-dev.ps1 mobile` or double-click `Start Mobile Server.bat`
+### **Test Accounts**
+| Role | Username | Password | Access Level |
+|------|----------|----------|--------------|
+| Admin | admin | password | Full system access |
+| Encoder | encoder | password | Receipt management |
+| Viewer | viewer | password | Read-only access |
 
-## 🔧 Troubleshooting
+### **Testing Scenarios**
+- **Receipt Issuance**: Create receipts with different templates
+- **QR Code Verification**: Scan generated QR codes
+- **Payment Processing**: Test payment gateway integration
+- **User Management**: Add, edit, and manage user accounts
+- **Role Permissions**: Verify access control for different roles
 
-### Common Issues
-- **Port already in use**: Use `.\start-dev.ps1 stop` then restart
-- **White screens**: Check browser console for errors
-- **Navigation errors**: Ensure servers are running
-- **Package-lock.json conflicts**: Delete and regenerate with `npm install`
+## 📱 Platform-Specific Features
 
-### Server Management
-```bash
-# Check what's running
-.\start-dev.ps1 status
+### **Web Application**
+- **Large Screen Optimization**: Better for data entry and management
+- **Keyboard Navigation**: Full keyboard support for power users
+- **Print Support**: Print receipts and reports directly
+- **Multi-tab Support**: Work with multiple sections simultaneously
 
-# Stop everything
-.\start-dev.ps1 stop
+### **Mobile Application**
+- **Camera Integration**: QR code scanning and photo capture
+- **Touch Optimization**: Mobile-first interface design
+- **Offline Capability**: Basic functionality without internet
+- **Push Notifications**: Real-time updates and alerts
 
-# Restart both
-.\start-dev.ps1 both
-```
+## 🔒 Security Features
 
-### Dependency Issues
-```bash
-# Clear npm cache
-npm cache clean --force
+- **Role-based Authentication**: Users can only access features for their role
+- **Session Management**: Secure login/logout with token validation
+- **Input Validation**: Prevents malicious data entry
+- **Secure API Calls**: Protected endpoints for sensitive operations
 
-# Delete node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-```
+## 📈 Future Enhancements
 
-## 🛠️ Technologies Used
+- **Backend Integration**: Replace mock data with real database
+- **Real-time Sync**: Live updates across all devices
+- **Advanced Analytics**: Detailed reporting and insights
+- **Multi-language Support**: Internationalization for diverse users
+- **API Documentation**: Comprehensive API reference
+- **Automated Testing**: Unit and integration tests
 
-- **Mobile**: React Native, Expo, TypeScript
-- **Web**: React.js, Vite, JavaScript
-- **Navigation**: React Navigation (mobile), React Router (web)
-- **State Management**: React Context API
-- **Styling**: StyleSheet (mobile), Inline styles (web)
-- **Development**: PowerShell scripts, Batch files
-- **QR Code**: Multiple libraries for generation and scanning
+## 🤝 Contributing
 
-## 📝 Contributing
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/new-feature`
+3. **Make your changes**: Follow the existing code style
+4. **Test thoroughly**: Ensure both web and mobile work correctly
+5. **Submit a pull request**: Include detailed description of changes
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 🔄 Recent Changes
-
-### v2.0 - Redesign Update
-- **Website redesign by Ivan** - Modernized UI/UX design
-- Improved navigation and back button functionality
-- Enhanced mobile responsiveness
-- Updated to latest React and React Native versions
-- FAQ chatbot removed from Admin role for better focus
-
-### Dependencies Updated
-- React Native upgraded to 0.79.5
-- Expo SDK updated to 53
-- React Navigation upgraded to v7
-- All web dependencies updated to latest stable versions
-
----
+### **Code Style Guidelines**
+- **Web**: Use `.jsx` extension, follow React best practices
+- **Mobile**: Use `.tsx` extension, follow TypeScript conventions
+- **Assets**: Place in appropriate folders, use descriptive names
+- **Documentation**: Update README and add inline comments
 
 ## 📞 Support
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review the console for error messages
-3. Ensure all dependencies are properly installed
-4. Verify Node.js version compatibility (v18+)
+- **Technical Issues**: Check existing issues or create new ones
+- **Feature Requests**: Submit through GitHub issues
+- **Documentation**: Refer to this README and inline code comments
+- **Community**: Join discussions in project forums
 
+## 📄 License
+
+This project is developed for NU Dasma student organizations and follows educational institution guidelines.
+
+---
+
+**RECETRA** - Empowering student organizations with digital receipt management! 🎓📱💼

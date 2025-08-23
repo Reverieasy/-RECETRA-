@@ -5,415 +5,888 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   TextInput,
+  Alert,
+  Modal,
 } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import Layout from '../components/Layout';
+import { mockUsers, mockOrganizations } from '../data/mockData';
 
-const UserManagementScreen = () => {
-  const { user } = useAuth();
-  const [users, setUsers] = useState([
-    {
-      id: '1',
-      username: 'admin',
-      fullName: 'Admin User',
-      email: 'admin@example.com',
-      role: 'Admin',
-      organization: 'NU Dasma',
-      isActive: true,
-    },
-    {
-      id: '2',
-      username: 'encoder',
-      fullName: 'Encoder User',
-      email: 'encoder@example.com',
-      role: 'Encoder',
-      organization: 'NU Dasma',
-      isActive: true,
-    },
-    {
-      id: '3',
-      username: 'viewer',
-      fullName: 'Viewer User',
-      email: 'viewer@example.com',
-      role: 'Viewer',
-      organization: 'NU Dasma',
-      isActive: true,
-    },
-  ]);
-
+/**
+ * User Management Screen Component
+ * Allows administrators to manage users, assign roles, and remove users
+ * 
+ * Features:
+ * - View all users in the system
+ * - Add new users
+ * - Edit user roles and permissions
+ * - Remove users from the system
+ * - Filter users by organization or role
+ * - User status management
+ */
+const UserManagementScreen: React.FC = () => {
+  const [users, setUsers] = useState(mockUsers);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterOrg, setFilterOrg] = useState('all');
   const [newUser, setNewUser] = useState({
-    username: '',
     fullName: '',
     email: '',
-    role: 'Viewer',
+    phone: '',
     organization: '',
+    role: 'Viewer',
+    isActive: true,
   });
 
-  const [isAddingUser, setIsAddingUser] = useState(false);
+  /**
+   * Filters users based on selected role and organization
+   * @returns Filtered list of users
+   */
+  const getFilteredUsers = () => {
+    return users.filter(user => {
+      const roleMatch = filterRole === 'all' || user.role === filterRole;
+      const orgMatch = filterOrg === 'all' || user.organization === filterOrg;
+      return roleMatch && orgMatch;
+    });
+  };
 
+  /**
+   * Handles adding a new user
+   * Validates input and adds user to the list
+   */
   const handleAddUser = () => {
-    if (!newUser.username || !newUser.fullName || !newUser.email || !newUser.organization) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!newUser.fullName.trim() || !newUser.email.trim() || !newUser.organization.trim()) {
+      Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
-    if (users.find(u => u.username === newUser.username)) {
-      Alert.alert('Error', 'Username already exists');
-      return;
-    }
-
-    if (users.find(u => u.email === newUser.email)) {
-      Alert.alert('Error', 'Email already exists');
-      return;
-    }
-
-    const userToAdd = {
+    const user = {
+      id: `user_${Date.now()}`,
+      username: newUser.email.split('@')[0],
+      password: 'password123', // Default password
       ...newUser,
-      id: Date.now().toString(),
-      isActive: true,
+      role: newUser.role as 'Admin' | 'Encoder' | 'Viewer',
     };
 
-    setUsers([...users, userToAdd]);
+    setUsers([...users, user]);
     setNewUser({
-      username: '',
       fullName: '',
       email: '',
-      role: 'Viewer',
+      phone: '',
       organization: '',
+      role: 'Viewer',
+      isActive: true,
     });
-    setIsAddingUser(false);
-
-    Alert.alert('Success', 'User added successfully');
+    setShowAddModal(false);
+    Alert.alert('Success', 'User added successfully!');
   };
 
-  const handleEditUser = (userId: string) => {
-    const userToEdit = users.find(u => u.id === userId);
-    if (userToEdit) {
-      Alert.alert(
-        'Edit User',
-        `Edit user: ${userToEdit.fullName}`,
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
+  /**
+   * Handles editing an existing user
+   * Updates user information in the list
+   */
+  const handleEditUser = () => {
+    if (!selectedUser) return;
+
+    const updatedUsers = users.map(user =>
+      user.id === selectedUser.id ? { ...user, ...selectedUser } : user
+    );
+    setUsers(updatedUsers);
+    setShowEditModal(false);
+    setSelectedUser(null);
+    Alert.alert('Success', 'User updated successfully!');
+  };
+
+  /**
+   * Handles removing a user from the system
+   * Shows confirmation dialog before removal
+   */
+  const handleRemoveUser = (user: any) => {
+    Alert.alert(
+      'Remove User',
+      `Are you sure you want to remove ${user.fullName}? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            const updatedUsers = users.filter(u => u.id !== user.id);
+            setUsers(updatedUsers);
+            Alert.alert('Success', 'User removed successfully!');
           },
-          {
-            text: 'Edit',
-            onPress: () => {
-              Alert.alert('Edit User', 'Edit functionality would be implemented here');
-            },
-          },
-        ]
-      );
-    }
+        },
+      ]
+    );
   };
 
-  const handleRemoveUser = (userId: string) => {
-    const userToRemove = users.find(u => u.id === userId);
-    if (userToRemove) {
-      Alert.alert(
-        'Remove User',
-        `Are you sure you want to remove ${userToRemove.fullName}?`,
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Remove',
-            style: 'destructive',
-            onPress: () => {
-              setUsers(users.filter(u => u.id !== userId));
-              Alert.alert('Success', 'User removed successfully');
-            },
-          },
-        ]
-      );
-    }
+  /**
+   * Opens the edit modal for a specific user
+   * @param user - User to edit
+   */
+  const openEditModal = (user: any) => {
+    setSelectedUser({ ...user });
+    setShowEditModal(true);
   };
 
-  const handleToggleUserStatus = (userId: string) => {
-    setUsers(users.map(u => 
-      u.id === userId ? { ...u, isActive: !u.isActive } : u
-    ));
+  /**
+   * Gets the role display name with color coding
+   * @param role - User's role
+   * @returns Formatted role display
+   */
+  const getRoleDisplay = (role: string) => {
+    const colors = {
+      Admin: '#ef4444',
+      Encoder: '#f59e0b',
+      Viewer: '#10b981',
+    };
+    
+    return (
+      <View style={[styles.roleBadge, { backgroundColor: colors[role as keyof typeof colors] }]}>
+        <Text style={styles.roleBadgeText}>{role}</Text>
+      </View>
+    );
   };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'Admin':
-        return '#ef4444';
-      case 'Encoder':
-        return '#f59e0b';
-      case 'Viewer':
-        return '#10b981';
-      default:
-        return '#6b7280';
-    }
-  };
+  const filteredUsers = getFilteredUsers();
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>User Management</Text>
-        
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Users</Text>
+    <Layout title="User Management" showBackButton={true}>
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          {/* Header Actions */}
+          <View style={styles.header}>
             <TouchableOpacity
               style={styles.addButton}
-              onPress={() => setIsAddingUser(!isAddingUser)}
+              onPress={() => setShowAddModal(true)}
             >
-              <Text style={styles.addButtonText}>
-                {isAddingUser ? 'Cancel' : 'Add User'}
-              </Text>
+              <Text style={styles.addButtonText}>Add New User</Text>
             </TouchableOpacity>
           </View>
 
-          {isAddingUser && (
-            <View style={styles.addUserForm}>
-              <TextInput
-                style={styles.input}
-                placeholder="Username"
-                value={newUser.username}
-                onChangeText={(text) => setNewUser({ ...newUser, username: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={newUser.fullName}
-                onChangeText={(text) => setNewUser({ ...newUser, fullName: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={newUser.email}
-                onChangeText={(text) => setNewUser({ ...newUser, email: text })}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Organization"
-                value={newUser.organization}
-                onChangeText={(text) => setNewUser({ ...newUser, organization: text })}
-              />
-              <TouchableOpacity style={styles.submitButton} onPress={handleAddUser}>
-                <Text style={styles.submitButtonText}>Add User</Text>
-              </TouchableOpacity>
+          {/* Filters */}
+          <View style={styles.filtersContainer}>
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>Filter by Role:</Text>
+              <View style={styles.filterButtons}>
+                {['all', 'Admin', 'Encoder', 'Viewer'].map(role => (
+                  <TouchableOpacity
+                    key={role}
+                    style={[
+                      styles.filterButton,
+                      filterRole === role && styles.filterButtonActive
+                    ]}
+                    onPress={() => setFilterRole(role)}
+                  >
+                    <Text style={[
+                      styles.filterButtonText,
+                      filterRole === role && styles.filterButtonTextActive
+                    ]}>
+                      {role === 'all' ? 'All' : role}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          )}
 
-          <View style={styles.usersList}>
-            {users.map((userItem) => (
-              <View key={userItem.id} style={styles.userCard}>
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>Filter by Organization:</Text>
+              <View style={styles.filterButtons}>
+                {['all', ...mockOrganizations.map(org => org.name)].map(org => (
+                  <TouchableOpacity
+                    key={org}
+                    style={[
+                      styles.filterButton,
+                      filterOrg === org && styles.filterButtonActive
+                    ]}
+                    onPress={() => setFilterOrg(org)}
+                  >
+                    <Text style={[
+                      styles.filterButtonText,
+                      filterOrg === org && styles.filterButtonTextActive
+                    ]}>
+                      {org === 'all' ? 'All' : org}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* Users List */}
+          <View style={styles.usersContainer}>
+            <Text style={styles.sectionTitle}>
+              Users ({filteredUsers.length})
+            </Text>
+            
+            {filteredUsers.map(user => (
+              <TouchableOpacity
+                key={user.id}
+                style={styles.userCard}
+                onPress={() => openEditModal(user)}
+              >
                 <View style={styles.userInfo}>
-                  <Text style={styles.userName}>{userItem.fullName}</Text>
-                  <Text style={styles.userUsername}>@{userItem.username}</Text>
-                  <Text style={styles.userEmail}>{userItem.email}</Text>
-                  <View style={styles.userDetails}>
-                    <View style={[styles.roleBadge, { backgroundColor: getRoleColor(userItem.role) }]}>
-                      <Text style={styles.roleText}>{userItem.role}</Text>
+                  <View style={styles.userHeader}>
+                    <Text style={styles.userName}>{user.fullName}</Text>
+                    {getRoleDisplay(user.role)}
+                  </View>
+                  
+                  <Text style={styles.userEmail}>{user.email}</Text>
+                  <Text style={styles.userOrg}>{user.organization}</Text>
+                  
+                  <View style={styles.userStatus}>
+                    <View style={[
+                      styles.statusBadge,
+                      { backgroundColor: user.isActive ? '#10b981' : '#ef4444' }
+                    ]}>
+                      <Text style={styles.statusText}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </Text>
                     </View>
-                    <Text style={styles.userOrganization}>{userItem.organization}</Text>
                   </View>
                 </View>
                 
                 <View style={styles.userActions}>
                   <TouchableOpacity
-                    style={[styles.statusButton, { backgroundColor: userItem.isActive ? '#10b981' : '#6b7280' }]}
-                    onPress={() => handleToggleUserStatus(userItem.id)}
-                  >
-                    <Text style={styles.statusButtonText}>
-                      {userItem.isActive ? 'Active' : 'Inactive'}
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
                     style={styles.editButton}
-                    onPress={() => handleEditUser(userItem.id)}
+                    onPress={() => openEditModal(user)}
                   >
                     <Text style={styles.editButtonText}>Edit</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity
                     style={styles.removeButton}
-                    onPress={() => handleRemoveUser(userItem.id)}
+                    onPress={() => handleRemoveUser(user)}
                   >
                     <Text style={styles.removeButtonText}>Remove</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
+            
+            {filteredUsers.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>No users found</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Try adjusting your filters or add a new user
+                </Text>
+              </View>
+            )}
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      {/* Add User Modal */}
+      <Modal
+        visible={showAddModal}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add New User</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Full Name"
+              value={newUser.fullName}
+              onChangeText={(text) => setNewUser({...newUser, fullName: text})}
+            />
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Email"
+              value={newUser.email}
+              onChangeText={(text) => setNewUser({...newUser, email: text})}
+              keyboardType="email-address"
+            />
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Phone (optional)"
+              value={newUser.phone}
+              onChangeText={(text) => setNewUser({...newUser, phone: text})}
+              keyboardType="phone-pad"
+            />
+            
+            <View style={styles.modalRow}>
+              <Text style={styles.modalLabel}>Organization:</Text>
+              <View style={styles.modalSelect}>
+                {mockOrganizations.map(org => (
+                  <TouchableOpacity
+                    key={org.name}
+                    style={[
+                      styles.selectOption,
+                      newUser.organization === org.name && styles.selectOptionActive
+                    ]}
+                    onPress={() => setNewUser({...newUser, organization: org.name})}
+                  >
+                    <Text style={[
+                      styles.selectOptionText,
+                      newUser.organization === org.name && styles.selectOptionTextActive
+                    ]}>
+                      {org.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.modalRow}>
+              <Text style={styles.modalLabel}>Role:</Text>
+              <View style={styles.modalSelect}>
+                {['Viewer', 'Encoder', 'Admin'].map(role => (
+                  <TouchableOpacity
+                    key={role}
+                    style={[
+                      styles.selectOption,
+                      newUser.role === role && styles.selectOptionActive
+                    ]}
+                    onPress={() => setNewUser({...newUser, role})}
+                  >
+                    <Text style={[
+                      styles.selectOptionText,
+                      newUser.role === role && styles.selectOptionTextActive
+                    ]}>
+                      {role}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setShowAddModal(false)}
+              >
+                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.modalButtonSave}
+                onPress={handleAddUser}
+              >
+                <Text style={styles.modalButtonTextSave}>Add User</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal
+        visible={showEditModal}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit User</Text>
+            
+            {selectedUser && (
+              <>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Full Name"
+                  value={selectedUser.fullName}
+                  onChangeText={(text) => setSelectedUser({...selectedUser, fullName: text})}
+                />
+                
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Email"
+                  value={selectedUser.email}
+                  onChangeText={(text) => setSelectedUser({...selectedUser, email: text})}
+                  keyboardType="email-address"
+                />
+                
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Phone"
+                  value={selectedUser.phone}
+                  onChangeText={(text) => setSelectedUser({...selectedUser, phone: text})}
+                  keyboardType="phone-pad"
+                />
+                
+                <View style={styles.modalRow}>
+                  <Text style={styles.modalLabel}>Organization:</Text>
+                  <View style={styles.modalSelect}>
+                    {mockOrganizations.map(org => (
+                      <TouchableOpacity
+                        key={org.name}
+                        style={[
+                          styles.selectOption,
+                          selectedUser.organization === org.name && styles.selectOptionActive
+                        ]}
+                        onPress={() => setSelectedUser({...selectedUser, organization: org.name})}
+                      >
+                        <Text style={[
+                          styles.selectOptionText,
+                          selectedUser.organization === org.name && styles.selectOptionTextActive
+                        ]}>
+                          {org.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                
+                <View style={styles.modalRow}>
+                  <Text style={styles.modalLabel}>Role:</Text>
+                  <View style={styles.modalSelect}>
+                    {['Viewer', 'Encoder', 'Admin'].map(role => (
+                      <TouchableOpacity
+                        key={role}
+                        style={[
+                          styles.selectOption,
+                          selectedUser.role === role && styles.selectOptionActive
+                        ]}
+                        onPress={() => setSelectedUser({...selectedUser, role})}
+                      >
+                        <Text style={[
+                          styles.selectOptionText,
+                          selectedUser.role === role && styles.selectOptionTextActive
+                        ]}>
+                          {role}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                
+                <View style={styles.modalRow}>
+                  <Text style={styles.modalLabel}>Status:</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusToggle,
+                      { backgroundColor: selectedUser.isActive ? '#10b981' : '#ef4444' }
+                    ]}
+                    onPress={() => setSelectedUser({...selectedUser, isActive: !selectedUser.isActive})}
+                  >
+                    <Text style={styles.statusToggleText}>
+                      {selectedUser.isActive ? 'Active' : 'Inactive'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.modalButtonCancel}
+                    onPress={() => setShowEditModal(false)}
+                  >
+                    <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={styles.modalButtonSave}
+                    onPress={handleEditUser}
+                  >
+                    <Text style={styles.modalButtonTextSave}>Save Changes</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </Layout>
   );
 };
 
+/**
+ * Styles for the UserManagementScreen component
+ * Uses a clean, professional design with consistent spacing and colors
+ */
 const styles = StyleSheet.create({
+  // Main container
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
+  
+  // Content area
   content: {
-    padding: 20,
+    padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  section: {
+  
+  // Header section
+  header: {
     marginBottom: 20,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  
+  // Add button
+  addButton: {
+    backgroundColor: '#10b981',
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 15,
   },
+  
+  // Add button text
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // Filters container
+  filtersContainer: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  
+  // Filter row
+  filterRow: {
+    marginBottom: 12,
+  },
+  
+  // Filter label
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  
+  // Filter buttons container
+  filterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  
+  // Filter button
+  filterButton: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  
+  // Active filter button
+  filterButtonActive: {
+    backgroundColor: '#1e3a8a',
+  },
+  
+  // Filter button text
+  filterButtonText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  
+  // Active filter button text
+  filterButtonTextActive: {
+    color: 'white',
+  },
+  
+  // Users container
+  usersContainer: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  
+  // Section title
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#374151',
+    marginBottom: 16,
   },
-  addButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  addUserForm: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: 'white',
-    marginBottom: 15,
-  },
-  submitButton: {
-    backgroundColor: '#34C759',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  usersList: {
-    gap: 15,
-  },
+  
+  // User card
   userCard: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  userInfo: {
-    marginBottom: 15,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  userUsername: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-  },
-  userDetails: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 10,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
+  
+  // User info
+  userInfo: {
+    flex: 1,
+  },
+  
+  // User header
+  userHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  
+  // User name
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  
+  // Role badge
   roleBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  roleText: {
-    color: 'white',
-    fontSize: 12,
+  
+  // Role badge text
+  roleBadgeText: {
+    fontSize: 10,
     fontWeight: '600',
+    color: 'white',
   },
-  userOrganization: {
+  
+  // User email
+  userEmail: {
     fontSize: 14,
-    color: '#666',
+    color: '#6b7280',
+    marginBottom: 2,
   },
+  
+  // User organization
+  userOrg: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginBottom: 8,
+  },
+  
+  // User status
+  userStatus: {
+    marginTop: 4,
+  },
+  
+  // Status badge
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  
+  // Status text
+  statusText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: 'white',
+  },
+  
+  // User actions
   userActions: {
     flexDirection: 'row',
-    gap: 10,
   },
-  statusButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  statusButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+  
+  // Edit button
   editButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1e3a8a',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
+    marginRight: 8,
   },
+  
+  // Edit button text
   editButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
   },
+  
+  // Remove button
   removeButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#ef4444',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
   },
+  
+  // Remove button text
   removeButtonText: {
     color: 'white',
     fontSize: 12,
+    fontWeight: '600',
+  },
+  
+  // Empty state
+  emptyState: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  
+  // Empty state text
+  emptyStateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  
+  // Empty state subtitle
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
+  },
+  
+  // Modal overlay
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Modal content
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  
+  // Modal title
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  
+  // Modal input
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    backgroundColor: 'white',
+  },
+  
+  // Modal row
+  modalRow: {
+    marginBottom: 16,
+  },
+  
+  // Modal label
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  
+  // Modal select
+  modalSelect: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  
+  // Select option
+  selectOption: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  
+  // Active select option
+  selectOptionActive: {
+    backgroundColor: '#1e3a8a',
+  },
+  
+  // Select option text
+  selectOptionText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  
+  // Active select option text
+  selectOptionTextActive: {
+    color: 'white',
+  },
+  
+  // Status toggle
+  statusToggle: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  
+  // Status toggle text
+  statusToggleText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  
+  // Modal buttons
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  
+  // Modal button cancel
+  modalButtonCancel: {
+    backgroundColor: '#f3f4f6',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 8,
+    alignItems: 'center',
+  },
+  
+  // Modal button save
+  modalButtonSave: {
+    backgroundColor: '#10b981',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 8,
+    alignItems: 'center',
+  },
+  
+  // Modal button text cancel
+  modalButtonTextCancel: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // Modal button text save
+  modalButtonTextSave: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

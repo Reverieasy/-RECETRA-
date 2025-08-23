@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
   if (!user) {
     return (
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
         </Stack.Navigator>
@@ -113,7 +113,7 @@ const AppContent: React.FC = () => {
   // If user is authenticated, show role-based navigation
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
         {/* Admin Navigation Stack */}
         {user.role === 'Admin' && (
           <>

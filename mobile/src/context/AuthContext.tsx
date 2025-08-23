@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, findUserByCredentials, mockUsers } from '../data/mockData';
+import { User, findUserByCredentials, addUser } from '../data/mockData';
 
 /**
  * Authentication context type definition
@@ -10,8 +10,8 @@ interface AuthContextType {
   user: User | null;                    // Current logged-in user
   isLoading: boolean;                    // Loading state during auth checks
   login: (username: string, password: string) => Promise<boolean>;  // Login method
-  signup: (username: string, email: string, password: string, role: string) => Promise<boolean>;  // Signup method
   logout: () => Promise<void>;          // Logout method
+  register: (userData: Omit<User, 'id' | 'createdAt'>) => Promise<boolean>;  // Registration method
 }
 
 // Create the authentication context
@@ -90,6 +90,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await AsyncStorage.setItem('user', JSON.stringify(foundUser));
         return true;
       }
+
+      // Check if user exists in registered users
+      try {
+        const registeredUsersData = await AsyncStorage.getItem('registeredUsers');
+        if (registeredUsersData) {
+          const registeredUser = JSON.parse(registeredUsersData);
+          if (registeredUser.username === username && registeredUser.password === password) {
+            setUser(registeredUser);
+            await AsyncStorage.setItem('user', JSON.stringify(registeredUser));
+            return true;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking registered users:', error);
+      }
+
       return false;
     } catch (error) {
       console.error('Login error:', error);
@@ -98,49 +114,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   /**
-   * Creates a new user account
-   * @param username - User's username
-   * @param email - User's email
-   * @param password - User's password
-   * @param role - User's role
-   * @returns Promise<boolean> - True if signup successful, false otherwise
+   * Registers a new user account
+   * @param userData - User data for registration
+   * @returns Promise<boolean> - True if registration successful, false otherwise
    */
-  const signup = async (username: string, email: string, password: string, role: string): Promise<boolean> => {
+  const register = async (userData: Omit<User, 'id' | 'createdAt'>): Promise<boolean> => {
     try {
-      // Check if username already exists
-      if (mockUsers.find(user => user.username === username)) {
-        throw new Error('Username already exists');
-      }
+      // Add user to mock data using the helper function
+      const newUser = addUser(userData);
 
-      // Check if email already exists
-      if (mockUsers.find(user => user.email === email)) {
-        throw new Error('Email already exists');
-      }
-
-      // Create new user
-      const newUser: User = {
-        id: Date.now().toString(),
-        username,
-        email,
-        password,
-        fullName: username, // Use username as fullName initially
-        role: role as 'Admin' | 'Encoder' | 'Viewer',
-        organization: 'NU Dasma', // Default organization
-        isActive: true,
-        createdAt: new Date().toISOString()
-      };
-
-      // Add user to mock data (in real app, this would be an API call)
-      mockUsers.push(newUser);
-
-      // Auto-login the new user
-      setUser(newUser);
-      await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      // Save to AsyncStorage for persistence
+      await AsyncStorage.setItem('registeredUsers', JSON.stringify(newUser));
       
       return true;
     } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
+      console.error('Registration error:', error);
+      return false;
     }
   };
 
@@ -162,8 +151,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     isLoading,
     login,
-    signup,
     logout,
+    register,
   };
 
   return (

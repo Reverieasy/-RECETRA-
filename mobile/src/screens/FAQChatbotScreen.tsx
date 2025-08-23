@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import Layout from '../components/Layout';
 
-type UserRole = 'admin' | 'encoder' | 'viewer';
+type UserRole = 'Admin' | 'Encoder' | 'Viewer';
 interface Message {
   id: string;
   text: string;
@@ -23,7 +23,7 @@ interface FAQChatbotScreenProps {
   userRole?: UserRole;
 }
 const FAQChatbotScreen: React.FC<FAQChatbotScreenProps> = ({
-  userRole = 'viewer',
+  userRole = 'Viewer',
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -47,7 +47,7 @@ const FAQChatbotScreen: React.FC<FAQChatbotScreenProps> = ({
 
    const faqResponses: { [key: string]: (role: UserRole) => string } = {
     'how do i issue a receipt': (role) => {
-      if (role === 'admin' || role === 'encoder') {
+      if (role === 'Admin' || role === 'Encoder') {
         return 'To issue a receipt, go to the "Issue Receipt" section, fill in the payer details, amount, purpose, select a category and template, then submit the form. The system will generate a unique receipt number and QR code.';
       } else {
         return 'Issuing receipts is only available to Admin and Encoder roles. You have read-only access.';
@@ -58,7 +58,7 @@ const FAQChatbotScreen: React.FC<FAQChatbotScreenProps> = ({
     'what are the different user roles': (_) =>
       'There are three roles: Admin (full system access), Encoder (can issue receipts), and Viewer (read-only access to view and verify receipts).',
     'how to use qr codes': (role) => {
-      if (role === 'viewer') {
+      if (role === 'Viewer') {
         return 'As a Viewer, you can use the QR code to quickly access receipt details and verify authenticity.';
       }
       return 'QR codes are automatically generated for each receipt. You can scan them using the verification feature to quickly access receipt details and verify authenticity.';
@@ -182,6 +182,8 @@ const FAQChatbotScreen: React.FC<FAQChatbotScreenProps> = ({
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+
+
         {/* Chat Messages */}
         <View style={styles.chatContainer}>
           <FlatList
@@ -252,6 +254,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   chatContainer: {
     flex: 1,
     backgroundColor: '#f5f5f5',

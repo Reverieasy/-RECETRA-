@@ -1,0 +1,33 @@
+/* Global Styles for Web Application */
+
+/* Container classes for centering content with max-width */
+.innerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.centerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1248px) {
+  .innerContainer,
+  .centerContainer {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .innerContainer,
+  .centerContainer {
+    padding: 0 16px;
+  }
+}

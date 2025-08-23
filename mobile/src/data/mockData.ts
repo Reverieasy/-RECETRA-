@@ -40,6 +40,7 @@ export interface Receipt {
   emailStatus: 'pending' | 'sent' | 'failed';   // Status of email notification
   smsStatus: 'pending' | 'sent' | 'failed';     // Status of SMS notification
   paymentStatus: 'pending' | 'completed' | 'failed'; // Status of payment processing
+  paymentMethod?: 'Paymongo' | 'Manual';        // Method of payment (optional for backward compatibility)
 }
 
 /**
@@ -53,6 +54,7 @@ export interface ReceiptTemplate {
   organization: string;                          // Organization that owns this template
   isActive: boolean;                             // Whether template is available for use
   createdAt: string;                             // Template creation timestamp
+  templateType?: string;                         // Type of template (optional for backward compatibility)
 }
 
 /**
@@ -204,7 +206,8 @@ export const mockReceiptTemplates: ReceiptTemplate[] = [
     description: 'Standard receipt template for general use',
     organization: 'Computer Science Society',
     isActive: true,
-    createdAt: '2024-01-01T00:00:00Z'
+    createdAt: '2024-01-01T00:00:00Z',
+    templateType: 'Standard'
   },
   {
     id: '2',
@@ -212,7 +215,8 @@ export const mockReceiptTemplates: ReceiptTemplate[] = [
     description: 'Specialized template for event registrations',
     organization: 'Student Council',
     isActive: true,
-    createdAt: '2024-01-01T00:00:00Z'
+    createdAt: '2024-01-01T00:00:00Z',
+    templateType: 'Event'
   },
   {
     id: '3',
@@ -220,7 +224,8 @@ export const mockReceiptTemplates: ReceiptTemplate[] = [
     description: 'Template for donation receipts',
     organization: 'Engineering Society',
     isActive: true,
-    createdAt: '2024-01-01T00:00:00Z'
+    createdAt: '2024-01-01T00:00:00Z',
+    templateType: 'Donation'
   }
 ];
 
@@ -243,7 +248,8 @@ export const mockReceipts: Receipt[] = [
     qrCode: 'OR-2024-001-QR',
     emailStatus: 'sent',
     smsStatus: 'sent',
-    paymentStatus: 'completed'
+    paymentStatus: 'completed',
+    paymentMethod: 'Manual'
   },
   {
     id: '2',
@@ -259,7 +265,8 @@ export const mockReceipts: Receipt[] = [
     qrCode: 'OR-2024-002-QR',
     emailStatus: 'sent',
     smsStatus: 'pending',
-    paymentStatus: 'completed'
+    paymentStatus: 'completed',
+    paymentMethod: 'Manual'
   },
   {
     id: '3',
@@ -275,7 +282,8 @@ export const mockReceipts: Receipt[] = [
     qrCode: 'OR-2024-003-QR',
     emailStatus: 'pending',
     smsStatus: 'failed',
-    paymentStatus: 'pending'
+    paymentStatus: 'pending',
+    paymentMethod: 'Manual'
   }
 ];
 
@@ -323,6 +331,22 @@ export const findUserByCredentials = (username: string, password: string): User 
     user.password === password && 
     user.isActive
   ) || null;
+};
+
+/**
+ * Adds a new user to the mock data
+ * In a real application, this would save to a database
+ * @param user - User data without id and createdAt (these are auto-generated)
+ * @returns The created user with generated id and createdAt
+ */
+export const addUser = (user: Omit<User, 'id' | 'createdAt'>) => {
+  const newUser: User = {
+    ...user,
+    id: Date.now().toString(),
+    createdAt: new Date().toISOString()
+  };
+  mockUsers.push(newUser);
+  return newUser;
 };
 
 /**
