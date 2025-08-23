@@ -2,30 +2,19 @@
 
 A comprehensive receipt management system for NU Dasma student organizations, featuring both web and mobile applications with role-based access control, QR code verification, and payment gateway integration.
 
-## 🏗️ Project Structure Overview
+## 🏗 Project Structure Overview
 
 This project contains **two separate applications** - a **web application** and a **mobile application** - both designed to work together as a complete receipt management system.
 
 ```
 Recetra_/
-├── assets/                     # 📁 Shared assets folder
-│   ├── archive.png            # 📄 Archive icon for transaction history
-│   ├── chat.png               # 💬 Chat icon for FAQ chatbot
-│   ├── home-icon.png          # 🏠 Home navigation icon
-│   ├── Logo_with_Color.png    # 🎨 Main application logo (colored)
-│   ├── LogoIcon.png           # 🖼️ Logo icon for profile pictures
-│   ├── Office_background.jpg  # 🏢 Background image for login/signup
-│   ├── payment.png            # 💳 Payment icon for payment gateway
-│   ├── profile.png            # 👤 Profile icon for user management
-│   ├── Receipt-issue.png      # 📝 Receipt issuance icon
-│   ├── receipt-ver.png        # ✅ Receipt verification icon
-│   └── template.png           # 📋 Template management icon
-├── mobile/                     # 📱 React Native Mobile Application
-├── web/                        # 🌐 React Web Application
-└── batch script/               # ⚡ Windows batch scripts for easy startup
+├── assets/                     # Shared assets folder
+├── mobile/                     # React Native Mobile Application
+├── web/                        # React Web Application
+└── batch script/               # Windows batch scripts for easy startup
 ```
 
-## 🌐 Web Application (`/web`)
+##  Web Application (`/web`)
 
 **Purpose**: Desktop/web-based interface for administrators and encoders to manage the receipt system from computers.
 
@@ -41,7 +30,7 @@ Recetra_/
 - CSS3 with modern styling
 - Responsive design for different screen sizes
 
-## 📱 Mobile Application (`/mobile`)
+##  Mobile Application (`/mobile`)
 
 **Purpose**: Mobile-first interface for encoders and viewers to use the system on-the-go.
 
@@ -57,7 +46,7 @@ Recetra_/
 - React Navigation for mobile navigation
 - Native device features (camera, storage, etc.)
 
-## 🔑 Key Features
+##  Key Features
 
 ### **Role-Based Access Control**
 - **Admin Role**: Full system access, user management, analytics
@@ -81,7 +70,7 @@ Recetra_/
 - **Intuitive Navigation**: Easy-to-use interface for all user types
 - **Real-time Updates**: Live data synchronization across platforms
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### **Prerequisites**
 - Node.js (v16 or higher)
@@ -118,15 +107,8 @@ Recetra_/
 - **`Start Mobile Server.bat`**: Starts only the mobile application
 - **`start-dev.bat`**: Alternative startup script with development settings
 
-## 📊 Data Flow
 
-```
-User Input → Authentication → Role Verification → Feature Access → Data Processing → Storage/Display
-    ↓
-Receipt Generation → QR Code Creation → Email Delivery → Payment Processing → Transaction Recording
-```
-
-## 🔧 Development Workflow
+## Development Workflow
 
 ### **Web Development**
 - Edit files in `/web/src/`
@@ -161,7 +143,7 @@ Receipt Generation → QR Code Creation → Email Delivery → Payment Processin
 - **User Management**: Add, edit, and manage user accounts
 - **Role Permissions**: Verify access control for different roles
 
-## 📱 Platform-Specific Features
+##  Platform-Specific Features
 
 ### **Web Application**
 - **Large Screen Optimization**: Better for data entry and management
@@ -175,23 +157,22 @@ Receipt Generation → QR Code Creation → Email Delivery → Payment Processin
 - **Offline Capability**: Basic functionality without internet
 - **Push Notifications**: Real-time updates and alerts
 
-## 🔒 Security Features
+##  Security Features
 
 - **Role-based Authentication**: Users can only access features for their role
 - **Session Management**: Secure login/logout with token validation
 - **Input Validation**: Prevents malicious data entry
 - **Secure API Calls**: Protected endpoints for sensitive operations
 
-## 📈 Future Enhancements
+##  Future Enhancements
 
 - **Backend Integration**: Replace mock data with real database
 - **Real-time Sync**: Live updates across all devices
 - **Advanced Analytics**: Detailed reporting and insights
-- **Multi-language Support**: Internationalization for diverse users
 - **API Documentation**: Comprehensive API reference
 - **Automated Testing**: Unit and integration tests
 
-## 🤝 Contributing
+##  Contributing
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/new-feature`
@@ -205,17 +186,10 @@ Receipt Generation → QR Code Creation → Email Delivery → Payment Processin
 - **Assets**: Place in appropriate folders, use descriptive names
 - **Documentation**: Update README and add inline comments
 
-## 📞 Support
+##  Support
 
 - **Technical Issues**: Check existing issues or create new ones
 - **Feature Requests**: Submit through GitHub issues
 - **Documentation**: Refer to this README and inline code comments
 - **Community**: Join discussions in project forums
 
-## 📄 License
-
-This project is developed for NU Dasma student organizations and follows educational institution guidelines.
-
----
-
-**RECETRA** - Empowering student organizations with digital receipt management! 🎓📱💼
