@@ -1,4 +1,4 @@
-# RECETRA - NU Dasma Receipt Management System
+# RECETRA 
 
 A comprehensive receipt management system for NU Dasma student organizations, featuring both web and mobile applications with role-based access control, QR code verification, and payment gateway integration.
 
