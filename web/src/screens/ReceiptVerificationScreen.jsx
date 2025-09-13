@@ -22,6 +22,7 @@ const ReceiptVerificationScreen = () => {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [modal, setModal] = useState({ open: false, title: '', message: '', type: 'info' });
   const scannerRef = useRef(null);
 
   /**
@@ -30,7 +31,7 @@ const ReceiptVerificationScreen = () => {
    */
   const handleManualVerification = () => {
     if (!receiptNumber.trim()) {
-      alert('Error: Please enter a receipt number');
+      setModal({ open: true, title: 'Missing Receipt Number', message: 'Please enter a receipt number to verify.', type: 'error' });
       return;
     }
 
@@ -40,6 +41,9 @@ const ReceiptVerificationScreen = () => {
       const receipt = mockReceipts.find(r => r.receiptNumber === receiptNumber.trim());
       setVerificationResult(receipt || null);
       setIsVerifying(false);
+      if (!receipt) {
+        setModal({ open: true, title: 'Receipt Not Found', message: `No receipt found for number "${receiptNumber.trim()}". Please check and try again.`, type: 'error' });
+      }
     }, 1000);
   };
 
@@ -60,9 +64,9 @@ const ReceiptVerificationScreen = () => {
     if (receipt) {
       setVerificationResult(receipt);
       setShowQRScanner(false);
-      alert(`QR Code Scanned!\n\nReceipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount.toLocaleString()}`);
+      setModal({ open: true, title: 'QR Code Scanned', message: `Receipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount.toLocaleString()}`, type: 'success' });
     } else {
-      alert('QR Code scanned but receipt not found. Please try again.');
+      setModal({ open: true, title: 'Not Found', message: 'QR Code scanned but receipt not found. Please try again.', type: 'error' });
     }
   };
 
@@ -295,7 +299,6 @@ const ReceiptVerificationScreen = () => {
             <div style={styles.method}>
               <h3 style={styles.methodTitle}>Manual Entry</h3>
               <p style={styles.methodDescription}>Enter the receipt number manually</p>
-              
               <div style={styles.inputContainer}>
                 <input
                   type="text"
@@ -318,12 +321,9 @@ const ReceiptVerificationScreen = () => {
             <div style={styles.method}>
               <h3 style={styles.methodTitle}>QR Code Scanner</h3>
               <p style={styles.methodDescription}>Scan QR code from receipt</p>
-              
               <button style={styles.qrButton} onClick={handleQRScan}>
                 <span style={styles.qrButtonText}>Scan QR Code</span>
               </button>
-              
-
             </div>
           </div>
 
@@ -335,7 +335,6 @@ const ReceiptVerificationScreen = () => {
               ) : (
                 <VerificationFailure />
               )}
-              
               <button style={styles.resetButton} onClick={handleReset}>
                 Verify Another Receipt
               </button>
@@ -352,15 +351,12 @@ const ReceiptVerificationScreen = () => {
                     X
                   </button>
                 </div>
-                
                 <div style={styles.modalBody}>
                   <p style={styles.modalDescription}>
                     Point your camera at a QR code to scan it automatically.
                   </p>
-                  
                   {/* Html5QrcodeScanner */}
                   <div id="reader" style={styles.scannerContainer}></div>
-                  
                   <div style={styles.cameraInstructions}>
                     <p style={styles.instructionText}>
                       - Hold your device steady
@@ -377,8 +373,6 @@ const ReceiptVerificationScreen = () => {
             </div>
           )}
 
-
-
           {/* QR Code Popup Modal */}
           {showQRPopup && selectedReceipt && (
             <div style={styles.modalOverlay}>
@@ -389,14 +383,12 @@ const ReceiptVerificationScreen = () => {
                     X
                   </button>
                 </div>
-                
                 <div style={styles.modalBody}>
                   <div style={styles.qrPopupContent}>
                     <h4 style={styles.qrPopupReceiptTitle}>{selectedReceipt.receiptNumber}</h4>
                     <p style={styles.qrPopupReceiptDetails}>
                       {selectedReceipt.payer} - ₱{selectedReceipt.amount.toLocaleString()}
                     </p>
-                    
                     <div style={styles.qrPopupCodeWrapper}>
                       <QRCode 
                         value={selectedReceipt.receiptNumber}
@@ -405,7 +397,6 @@ const ReceiptVerificationScreen = () => {
                         includeMargin={true}
                       />
                     </div>
-                    
                     <p style={styles.qrPopupNote}>
                       Scan this QR code to verify receipt authenticity
                     </p>
@@ -415,7 +406,22 @@ const ReceiptVerificationScreen = () => {
             </div>
           )}
 
-
+          {/* Custom Modal for feedback and errors */}
+          {modal.open && (
+            <div style={styles.modalOverlay}>
+              <div style={{ ...styles.modalContent, maxWidth: 400, textAlign: 'center' }}>
+                <div style={styles.modalHeader}>
+                  <h3 style={styles.modalTitle}>{modal.title}</h3>
+                  <button style={styles.closeButton} onClick={() => setModal({ ...modal, open: false })}>
+                    X
+                  </button>
+                </div>
+                <div style={styles.modalBody}>
+                  <p style={{ fontSize: 16, color: modal.type === 'error' ? '#ef4444' : '#374151', whiteSpace: 'pre-line' }}>{modal.message}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Instructions */}
           <div style={styles.instructionsContainer}>

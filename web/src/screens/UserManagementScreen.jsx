@@ -29,6 +29,8 @@ const UserManagementScreen = () => {
     role: 'Viewer',
     isActive: true,
   });
+  const [addUserErrorModal, setAddUserErrorModal] = useState(false);
+  const [addUserSuccessModal, setAddUserSuccessModal] = useState(false);
 
   /**
    * Filters users based on selected role and organization
@@ -48,7 +50,7 @@ const UserManagementScreen = () => {
    */
   const handleAddUser = () => {
     if (!newUser.fullName.trim() || !newUser.email.trim() || !newUser.organization.trim()) {
-      alert('Error: Please fill in all required fields');
+      setAddUserErrorModal(true);
       return;
     }
 
@@ -69,7 +71,28 @@ const UserManagementScreen = () => {
       isActive: true,
     });
     setShowAddModal(false);
-    alert('Success: User added successfully!');
+    setAddUserSuccessModal(true);
+      {/* Success Modal for Add User */}
+      {addUserSuccessModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 12, padding: '32px 24px', minWidth: 320, boxShadow: '0 4px 24px rgba(0,0,0,0.18)', textAlign: 'center', position: 'relative'
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 600, color: '#10b981', marginBottom: 12 }}>User Added Successfully</div>
+            <div style={{ color: '#555', marginBottom: 24 }}>The new user has been added to the system.</div>
+            <button
+              onClick={() => setAddUserSuccessModal(false)}
+              style={{
+                background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontWeight: 500, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px rgba(16,185,129,0.08)'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
   };
 
   /**
@@ -532,6 +555,28 @@ const UserManagementScreen = () => {
         {/* Modals */}
         {showAddModal && <AddUserModal />}
         {showEditModal && <EditUserModal />}
+
+        {/* Error Modal for Add User Required Fields */}
+        {addUserErrorModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{
+              background: '#fff', borderRadius: 12, padding: '32px 24px', minWidth: 320, boxShadow: '0 4px 24px rgba(0,0,0,0.18)', textAlign: 'center', position: 'relative'
+            }}>
+              <div style={{ fontSize: 24, fontWeight: 600, color: '#1e3a8a', marginBottom: 12 }}>Missing Required Fields</div>
+              <div style={{ color: '#000000ff', marginBottom: 24 }}>Please fill in all required fields before adding a new user.</div>
+              <button
+                onClick={() => setAddUserErrorModal(false)}
+                style={{
+                  background: '#1e3a8a', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontWeight: 500, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px rgba(211,47,47,0.08)'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

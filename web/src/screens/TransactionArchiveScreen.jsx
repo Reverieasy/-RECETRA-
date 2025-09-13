@@ -96,24 +96,29 @@ const TransactionArchiveScreen = () => {
   /**
    * Handles exporting transaction data
    */
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
   const handleExportData = () => {
-    const confirmed = window.confirm('Export transaction data to CSV format?');
-    
-    if (confirmed) {
-      // Simulate export
-      const transactions = getFilteredTransactions();
-      const csvData = transactions.map(t => 
-        `${t.receiptNumber},${t.payer},${t.amount},${t.purpose},${t.paymentStatus},${new Date(t.issuedAt).toLocaleDateString()}`
-      ).join('\n');
-      
-      const blob = new Blob([`Receipt Number,Payer,Amount,Purpose,Status,Date\n${csvData}`], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    setExportModalOpen(true);
+  };
+  const confirmExport = () => {
+    // Simulate export
+    const transactions = getFilteredTransactions();
+    const csvData = transactions.map(t => 
+      `${t.receiptNumber},${t.payer},${t.amount},${t.purpose},${t.paymentStatus},${new Date(t.issuedAt).toLocaleDateString()}`
+    ).join('\n');
+    const blob = new Blob([`Receipt Number,Payer,Amount,Purpose,Status,Date\n${csvData}`], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    setExportSuccess(true);
+    setTimeout(() => {
+      setExportModalOpen(false);
+      setExportSuccess(false);
+    }, 1200);
   };
 
   /**
@@ -350,6 +355,43 @@ const TransactionArchiveScreen = () => {
             >
               Export Data
             </button>
+      {/* Export Data Modal */}
+      {exportModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalContent, maxWidth: 400, textAlign: 'center' }}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Export Transactions</h3>
+              <button style={styles.closeButton} onClick={() => { setExportModalOpen(false); setExportSuccess(false); }}>X</button>
+            </div>
+            <div style={styles.modalBody}>
+              {exportSuccess ? (
+                <div style={{ color: '#047857', fontWeight: 600, fontSize: 16, margin: '18px 0' }}>Exported successfully!</div>
+              ) : (
+                <>
+                  <p style={{ fontSize: 15, color: '#374151', marginBottom: 18 }}>
+                    Export transaction data to CSV format?<br />
+                    <span style={{ color: '#6b7280', fontSize: 13 }}>(All filtered transactions will be included.)</span>
+                  </p>
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 10 }}>
+                    <button
+                      style={{ ...styles.exportButton, minWidth: 90, background: '#1e3a8a', color: 'white', border: 'none' }}
+                      onClick={confirmExport}
+                    >
+                      Export
+                    </button>
+                    <button
+                      style={{ ...styles.exportButton, minWidth: 90, background: '#9ca3af', color: 'white', border: 'none' }}
+                      onClick={() => setExportModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
           </div>
 
           {/* Statistics */}

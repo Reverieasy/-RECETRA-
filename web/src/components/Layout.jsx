@@ -107,31 +107,32 @@ const Layout = ({ children, title, showBackButton = false }) => {
     <div style={styles.container}>
       {/* Top Navigation Bar */}
       <div style={styles.topBar}>
-        {/* Back Button - Only shown when showBackButton is true */}
-        {showBackButton && (
-          <button
-            style={styles.backButton}
-            onClick={handleBackPress}
-          >
-            <span style={styles.backButtonText}>Back</span>
-          </button>
-          )}
-        
-        {/* Menu Button - Toggles sidebar */}
+        {/* Burger Menu Button - Always shown, toggles sidebar */}
         <button
           style={styles.menuButton}
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Open menu"
         >
-          <span style={styles.menuButtonText}>Menu</span>
+          {/* Hamburger icon SVG */}
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect y="5" width="28" height="3" rx="1.5" fill="white"/>
+            <rect y="12.5" width="28" height="3" rx="1.5" fill="white"/>
+            <rect y="20" width="28" height="3" rx="1.5" fill="white"/>
+          </svg>
         </button>
-        
-        {/* Page Title - Centered */}
-        <h1 style={styles.title}>{title}</h1>
-        
-        {/* User Information - Right side */}
+        {/* Page Title - Centered, absolutely centered using flex */}
+        <div style={styles.headerCenter}>
+          <h1 style={styles.title}>{title}</h1>
+        </div>
+        {/* User Information - Right side, with avatar */}
         <div style={styles.userInfo}>
-          <span style={styles.userName}>{user?.fullName}</span>
-          <span style={styles.userRole}>{user?.role}</span>
+          <div style={styles.avatar}>
+            {user?.fullName ? user.fullName.charAt(0).toUpperCase() : '?'}
+          </div>
+          <div style={styles.userTextInfo}>
+            <span style={styles.userName}>{user?.fullName}</span>
+            <span style={styles.userRole}>{user?.role}</span>
+          </div>
         </div>
       </div>
 
@@ -273,10 +274,23 @@ const styles = {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#1e3a8a',  // Primary blue color
-    padding: '16px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    minHeight: '64px',
+    padding: '8px 24px',
+    boxShadow: '0 4px 16px rgba(30, 58, 138, 0.10)',
+    minHeight: '56px',
+    position: 'relative',
+    zIndex: 10,
+  },
+
+  headerCenter: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+    zIndex: 1,
   },
   
   // Back button
@@ -308,30 +322,66 @@ const styles = {
   
   // Page title
   title: {
-    flex: 1,
     color: 'white',
-    fontSize: '18px',
-    fontWeight: '600',
-    textAlign: 'center',
+    fontSize: '20px',
+    fontWeight: 500,
+    letterSpacing: '0.5px',
     margin: 0,
+    textAlign: 'center',
+    lineHeight: 1.2,
+    pointerEvents: 'auto',
+    background: 'transparent',
+    boxShadow: 'none',
   },
   
   // User information section
   userInfo: {
     display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '10px',
+    minWidth: 0,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 600,
+    fontSize: 18,
+    boxShadow: '0 2px 8px rgba(30,58,138,0.10)',
+    marginRight: 4,
+    userSelect: 'none',
+  },
+  userTextInfo: {
+    display: 'flex',
     flexDirection: 'column',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
+    minWidth: 0,
   },
   userName: {
     color: 'white',
-    fontSize: '12px',
-    fontWeight: '500',
+    fontSize: '13px',
+    fontWeight: 400,
     margin: 0,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: 120,
   },
   userRole: {
     color: '#bfdbfe',  // Light blue
-    fontSize: '10px',
+    fontSize: '11px',
     margin: 0,
+    fontWeight: 300,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: 120,
   },
   
   // Sidebar overlay (full screen when sidebar is open)

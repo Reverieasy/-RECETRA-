@@ -27,6 +27,7 @@ const PaymentGatewayScreen = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
+  const [errorModal, setErrorModal] = useState(false);
 
   /**
    * Handles payment submission
@@ -144,7 +145,7 @@ const PaymentGatewayScreen = () => {
   const validatePaymentForm = () => {
     if (!paymentData.organization || !paymentData.category || !paymentData.amount || 
         !paymentData.purpose || !paymentData.payerName || !paymentData.payerEmail) {
-      alert('Please fill in all required fields');
+      setErrorModal(true);
       return false;
     }
 
@@ -372,6 +373,26 @@ const PaymentGatewayScreen = () => {
 
             {/* Payment Result */}
             {paymentResult && <PaymentResult />}
+
+            {/* Error Modal for missing required fields */}
+            {errorModal && (
+              <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.2)', zIndex: 1000,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <div style={{
+                  background: 'white', borderRadius: 12, padding: '28px 24px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.15)', minWidth: 320, maxWidth: '90vw', textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1e3a8a', marginBottom: 12 }}>Missing Required Fields</div>
+                  <div style={{ fontSize: 15, color: '#000000ff', marginBottom: 18 }}>Please fill in all required fields.</div>
+                  <button style={{ backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 90 }} onClick={() => setErrorModal(false)}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -579,7 +600,53 @@ const styles = {
     color: '#6b7280',
     marginTop: 8,
   },
-
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    width: '90%',
+    maxWidth: 400,
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 16,
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 24,
+    lineHeight: 1.5,
+  },
+  modalActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+  modalButton: {
+    backgroundColor: '#1e3a8a',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    padding: '12px 24px',
+    fontSize: 14,
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
 };
 
 export default PaymentGatewayScreen;

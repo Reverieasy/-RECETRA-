@@ -31,6 +31,7 @@ const IssueReceiptScreen = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedReceipt, setGeneratedReceipt] = useState(null);
+  const [errorModal, setErrorModal] = useState(false);
   const receiptRef = useRef(null);
 
   /**
@@ -39,7 +40,7 @@ const IssueReceiptScreen = () => {
    */
   const handleSubmit = async () => {
     if (!receiptData.payer.trim() || !receiptData.amount.trim()) {
-      alert('Error: Payer name and amount are required');
+      setErrorModal(true);
       return;
     }
 
@@ -363,7 +364,7 @@ const IssueReceiptScreen = () => {
                   style={styles.downloadButton}
                   onClick={handleDownloadReceipt}
                 >
-                  📥 Download Receipt
+                   Download Receipt
                 </button>
               </div>
               <div ref={receiptRef} style={{ 
@@ -378,6 +379,26 @@ const IssueReceiptScreen = () => {
               </div>
             </div>
           )}
+
+          {/* Error Modal for missing payer name and amount */}
+            {errorModal && (
+              <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.2)', zIndex: 1000,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <div style={{
+                  background: 'white', borderRadius: 12, padding: '28px 24px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.15)', minWidth: 320, maxWidth: '90vw', textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1e3a8a', marginBottom: 12 }}>Missing Required Fields</div>
+                  <div style={{ fontSize: 15, color: '#000000ff', marginBottom: 18 }}>Payer name and amount are required.</div>
+                  <button style={{ backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 90 }} onClick={() => setErrorModal(false)}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
 
           {/* Instructions */}
           <div style={styles.instructionsContainer}>
@@ -671,6 +692,7 @@ const styles = {
   },
   
   instructionsContainer: {
+    marginTop: '25px',
     backgroundColor: 'white',
     borderRadius: '12px',
     padding: '24px',

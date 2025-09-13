@@ -28,6 +28,7 @@ const TemplateManagementScreen = () => {
     isActive: true,
     templateType: 'standard',
   });
+  const [addTemplateErrorModal, setAddTemplateErrorModal] = useState(false);
 
   /**
    * Filters templates based on selected organization and status
@@ -49,7 +50,7 @@ const TemplateManagementScreen = () => {
    */
   const handleAddTemplate = () => {
     if (!newTemplate.name.trim() || !newTemplate.organization.trim()) {
-      alert('Error: Please fill in all required fields');
+      setAddTemplateErrorModal(true);
       return;
     }
 
@@ -446,6 +447,28 @@ const TemplateManagementScreen = () => {
         {/* Modals */}
         {showAddModal && <AddTemplateModal />}
         {showEditModal && <EditTemplateModal />}
+
+        {/* Error Modal for Add Template Required Fields */}
+        {addTemplateErrorModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{
+              background: '#fff', borderRadius: 12, padding: '32px 24px', minWidth: 320, boxShadow: '0 4px 24px rgba(0,0,0,0.18)', textAlign: 'center', position: 'relative'
+            }}>
+              <div style={{ fontSize: 24, fontWeight: 600, color: '#1e3a8a', marginBottom: 12 }}>Missing Required Fields</div>
+              <div style={{ color: '#555', marginBottom: 24 }}>Please fill in all required fields before adding a new template.</div>
+              <button
+                onClick={() => setAddTemplateErrorModal(false)}
+                style={{
+                  background: '#1e3a8a', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontWeight: 500, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px rgba(211,47,47,0.08)'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

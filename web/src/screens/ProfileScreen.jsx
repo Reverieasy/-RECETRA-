@@ -47,6 +47,8 @@ const ProfileScreen = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
   /**
    * Handles change password action
@@ -57,20 +59,29 @@ const ProfileScreen = () => {
 
   const handleSubmitPassword = (e) => {
     e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
     if (!currentPassword || !newPassword || !confirmPassword) {
-      alert('Please fill all fields.');
+      setPasswordError('Please fill in all fields.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match.');
+      setPasswordError('Passwords do not match.');
       return;
     }
     // Here, you would call your API to change the password.
-    setPasswordModalOpen(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    alert('Password changed successfully!');
+    setPasswordSuccess('Password changed successfully!');
+    setTimeout(() => {
+      setPasswordModalOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSuccess('');
+    }, 1200);
   };
 
   /**
@@ -369,26 +380,34 @@ const ProfileScreen = () => {
           {/* Password Change Modal */}
           {isPasswordModalOpen && (
             <div style={modalStyles.overlay}>
-              <div style={modalStyles.modal}>
-                <h3 style={{ marginBottom: 10 }}>Change Password</h3>
-                <form onSubmit={handleSubmitPassword}>
+              <div style={{ ...modalStyles.modal, maxWidth: 400, width: '100%' }}>
+                <h3 style={{ marginBottom: 18, textAlign: 'center', color: '#1e3a8a', fontWeight: 700 }}>Change Password</h3>
+                <form onSubmit={handleSubmitPassword} autoComplete="off">
+                  {passwordError && (
+                    <div style={{ background: '#fef3f2', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 14 }}>{passwordError}</div>
+                  )}
+                  {passwordSuccess && (
+                    <div style={{ background: '#e0f2f7', color: '#047857', border: '1px solid #90cdf4', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 14 }}>{passwordSuccess}</div>
+                  )}
                   <div style={modalStyles.formRow}>
                     <label style={modalStyles.label}>Current Password</label>
                     <input
                       type="password"
-                      style={modalStyles.input}
+                      style={{ ...modalStyles.input, marginBottom: 6 }}
                       value={currentPassword}
                       onChange={e => setCurrentPassword(e.target.value)}
                       autoFocus
+                      placeholder="Enter current password"
                     />
                   </div>
                   <div style={modalStyles.formRow}>
                     <label style={modalStyles.label}>New Password</label>
                     <input
                       type="password"
-                      style={modalStyles.input}
+                      style={{ ...modalStyles.input, marginBottom: 6 }}
                       value={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
+                      placeholder="At least 8 characters"
                     />
                   </div>
                   <div style={modalStyles.formRow}>
@@ -398,19 +417,29 @@ const ProfileScreen = () => {
                       style={modalStyles.input}
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter new password"
                     />
                   </div>
                   <div style={modalStyles.buttonRow}>
                     <button
                       type="submit"
-                      style={modalStyles.saveButton}
+                      style={{ ...modalStyles.saveButton, minWidth: 90 }}
+                      disabled={!!passwordSuccess}
                     >
-                      Submit
+                      {passwordSuccess ? 'Saved' : 'Submit'}
                     </button>
                     <button
                       type="button"
                       style={modalStyles.cancelButton}
-                      onClick={() => setPasswordModalOpen(false)}
+                      onClick={() => {
+                        setPasswordModalOpen(false);
+                        setPasswordError('');
+                        setPasswordSuccess('');
+                        setCurrentPassword('');
+                        setNewPassword('');
+                        setConfirmPassword('');
+                      }}
+                      disabled={!!passwordSuccess}
                     >
                       Cancel
                     </button>
@@ -496,10 +525,13 @@ const modalStyles = {
   },
   input: {
     width: '100%',
-    padding: '8px 10px',
+    padding: '10px 14px',
     border: '1px solid #d1d5db',
     borderRadius: '6px',
-    fontSize: '14px'
+    fontSize: '14px',
+    marginTop: '4px',
+    marginBottom: '2px',
+    boxSizing: 'border-box',
   },
   buttonRow: {
     display: 'flex',
