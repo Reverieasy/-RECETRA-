@@ -38,7 +38,6 @@ export interface Receipt {
   templateId: string;                            // ID of the receipt template used
   qrCode: string;                                // QR code data for verification
   emailStatus: 'pending' | 'sent' | 'failed';   // Status of email notification
-  smsStatus: 'pending' | 'sent' | 'failed';     // Status of SMS notification
   paymentStatus: 'pending' | 'completed' | 'failed'; // Status of payment processing
   paymentMethod?: 'Paymongo' | 'Manual';        // Method of payment (optional for backward compatibility)
 }
@@ -247,7 +246,6 @@ export const mockReceipts: Receipt[] = [
     templateId: '1',
     qrCode: 'OR-2024-001-QR',
     emailStatus: 'sent',
-    smsStatus: 'sent',
     paymentStatus: 'completed',
     paymentMethod: 'Manual'
   },
@@ -264,7 +262,6 @@ export const mockReceipts: Receipt[] = [
     templateId: '2',
     qrCode: 'OR-2024-002-QR',
     emailStatus: 'sent',
-    smsStatus: 'pending',
     paymentStatus: 'completed',
     paymentMethod: 'Manual'
   },
@@ -281,7 +278,6 @@ export const mockReceipts: Receipt[] = [
     templateId: '3',
     qrCode: 'OR-2024-003-QR',
     emailStatus: 'pending',
-    smsStatus: 'failed',
     paymentStatus: 'pending',
     paymentMethod: 'Manual'
   }

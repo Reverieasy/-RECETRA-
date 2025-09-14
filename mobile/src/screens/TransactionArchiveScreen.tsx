@@ -93,8 +93,7 @@ const TransactionArchiveScreen: React.FC = () => {
       `Status: ${transaction.paymentStatus}\n` +
       `Issued By: ${transaction.issuedBy}\n` +
       `Date: ${new Date(transaction.issuedAt).toLocaleDateString()}\n` +
-      `Email Status: ${transaction.emailStatus}\n` +
-      `SMS Status: ${transaction.smsStatus}`,
+      `Email Status: ${transaction.emailStatus}`,
       [{ text: 'OK' }]
     );
   };
@@ -106,7 +105,7 @@ const TransactionArchiveScreen: React.FC = () => {
   const handleResendNotifications = (transaction: any) => {
     Alert.alert(
       'Resend Notifications',
-      `Resend email and SMS notifications for receipt ${transaction.receiptNumber}?`,
+      `Resend email notification for receipt ${transaction.receiptNumber}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -187,10 +186,6 @@ const TransactionArchiveScreen: React.FC = () => {
           <View style={[
             styles.notificationDot,
             { backgroundColor: transaction.emailStatus === 'sent' ? '#10b981' : '#ef4444' }
-          ]} />
-          <View style={[
-            styles.notificationDot,
-            { backgroundColor: transaction.smsStatus === 'sent' ? '#10b981' : '#ef4444' }
           ]} />
         </View>
       </View>
@@ -318,7 +313,7 @@ const TransactionArchiveScreen: React.FC = () => {
             <Text style={styles.infoText}>
               • View all transactions for your organization{'\n'}
               • Track Paymongo payments and manual receipts{'\n'}
-              • Monitor notification status (email/SMS){'\n'}
+              • Monitor email notification status{'\n'}
               • Export transaction data for reporting{'\n'}
               • Filter by transaction type and status
             </Text>

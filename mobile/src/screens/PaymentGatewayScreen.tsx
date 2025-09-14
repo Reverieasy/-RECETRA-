@@ -125,7 +125,6 @@ const PaymentGatewayScreen = ({ navigation }: any) => {
           issuedAt: new Date().toISOString(),
           templateId: paymentData.template,
           emailStatus: 'pending' as const,
-          smsStatus: 'pending' as const,
           paymentStatus: 'completed' as const,
           paymentMethod: 'Paymongo' as const,
         };

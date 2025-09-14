@@ -200,16 +200,6 @@ const ReceiptVerificationScreen: React.FC = () => {
           </View>
         </View>
         
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>SMS Status:</Text>
-          <View style={[
-            styles.statusBadge, 
-            { backgroundColor: receipt.smsStatus === 'sent' ? '#10b981' : 
-              receipt.smsStatus === 'pending' ? '#f59e0b' : '#ef4444' }
-          ]}>
-            <Text style={styles.statusText}>{receipt.smsStatus}</Text>
-          </View>
-        </View>
       </View>
     </View>
   );

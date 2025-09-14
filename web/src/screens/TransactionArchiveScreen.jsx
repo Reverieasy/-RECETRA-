@@ -222,16 +222,6 @@ const TransactionArchiveScreen = () => {
                 </div>
               </div>
               
-              <div style={styles.detailRow}>
-                <span style={styles.detailLabel}>SMS Status:</span>
-                <div style={{
-                  ...styles.statusBadge,
-                  backgroundColor: selectedTransaction.smsStatus === 'sent' ? '#10b981' : 
-                    selectedTransaction.smsStatus === 'pending' ? '#f59e0b' : '#ef4444'
-                }}>
-                  <span style={styles.statusText}>{selectedTransaction.smsStatus}</span>
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -316,14 +306,6 @@ const TransactionArchiveScreen = () => {
             {transaction.emailStatus}
           </span>
           
-          <span style={styles.notificationLabel}>SMS:</span>
-          <span style={{
-            ...styles.notificationBadge,
-            backgroundColor: transaction.smsStatus === 'sent' ? '#10b981' : 
-              transaction.smsStatus === 'pending' ? '#f59e0b' : '#ef4444'
-          }}>
-            {transaction.smsStatus}
-          </span>
         </div>
       </div>
     </div>
@@ -485,10 +467,10 @@ const TransactionArchiveScreen = () => {
               <div style={styles.modalBody}>
                 <div style={styles.confirmMessage}>
                   <p style={styles.confirmText}>
-                    Resend email and SMS notifications for receipt <strong>"{transactionToResend.receiptNumber}"</strong>?
+                    Resend email notification for receipt <strong>"{transactionToResend.receiptNumber}"</strong>?
                   </p>
                   <p style={styles.confirmSubtext}>
-                    This will send new notification emails and SMS messages to the payer.
+                    This will send a new notification email to the payer.
                   </p>
                 </div>
               </div>

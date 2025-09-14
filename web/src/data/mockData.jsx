@@ -32,7 +32,6 @@
  *   templateId: string,
  *   qrCode: string,
  *   emailStatus: 'pending' | 'sent' | 'failed',
- *   smsStatus: 'pending' | 'sent' | 'failed',
  *   paymentStatus: 'pending' | 'completed' | 'failed'
  * }
  */
@@ -206,7 +205,6 @@ export const mockReceipts = [
     templateId: '1',
     qrCode: 'OR-2024-001-QR',
     emailStatus: 'sent',
-    smsStatus: 'sent',
     paymentStatus: 'completed'
   },
   {
@@ -222,7 +220,6 @@ export const mockReceipts = [
     templateId: '2',
     qrCode: 'OR-2024-002-QR',
     emailStatus: 'sent',
-    smsStatus: 'pending',
     paymentStatus: 'completed'
   },
   {
@@ -238,7 +235,6 @@ export const mockReceipts = [
     templateId: '3',
     qrCode: 'OR-2024-003-QR',
     emailStatus: 'pending',
-    smsStatus: 'failed',
     paymentStatus: 'pending'
   }
 ];

@@ -226,16 +226,6 @@ const ReceiptVerificationScreen = () => {
           </div>
         </div>
         
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>SMS Status:</span>
-          <div style={{
-            ...styles.statusBadge, 
-            backgroundColor: receipt.smsStatus === 'sent' ? '#10b981' : 
-              receipt.smsStatus === 'pending' ? '#f59e0b' : '#ef4444'
-          }}>
-            <span style={styles.statusText}>{receipt.smsStatus}</span>
-          </div>
-        </div>
       </div>
       
       {/* QR Code Section */}

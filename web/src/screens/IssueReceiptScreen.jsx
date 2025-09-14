@@ -265,7 +265,6 @@ const IssueReceiptScreen = () => {
         issuedAt: new Date().toISOString(),
         paymentStatus: 'completed',
         emailStatus: 'pending',
-        smsStatus: 'pending',
         templateId: receiptData.template || '1',
         qrCode: qrCodeData, // Store QR code data
         paymentMethod: 'Cash',

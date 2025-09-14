@@ -255,7 +255,6 @@ const IssueReceiptScreen = ({ navigation }: any) => {
         qrCode: qrCodeData,
         paymentStatus: 'completed' as const,
         emailStatus: 'pending' as 'pending' | 'sent' | 'failed',
-        smsStatus: 'pending' as 'pending' | 'sent' | 'failed',
         isDigital: true,
       };
 
