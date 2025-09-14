@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Layout from '../components/Layout';
+import ReceiptTemplate from '../components/ReceiptTemplate';
 import { mockReceipts } from '../data/mockData';
 import QRCode from 'qrcode.react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
@@ -150,7 +151,7 @@ const ReceiptVerificationScreen = () => {
 
   /**
    * Component to display successful verification results
-   * Shows complete receipt details with status indicators
+   * Shows the receipt in the same format as issued receipts
    */
   const VerificationResult = ({ receipt }) => (
     <div style={styles.resultContainer}>
@@ -161,51 +162,19 @@ const ReceiptVerificationScreen = () => {
         </div>
       </div>
       
-      <div style={styles.resultContent}>
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Receipt Number:</span>
-          <span style={styles.resultValue}>{receipt.receiptNumber}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Payer:</span>
-          <span style={styles.resultValue}>{receipt.payer}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Amount:</span>
-          <span style={styles.resultValue}>₱{receipt.amount.toLocaleString()}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Purpose:</span>
-          <span style={styles.resultValue}>{receipt.purpose}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Category:</span>
-          <span style={styles.resultValue}>{receipt.category}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Organization:</span>
-          <span style={styles.resultValue}>{receipt.organization}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Issued By:</span>
-          <span style={styles.resultValue}>{receipt.issuedBy}</span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Date Issued:</span>
-          <span style={styles.resultValue}>
-            {new Date(receipt.issuedAt).toLocaleDateString()}
-          </span>
-        </div>
-        
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Payment Status:</span>
+      {/* Display the receipt using the same template as issued receipts */}
+      <div style={styles.receiptDisplay}>
+        <ReceiptTemplate 
+          receipt={receipt} 
+          organization={receipt.organization} 
+        />
+      </div>
+      
+      {/* Additional verification details */}
+      <div style={styles.verificationDetails}>
+        <h4 style={styles.verificationTitle}>Verification Details</h4>
+        <div style={styles.verificationRow}>
+          <span style={styles.verificationLabel}>Payment Status:</span>
           <div style={{
             ...styles.statusBadge, 
             backgroundColor: receipt.paymentStatus === 'completed' ? '#10b981' : 
@@ -215,8 +184,8 @@ const ReceiptVerificationScreen = () => {
           </div>
         </div>
         
-        <div style={styles.resultRow}>
-          <span style={styles.resultLabel}>Email Status:</span>
+        <div style={styles.verificationRow}>
+          <span style={styles.verificationLabel}>Email Status:</span>
           <div style={{
             ...styles.statusBadge, 
             backgroundColor: receipt.emailStatus === 'sent' ? '#10b981' : 
@@ -226,25 +195,11 @@ const ReceiptVerificationScreen = () => {
           </div>
         </div>
         
-      </div>
-      
-      {/* QR Code Section */}
-      <div style={styles.qrCodeSection}>
-        <h4 style={styles.qrCodeTitle}>Receipt QR Code</h4>
-        <p style={styles.qrCodeDescription}>
-          This QR code contains the receipt information and can be scanned for verification
-        </p>
-        <div style={styles.qrCodeContainer}>
-          <QRCode 
-            value={receipt.receiptNumber}
-            size={120}
-            level="M"
-            includeMargin={true}
-            style={styles.qrCode}
-          />
-          <p style={styles.qrCodeNote}>
-            Scan this QR code to verify receipt authenticity
-          </p>
+        <div style={styles.verificationRow}>
+          <span style={styles.verificationLabel}>Verification Date:</span>
+          <span style={styles.verificationValue}>
+            {new Date().toLocaleString()}
+          </span>
         </div>
       </div>
     </div>
@@ -811,6 +766,50 @@ const styles = {
     fontSize: '12px',
     color: '#6b7280',
     textAlign: 'center',
+  },
+
+  // New styles for receipt display
+  receiptDisplay: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    padding: '20px',
+    marginBottom: '20px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  },
+
+  // Verification details styles
+  verificationDetails: {
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+    padding: '16px',
+    border: '1px solid #e5e7eb',
+  },
+
+  verificationTitle: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: '12px',
+    margin: '0 0 12px 0',
+  },
+
+  verificationRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+  },
+
+  verificationLabel: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+
+  verificationValue: {
+    fontSize: '14px',
+    color: '#374151',
+    fontWeight: '500',
   },
 };
 

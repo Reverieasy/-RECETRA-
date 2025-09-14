@@ -349,6 +349,7 @@ const PaymentGatewayScreen = ({ navigation }: any) => {
                     <ReceiptTemplate 
                       receipt={paymentResult.receipt} 
                       organization={paymentResult.receipt.organization}
+                      paymentMethod="Online"
                     />
                   </View>
 

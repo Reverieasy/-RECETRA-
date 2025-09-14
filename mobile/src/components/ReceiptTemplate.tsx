@@ -8,8 +8,9 @@ import QRCode from 'react-native-qrcode-svg';
  * 
  * @param {Object} receipt - The receipt data object
  * @param {string} organization - The organization name
+ * @param {string} paymentMethod - The payment method ('Cash' or 'Online')
  */
-const ReceiptTemplate = ({ receipt, organization }) => {
+const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
   // Convert amount to words (simplified version)
   const convertAmountToWords = (amount) => {
     const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -131,8 +132,8 @@ const ReceiptTemplate = ({ receipt, organization }) => {
         {/* Payment Details */}
         <View style={styles.paymentDetailsSection}>
           <Text style={styles.paymentDetailsLabel}>Payment Details: </Text>
-          <Text style={styles.checkbox}>☑</Text> Cash
-          <Text style={styles.checkbox}>☐</Text> Online
+          <Text style={styles.checkbox}>{paymentMethod === 'Cash' ? '☑' : '☐'}</Text> Cash
+          <Text style={styles.checkbox}>{paymentMethod === 'Online' ? '☑' : '☐'}</Text> Online
         </View>
 
 

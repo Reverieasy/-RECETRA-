@@ -7,8 +7,9 @@ import QRCode from 'qrcode.react';
  * 
  * @param {Object} receipt - The receipt data object
  * @param {string} organization - The organization name
+ * @param {string} paymentMethod - The payment method ('Cash' or 'Online')
  */
-const ReceiptTemplate = ({ receipt, organization }) => {
+const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
   // Convert amount to words (simplified version)
   const convertAmountToWords = (amount) => {
     const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -137,8 +138,8 @@ const ReceiptTemplate = ({ receipt, organization }) => {
         {/* Payment Details */}
         <div style={styles.paymentDetailsSection}>
           <span style={styles.paymentDetailsLabel}>Payment Details: </span>
-          <span style={styles.checkbox}>☑</span> Cash
-          <span style={styles.checkbox}>☐</span> Online
+          <span style={styles.checkbox}>{paymentMethod === 'Cash' ? '☑' : '☐'}</span> Cash
+          <span style={styles.checkbox}>{paymentMethod === 'Online' ? '☑' : '☐'}</span> Online
         </div>
 
         {/* Received By Section */}

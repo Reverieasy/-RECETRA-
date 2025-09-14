@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
 import Layout from '../components/Layout';
+import ReceiptTemplate from '../components/ReceiptTemplate';
 import { mockReceipts } from '../data/mockData';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -135,51 +136,19 @@ const ReceiptVerificationScreen: React.FC = () => {
         </View>
       </View>
       
-      <View style={styles.resultContent}>
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Receipt Number:</Text>
-          <Text style={styles.resultValue}>{receipt.receiptNumber}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Payer:</Text>
-          <Text style={styles.resultValue}>{receipt.payer}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Amount:</Text>
-          <Text style={styles.resultValue}>₱{receipt.amount.toLocaleString()}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Purpose:</Text>
-          <Text style={styles.resultValue}>{receipt.purpose}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Category:</Text>
-          <Text style={styles.resultValue}>{receipt.category}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Organization:</Text>
-          <Text style={styles.resultValue}>{receipt.organization}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Issued By:</Text>
-          <Text style={styles.resultValue}>{receipt.issuedBy}</Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Date Issued:</Text>
-          <Text style={styles.resultValue}>
-            {new Date(receipt.issuedAt).toLocaleDateString()}
-          </Text>
-        </View>
-        
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Payment Status:</Text>
+      {/* Display the receipt using the same template as issued receipts */}
+      <View style={styles.receiptDisplay}>
+        <ReceiptTemplate 
+          receipt={receipt} 
+          organization={receipt.organization} 
+        />
+      </View>
+      
+      {/* Additional verification details */}
+      <View style={styles.verificationDetails}>
+        <Text style={styles.verificationTitle}>Verification Details</Text>
+        <View style={styles.verificationRow}>
+          <Text style={styles.verificationLabel}>Payment Status:</Text>
           <View style={[
             styles.statusBadge, 
             { backgroundColor: receipt.paymentStatus === 'completed' ? '#10b981' : 
@@ -189,8 +158,8 @@ const ReceiptVerificationScreen: React.FC = () => {
           </View>
         </View>
         
-        <View style={styles.resultRow}>
-          <Text style={styles.resultLabel}>Email Status:</Text>
+        <View style={styles.verificationRow}>
+          <Text style={styles.verificationLabel}>Email Status:</Text>
           <View style={[
             styles.statusBadge, 
             { backgroundColor: receipt.emailStatus === 'sent' ? '#10b981' : 
@@ -200,6 +169,12 @@ const ReceiptVerificationScreen: React.FC = () => {
           </View>
         </View>
         
+        <View style={styles.verificationRow}>
+          <Text style={styles.verificationLabel}>Verification Date:</Text>
+          <Text style={styles.verificationValue}>
+            {new Date().toLocaleString()}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -771,7 +746,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
-  
+
+  // New styles for receipt display
+  receiptDisplay: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Verification details styles
+  verificationDetails: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+
+  verificationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+
+  verificationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  verificationLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+
+  verificationValue: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
 
 });
 

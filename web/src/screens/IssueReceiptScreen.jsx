@@ -534,7 +534,7 @@ const IssueReceiptScreen = () => {
                 </div>
                 <div style={styles.summaryRow}>
                   <span style={styles.summaryLabel}>Email Delivery:</span>
-                  <span style={styles.summaryValue}>Automatic to {receiptData.payerEmail || 'Not specified'}</span>
+                  <span style={styles.summaryValue}>{receiptData.payerEmail || 'Not specified'}</span>
                 </div>
               </div>
             </div>
