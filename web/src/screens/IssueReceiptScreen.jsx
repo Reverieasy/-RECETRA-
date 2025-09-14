@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import ReceiptTemplate from '../components/ReceiptTemplate';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockCategories, mockReceiptTemplates, addReceipt } from '../data/mockData';
 import { emailService } from '../services/emailService';
 import QRCode from 'qrcode.react';
@@ -21,10 +22,12 @@ import * as htmlToImage from 'html-to-image';
  */
 const IssueReceiptScreen = () => {
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [receiptData, setReceiptData] = useState({
     payer: '',
     payerEmail: '', // Added email field
     amount: '',
+    organization: user?.organization || '',
     purpose: '',
     category: '',
     template: '',
@@ -33,6 +36,183 @@ const IssueReceiptScreen = () => {
   const [generatedReceipt, setGeneratedReceipt] = useState(null);
   const [errorModal, setErrorModal] = useState(false);
   const receiptRef = useRef(null);
+
+  // Organization mapping for auto-fill
+  const organizationMapping = {
+    'Computer Science Society': {
+      purpose: 'Computer Science Society Activities',
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'Student Council': {
+      purpose: 'Student Council Activities',
+      category: 'Student Government',
+      template: '2' // Student Government Receipt
+    },
+    'Engineering Society': {
+      purpose: 'Engineering Society Activities',
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'NU Dasma Admin': {
+      purpose: 'Administrative Services',
+      category: 'Administration',
+      template: '3' // Administrative Receipt
+    }
+  };
+
+  // Category mapping for auto-fill
+  const categoryMapping = {
+    'Student Organization': {
+      purpose: 'Student Organization Activities',
+      template: '1' // Student Organization Receipt
+    },
+    'Student Government': {
+      purpose: 'Student Government Activities',
+      template: '2' // Student Government Receipt
+    },
+    'Administration': {
+      purpose: 'Administrative Services',
+      template: '3' // Administrative Receipt
+    },
+    'Event Registration': {
+      purpose: 'Event Registration Fee',
+      template: '4' // Event Registration Receipt
+    },
+    'Membership': {
+      purpose: 'Membership Fee',
+      template: '5' // Membership Fee Receipt
+    }
+  };
+
+  // Purpose mapping for auto-fill
+  const purposeMapping = {
+    'Event Registration': {
+      category: 'Event Registration',
+      template: '4' // Event Registration Receipt
+    },
+    'Membership Fee': {
+      category: 'Membership',
+      template: '5' // Membership Fee Receipt
+    },
+    'Activity Fee': {
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'Administrative Services': {
+      category: 'Administration',
+      template: '3' // Administrative Receipt
+    },
+    'Computer Science Society Activities': {
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'Student Council Activities': {
+      category: 'Student Government',
+      template: '2' // Student Government Receipt
+    },
+    'Engineering Society Activities': {
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    }
+  };
+
+  // Template mapping for auto-fill
+  const templateMapping = {
+    '1': {
+      category: 'Student Organization',
+      purpose: 'Student Organization Activities'
+    },
+    '2': {
+      category: 'Student Government',
+      purpose: 'Student Government Activities'
+    },
+    '3': {
+      category: 'Administration',
+      purpose: 'Administrative Services'
+    },
+    '4': {
+      category: 'Event Registration',
+      purpose: 'Event Registration Fee'
+    },
+    '5': {
+      category: 'Membership',
+      purpose: 'Membership Fee'
+    }
+  };
+
+  // Available organizations for dropdown
+  const availableOrganizations = [
+    'Computer Science Society',
+    'Student Council', 
+    'Engineering Society',
+    'NU Dasma Admin'
+  ];
+
+  // Available purposes for dropdown
+  const availablePurposes = [
+    'Event Registration',
+    'Membership Fee',
+    'Activity Fee',
+    'Administrative Services',
+    'Computer Science Society Activities',
+    'Student Council Activities',
+    'Engineering Society Activities',
+    'Other'
+  ];
+
+  /**
+   * Handles organization change and auto-fills related fields
+   */
+  const handleOrganizationChange = (organization) => {
+    const mapping = organizationMapping[organization] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      organization,
+      purpose: mapping.purpose || prev.purpose,
+      category: mapping.category || prev.category,
+      template: mapping.template || prev.template
+    }));
+  };
+
+  /**
+   * Handles category change and auto-fills related fields
+   */
+  const handleCategoryChange = (category) => {
+    const mapping = categoryMapping[category] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      category,
+      purpose: mapping.purpose || prev.purpose,
+      template: mapping.template || prev.template
+    }));
+  };
+
+  /**
+   * Handles purpose change and auto-fills related fields
+   */
+  const handlePurposeChange = (purpose) => {
+    const mapping = purposeMapping[purpose] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      purpose,
+      category: mapping.category || prev.category,
+      template: mapping.template || prev.template
+    }));
+  };
+
+  /**
+   * Handles template change and auto-fills related fields
+   */
+  const handleTemplateChange = (template) => {
+    const mapping = templateMapping[template] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      template,
+      category: mapping.category || prev.category,
+      purpose: mapping.purpose || prev.purpose
+    }));
+  };
 
   /**
    * Handles receipt submission
@@ -45,13 +225,13 @@ const IssueReceiptScreen = () => {
     }
 
     if (!receiptData.payerEmail.trim()) {
-      alert('Error: Payer email is required for receipt delivery');
+      showError('Payer email is required for receipt delivery', 'Validation Error');
       return;
     }
 
     const amount = parseFloat(receiptData.amount);
     if (isNaN(amount) || amount <= 0) {
-      alert('Error: Please enter a valid amount');
+      showError('Please enter a valid amount', 'Validation Error');
       return;
     }
 
@@ -116,11 +296,9 @@ const IssueReceiptScreen = () => {
       setGeneratedReceipt(receipt);
 
       // Show success message
-      alert(
-        `Receipt Issued Successfully!\n\n` +
-        `Receipt ${receiptNumber} has been created.\n` +
-        `QR Code generated and email sent to ${receiptData.payerEmail}.\n\n` +
-        `The payer will receive their receipt via email.`
+      showSuccess(
+        `Receipt ${receiptNumber} has been created successfully!\n\nQR Code generated and email sent to ${receiptData.payerEmail}.\n\nThe payer will receive their receipt via email.`,
+        'Receipt Issued Successfully!'
       );
 
       // Reset form
@@ -134,7 +312,7 @@ const IssueReceiptScreen = () => {
       });
     } catch (error) {
       console.error('Error creating receipt:', error);
-      alert('Error: Failed to create receipt. Please try again.');
+      showError('Failed to create receipt. Please try again.', 'Error');
     } finally {
       setIsSubmitting(false);
     }
@@ -169,7 +347,7 @@ const IssueReceiptScreen = () => {
    */
   const handleDownloadReceipt = async () => {
     if (!receiptRef.current) {
-      alert('No receipt to download');
+      showError('No receipt to download', 'Download Error');
       return;
     }
 
@@ -199,7 +377,7 @@ const IssueReceiptScreen = () => {
       console.log('Download completed');
     } catch (error) {
       console.error('Error downloading receipt:', error);
-      alert('Error downloading receipt: ' + error.message);
+      showError('Error downloading receipt: ' + error.message, 'Download Error');
     }
   };
 
@@ -245,6 +423,29 @@ const IssueReceiptScreen = () => {
               </div>
             </div>
 
+            {/* Organization Selection */}
+            <div style={styles.section}>
+              <h3 style={styles.sectionTitle}>Organization Details</h3>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Organization *</label>
+                  <select
+                    style={styles.select}
+                    value={receiptData.organization}
+                    onChange={(e) => handleOrganizationChange(e.target.value)}
+                    required
+                  >
+                    <option value="">Select organization</option>
+                    {availableOrganizations.map((org) => (
+                      <option key={org} value={org}>
+                        {org}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {/* Payment Details */}
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Payment Details</h3>
@@ -264,13 +465,18 @@ const IssueReceiptScreen = () => {
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Purpose</label>
-                  <input
-                    type="text"
-                    style={styles.input}
+                  <select
+                    style={styles.select}
                     value={receiptData.purpose}
-                    onChange={(e) => handleInputChange('purpose', e.target.value)}
-                    placeholder="e.g., Event Registration, Membership Fee"
-                  />
+                    onChange={(e) => handlePurposeChange(e.target.value)}
+                  >
+                    <option value="">Select purpose</option>
+                    {availablePurposes.map((purpose) => (
+                      <option key={purpose} value={purpose}>
+                        {purpose}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div style={styles.formRow}>
@@ -279,7 +485,7 @@ const IssueReceiptScreen = () => {
                   <select
                     style={styles.select}
                     value={receiptData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
                   >
                     <option value="">Select category</option>
                     {mockCategories.map((category) => (
@@ -294,7 +500,7 @@ const IssueReceiptScreen = () => {
                   <select
                     style={styles.select}
                     value={receiptData.template}
-                    onChange={(e) => handleInputChange('template', e.target.value)}
+                    onChange={(e) => handleTemplateChange(e.target.value)}
                   >
                     <option value="">Select template</option>
                     {mockReceiptTemplates.map((template) => (
@@ -313,7 +519,7 @@ const IssueReceiptScreen = () => {
               <div style={styles.summary}>
                 <div style={styles.summaryRow}>
                   <span style={styles.summaryLabel}>Organization:</span>
-                  <span style={styles.summaryValue}>{user?.organization}</span>
+                  <span style={styles.summaryValue}>{receiptData.organization || 'Not selected'}</span>
                 </div>
                 <div style={styles.summaryRow}>
                   <span style={styles.summaryLabel}>Issued By:</span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavigationContainer, RouteProp } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { InlineNotificationProvider } from './src/components/InlineNotificationSystem';
 import LoginScreen from './src/screens/LoginScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import AdminDashboard from './src/screens/AdminDashboard';
@@ -163,9 +164,11 @@ const AppContent: React.FC = () => {
  */
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <InlineNotificationProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </InlineNotificationProvider>
   );
 };
 

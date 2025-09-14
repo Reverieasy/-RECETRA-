@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { getReceiptsByUser } from '../data/mockData';
 
 const EncoderDashboard = () => {
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const navigate = useNavigate();
   const userReceipts = user ? getReceiptsByUser(user.fullName) : [];
 
@@ -77,7 +79,7 @@ const EncoderDashboard = () => {
                   key={receipt.id} 
                   style={styles.listItem}
                   onClick={() => {
-                    alert(`Receipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount}\nPurpose: ${receipt.purpose}`);
+                    showInfo(`Receipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount}\nPurpose: ${receipt.purpose}`, 'Receipt Details');
                   }}
                 >
                   <div style={styles.listItemContent}>

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockReceipts, getReceiptsByOrganization } from '../data/mockData';
 
 /**
@@ -25,6 +26,7 @@ import { mockReceipts, getReceiptsByOrganization } from '../data/mockData';
  */
 const TransactionArchiveScreen: React.FC = () => {
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
@@ -112,7 +114,7 @@ const TransactionArchiveScreen: React.FC = () => {
           onPress: () => {
             // Simulate resending notifications
             setTimeout(() => {
-              Alert.alert('Success', 'Notifications have been resent successfully!');
+              showSuccess('Notifications have been resent successfully!', 'Success');
             }, 1000);
           },
         },
@@ -132,7 +134,7 @@ const TransactionArchiveScreen: React.FC = () => {
         {
           text: 'Export',
           onPress: () => {
-            Alert.alert('Success', 'Transaction data has been exported successfully!');
+            showSuccess('Transaction data has been exported successfully!', 'Success');
           },
         },
       ]

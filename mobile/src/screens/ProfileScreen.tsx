@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import * as ImagePicker from 'expo-image-picker';
 import Modal from 'react-native-modal';
 

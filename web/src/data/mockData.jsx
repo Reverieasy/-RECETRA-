@@ -148,25 +148,41 @@ export const mockCategories = [
 export const mockReceiptTemplates = [
   {
     id: '1',
-    name: 'Standard Receipt',
-    description: 'Standard receipt template for general use',
+    name: 'Student Organization Receipt',
+    description: 'Template for student organization activities and events',
     organization: 'Computer Science Society',
     isActive: true,
     createdAt: '2024-01-01T00:00:00Z'
   },
   {
     id: '2',
-    name: 'Event Receipt',
-    description: 'Specialized template for event registrations',
+    name: 'Student Government Receipt',
+    description: 'Template for student government activities and official transactions',
     organization: 'Student Council',
     isActive: true,
     createdAt: '2024-01-01T00:00:00Z'
   },
   {
     id: '3',
-    name: 'Donation Receipt',
-    description: 'Template for donation receipts',
-    organization: 'Engineering Society',
+    name: 'Administrative Receipt',
+    description: 'Template for administrative services and official university transactions',
+    organization: 'NU Dasma Admin',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '4',
+    name: 'Event Registration Receipt',
+    description: 'Template specifically for event registration fees',
+    organization: 'All Organizations',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '5',
+    name: 'Membership Fee Receipt',
+    description: 'Template for membership fees and dues',
+    organization: 'All Organizations',
     isActive: true,
     createdAt: '2024-01-01T00:00:00Z'
   }

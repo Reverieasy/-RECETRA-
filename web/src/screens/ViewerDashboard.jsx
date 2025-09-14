@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { getReceiptsByOrganization } from '../data/mockData';
 
 const ViewerDashboard = () => {
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const navigate = useNavigate();
   const organizationReceipts = user ? getReceiptsByOrganization(user.organization) : [];
 
@@ -61,7 +63,7 @@ const ViewerDashboard = () => {
                 key={receipt.id} 
                 style={styles.listItem}
                 onClick={() => {
-                  alert(`Receipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount}\nPurpose: ${receipt.purpose}\nIssued by: ${receipt.issuedBy}`);
+                  showInfo(`Receipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount}\nPurpose: ${receipt.purpose}\nIssued by: ${receipt.issuedBy}`, 'Receipt Details');
                 }}
               >
                 <div style={styles.listItemContent}>

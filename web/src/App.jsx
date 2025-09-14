@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { InlineNotificationProvider } from './components/InlineNotificationSystem';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import AdminDashboard from './screens/AdminDashboard';
@@ -89,7 +90,9 @@ const AppContent = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <InlineNotificationProvider>
+        <AppContent />
+      </InlineNotificationProvider>
     </AuthProvider>
   );
 };

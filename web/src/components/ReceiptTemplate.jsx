@@ -1,4 +1,5 @@
 import React from 'react';
+import QRCode from 'qrcode.react';
 
 /**
  * RECETRA Receipt Template Component
@@ -45,35 +46,35 @@ const ReceiptTemplate = ({ receipt, organization }) => {
   const getOrganizationDetails = (orgName) => {
     const orgs = {
       'Computer Science Society': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'Computer Science Society',
+        subtitle: 'NU DASMA',
+        code: 'CSS',
+        fullName: 'Computer Science Society - NU Dasma'
       },
       'Student Council': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'Student Council',
+        subtitle: 'NU DASMA',
+        code: 'SC',
+        fullName: 'Student Council - NU Dasma'
       },
       'Engineering Society': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'Engineering Society',
+        subtitle: 'NU DASMA',
+        code: 'ES',
+        fullName: 'Engineering Society - NU Dasma'
       },
       'NU Dasma Admin': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'NU Dasma Admin',
+        subtitle: 'ADMINISTRATION',
+        code: 'NU',
+        fullName: 'NU Dasma Administration'
       }
     };
     return orgs[orgName] || {
-      name: 'RECETRA',
-      subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-      code: 'RECETRA',
-      fullName: 'RECETRA Receipt Management System'
+      name: orgName || 'Organization',
+      subtitle: 'NU DASMA',
+      code: 'ORG',
+      fullName: `${orgName || 'Organization'} - NU Dasma`
     };
   };
 
@@ -146,11 +147,24 @@ const ReceiptTemplate = ({ receipt, organization }) => {
             <span style={styles.receivedByLabel}>Received By:</span>
             <span style={styles.receivedByValue}>{receipt.issuedBy || 'System'}</span>
           </div>
-          <div style={styles.signatureLine}>
-            <span style={styles.signatureLabel}>Signature:</span>
-            <div style={styles.signatureSpace}></div>
-          </div>
         </div>
+
+        {/* QR Code Section */}
+        {receipt.qrCode && (
+          <div style={styles.qrCodeSection}>
+            <div style={styles.qrCodeContainer}>
+              <QRCode 
+                value={receipt.qrCode} 
+                size={120}
+                level="M"
+                includeMargin={true}
+              />
+            </div>
+            <div style={styles.qrCodeNote}>
+              Scan this QR code to verify receipt authenticity
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
@@ -357,6 +371,26 @@ const styles = {
     height: '1px',
     borderBottom: '1px solid #000',
     marginTop: '10px'
+  },
+
+  // QR Code Section Styles
+  qrCodeSection: {
+    textAlign: 'center',
+    marginTop: '30px',
+    padding: '20px',
+    border: '2px dashed #ccc',
+    borderRadius: '8px',
+    backgroundColor: '#f9f9f9'
+  },
+  qrCodeContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '10px'
+  },
+  qrCodeNote: {
+    fontSize: '12px',
+    color: '#666',
+    fontStyle: 'italic'
   },
 };
 

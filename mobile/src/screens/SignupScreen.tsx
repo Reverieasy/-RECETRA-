@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 
 /**
  * Signup Screen Component
@@ -28,6 +29,7 @@ import { useAuth } from '../context/AuthContext';
 const SignupScreen = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { register } = useAuth();
+  const { showError, showSuccess } = useInlineNotification();
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -128,24 +130,17 @@ const SignupScreen = () => {
       const success = await register(newUserData);
 
               if (success) {
-          Alert.alert(
-            'Account Created Successfully!',
+          showSuccess(
             `Welcome ${newUserData.fullName}!\n\nRole: ${newUserData.role} (Default)\nOrganization: ${newUserData.organization}\n\nPlease log in with:\nUsername: ${newUserData.username}\nPassword: ${formData.password}`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  // Navigate to login screen
-                  navigation.navigate('Login');
-                },
-              },
-            ]
+            'Account Created Successfully!'
           );
+          // Navigate to login screen
+          navigation.navigate('Login');
         } else {
-          Alert.alert('Error', 'Failed to create account. Please try again.');
+          showError('Failed to create account. Please try again.', 'Error');
         }
     } catch (error) {
-      Alert.alert('Error', 'Error creating account. Please try again.');
+      showError('Error creating account. Please try again.', 'Error');
       console.error('Signup error:', error);
     } finally {
       setIsSubmitting(false);

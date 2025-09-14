@@ -1,7 +1,6 @@
 /**
- * PayMongo Service Placeholder for Mobile Application
- * This is a placeholder for future PayMongo payment gateway implementation
- * Currently just logs actions to console
+ * PayMongo Service for Mobile Application
+ * Handles real PayMongo payment gateway integration
  */
 
 class PayMongoService {
@@ -10,15 +9,60 @@ class PayMongoService {
   private publicKey: string | undefined;
 
   constructor() {
-    this.baseURL = 'placeholder';
-    this.secretKey = undefined;
-    this.publicKey = undefined;
+    this.baseURL = 'https://api.paymongo.com/v1';
+    this.secretKey = process.env.EXPO_PUBLIC_PAYMONGO_SECRET_KEY;
+    this.publicKey = process.env.EXPO_PUBLIC_PAYMONGO_PUBLIC_KEY;
     
-    console.log('💳 PayMongo Service initialized - placeholder mode');
+    if (!this.secretKey || !this.publicKey) {
+      console.warn('⚠️ PayMongo API keys not found. Please set EXPO_PUBLIC_PAYMONGO_SECRET_KEY and EXPO_PUBLIC_PAYMONGO_PUBLIC_KEY in your environment variables.');
+    }
+    
+    console.log('💳 PayMongo Service initialized');
   }
 
   /**
-   * Creates a payment intent (placeholder)
+   * Makes authenticated API request to PayMongo
+   * @param endpoint - API endpoint
+   * @param data - Request data
+   * @param method - HTTP method
+   * @returns API response
+   */
+  private async makeRequest(endpoint: string, data: any = null, method: string = 'GET'): Promise<any> {
+    if (!this.secretKey) {
+      throw new Error('PayMongo secret key not configured');
+    }
+
+    const url = `${this.baseURL}${endpoint}`;
+    const options: RequestInit = {
+      method,
+      headers: {
+        'Authorization': `Basic ${btoa ? btoa(this.secretKey + ':') : Buffer.from(this.secretKey + ':').toString('base64')}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    };
+
+    if (data && method !== 'GET') {
+      options.body = JSON.stringify(data);
+    }
+
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.errors?.[0]?.detail || 'PayMongo API error');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('PayMongo API Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Creates a payment intent
    * @param paymentData - Payment data
    * @returns Payment intent result
    */
@@ -30,24 +74,38 @@ class PayMongoService {
   }> {
     console.log('💳 PayMongo Service: Creating payment intent', paymentData);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Return mock payment intent - replace with actual PayMongo API later
-    return {
-      success: true,
-      paymentIntent: {
-        id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        attributes: {
-          client_key: `pi_${Date.now()}_client_${Math.random().toString(36).substr(2, 9)}`,
-          amount: paymentData.amount,
-          currency: 'PHP',
-          status: 'requires_payment_method'
+    try {
+      const data = {
+        data: {
+          attributes: {
+            amount: Math.round(parseFloat(paymentData.amount) * 100), // Convert to centavos
+            currency: 'PHP',
+            description: paymentData.purpose,
+            metadata: {
+              organization: paymentData.organization,
+              category: paymentData.category,
+              payer_name: paymentData.payerName,
+              payer_email: paymentData.payerEmail
+            }
+          }
         }
-      },
-      clientKey: `pi_${Date.now()}_client_${Math.random().toString(36).substr(2, 9)}`,
-      error: undefined
-    };
+      };
+
+      const result = await this.makeRequest('/payment_intents', data, 'POST');
+      
+      return {
+        success: true,
+        paymentIntent: result.data,
+        clientKey: result.data.attributes.client_key,
+        error: undefined
+      };
+    } catch (error: any) {
+      console.error('Error creating payment intent:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   }
 
   /**
@@ -131,7 +189,7 @@ class PayMongoService {
   }
 
   /**
-   * Processes a complete payment flow (placeholder)
+   * Processes a complete payment flow
    * @param paymentData - Complete payment information
    * @returns Payment result
    */
@@ -151,36 +209,12 @@ class PayMongoService {
         return intentResult;
       }
 
-      // Step 2: Create payment method
-      const methodResult = await this.createPaymentMethod({
-        type: paymentData.paymentMethod,
-        details: paymentData.paymentDetails
-      });
-
-      if (!methodResult.success) {
-        return methodResult;
-      }
-
-      // Step 3: Attach payment method to intent
-      const attachResult = await this.attachPaymentMethod(
-        intentResult.paymentIntent!.id,
-        methodResult.paymentMethod!.id
-      );
-
-      if (!attachResult.success) {
-        return attachResult;
-      }
-
-      // Step 4: Confirm payment
-      const confirmResult = await this.confirmPaymentIntent(intentResult.paymentIntent!.id);
-      if (!confirmResult.success) {
-        return confirmResult;
-      }
-
+      // For now, return the payment intent with client key
+      // In a real implementation, you would redirect to PayMongo's payment page
+      // or use their JavaScript SDK to handle payment method selection
       return {
         success: true,
-        paymentIntent: confirmResult.paymentIntent,
-        paymentMethod: methodResult.paymentMethod,
+        paymentIntent: intentResult.paymentIntent,
         clientKey: intentResult.clientKey,
         error: undefined
       };

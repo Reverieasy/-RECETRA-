@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 
 
 const LoginScreen = () => {
   const { login } = useAuth();
+  const { showError, showSuccess } = useInlineNotification();
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     username: '',
@@ -14,7 +16,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     if (!credentials.username.trim() || !credentials.password.trim()) {
-      alert('Please enter both username and password');
+      showError('Please enter both username and password', 'Validation Error');
       return;
     }
 
@@ -22,10 +24,10 @@ const LoginScreen = () => {
     try {
       const success = await login(credentials.username, credentials.password);
       if (!success) {
-        alert('Invalid username or password');
+        showError('Invalid username or password', 'Login Failed');
       }
     } catch (error) {
-      alert('Login Failed: Invalid username or password');
+      showError('Login Failed: Invalid username or password', 'Error');
     } finally {
       setIsLoading(false);
     }

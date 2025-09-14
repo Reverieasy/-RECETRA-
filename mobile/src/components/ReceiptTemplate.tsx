@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 /**
  * RECETRA Receipt Template Component
@@ -46,35 +47,35 @@ const ReceiptTemplate = ({ receipt, organization }) => {
   const getOrganizationDetails = (orgName) => {
     const orgs = {
       'Computer Science Society': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'Computer Science Society',
+        subtitle: 'NU DASMA',
+        code: 'CSS',
+        fullName: 'Computer Science Society - NU Dasma'
       },
       'Student Council': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'Student Council',
+        subtitle: 'NU DASMA',
+        code: 'SC',
+        fullName: 'Student Council - NU Dasma'
       },
       'Engineering Society': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'Engineering Society',
+        subtitle: 'NU DASMA',
+        code: 'ES',
+        fullName: 'Engineering Society - NU Dasma'
       },
       'NU Dasma Admin': {
-        name: 'RECETRA',
-        subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-        code: 'RECETRA',
-        fullName: 'RECETRA Receipt Management System'
+        name: 'NU Dasma Admin',
+        subtitle: 'ADMINISTRATION',
+        code: 'NU',
+        fullName: 'NU Dasma Administration'
       }
     };
     return orgs[orgName] || {
-      name: 'RECETRA',
-      subtitle: 'RECEIPT MANAGEMENT SYSTEM',
-      code: 'RECETRA',
-      fullName: 'RECETRA Receipt Management System'
+      name: orgName || 'Organization',
+      subtitle: 'NU DASMA',
+      code: 'ORG',
+      fullName: `${orgName || 'Organization'} - NU Dasma`
     };
   };
 
@@ -162,6 +163,21 @@ const ReceiptTemplate = ({ receipt, organization }) => {
             <Text style={styles.detailValue}>{receipt.purpose}</Text>
           </View>
         </View>
+
+        {/* QR Code Section */}
+        {receipt.qrCode && (
+          <View style={styles.qrCodeSection}>
+            <View style={styles.qrCodeContainer}>
+              <QRCode 
+                value={receipt.qrCode} 
+                size={120}
+              />
+            </View>
+            <Text style={styles.qrCodeNote}>
+              Scan this QR code to verify receipt authenticity
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -377,6 +393,28 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     marginLeft: 20,
+  },
+
+  // QR Code Section Styles
+  qrCodeSection: {
+    alignItems: 'center',
+    marginTop: 30,
+    padding: 20,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+  },
+  qrCodeContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  qrCodeNote: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
 

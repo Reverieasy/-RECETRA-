@@ -5,27 +5,18 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { mockOrganizations, mockCategories, addReceipt } from '../data/mockData';
+import { paymongoService } from '../services/paymongoService';
 import { emailService } from '../services/emailService';
-import QRCode from 'react-native-qrcode-svg';
+import ReceiptTemplate from '../components/ReceiptTemplate';
 
-/**
- * Payment Gateway Screen Component
- * Allows viewers to make payments through PayMongo and receive digital receipts
- * 
- * Features:
- * - PayMongo payment processing
- * - Automatic receipt generation with QR codes
- * - Automatic email delivery to payer
- * - Receipt verification
- */
 const PaymentGatewayScreen = ({ navigation }: any) => {
   const { user } = useAuth();
+  
   const [paymentData, setPaymentData] = useState({
     organization: '',
     category: '',
@@ -33,412 +24,383 @@ const PaymentGatewayScreen = ({ navigation }: any) => {
     purpose: '',
     payerName: '',
     payerEmail: '',
+    template: '',
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
 
-  /**
-   * Handles payment submission
-   * Processes payment through PayMongo and generates receipt with QR code and email
-   */
-  const handlePaymentSubmit = async () => {
-    if (!validatePaymentForm()) {
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // TODO: REAL PAYMONGO INTEGRATION
-      // 1. Create payment intent with PayMongo
-      // const paymentIntent = await paymongo.createPaymentIntent({
-      //   amount: parseFloat(paymentData.amount) * 100, // Convert to centavos
-      //   currency: 'PHP',
-      //   description: paymentData.purpose,
-      //   // Add your PayMongo API key here
-      //   apiKey: 'YOUR_PAYMONGO_SECRET_KEY'
-      // });
-      
-      // 2. Redirect to PayMongo payment page or show payment form
-      // 3. Handle payment success/failure callbacks
-      // 4. Generate receipt only after successful payment
-
-      // For now, simulate payment processing
-      console.log('🔄 Simulating PayMongo payment processing...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Generate unique receipt number
-      const receiptNumber = `OR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-      
-      // Generate QR code data with receipt details for verification
-      const qrCodeData = JSON.stringify({
-        receiptNumber,
-        amount: parseFloat(paymentData.amount),
-        payer: paymentData.payerName,
-        organization: paymentData.organization,
-        purpose: paymentData.purpose,
-        timestamp: Date.now()
-      });
-
-      // Generate receipt with QR code
-      const receipt = {
-        id: `receipt_${Date.now()}`,
-        receiptNumber,
-        payer: paymentData.payerName,
-        payerEmail: paymentData.payerEmail,
-        amount: parseFloat(paymentData.amount),
-        purpose: paymentData.purpose,
-        category: paymentData.category,
-        organization: paymentData.organization,
-        issuedBy: user?.fullName || 'PayMongo Gateway',
-        issuedAt: new Date().toISOString(),
-        templateId: 'digital_payment',
-        qrCode: qrCodeData,
-        paymentStatus: 'completed' as const,
-        emailStatus: 'pending' as 'pending' | 'sent' | 'failed',
-        smsStatus: 'pending' as 'pending' | 'sent' | 'failed',
-        isDigital: true,
-      };
-
-      // Add receipt to system
-      addReceipt(receipt);
-
-      // Send email to payer automatically
-      if (paymentData.payerEmail) {
-        try {
-          const emailResult = await emailService.sendReceiptEmail(receipt, paymentData.payerEmail);
-          
-          if (emailResult.success) {
-            console.log('📧 PayMongo receipt email sent successfully to:', paymentData.payerEmail);
-            receipt.emailStatus = 'sent';
-          } else {
-            console.error('❌ Failed to send PayMongo receipt email:', emailResult.error);
-            receipt.emailStatus = 'failed';
-          }
-        } catch (emailError) {
-          console.error('❌ Email service error:', emailError);
-          receipt.emailStatus = 'failed';
-        }
-      }
-
-      setPaymentResult({
-        success: true,
-        receipt,
-        message: 'Payment successful through PayMongo! Digital receipt has been generated and sent to your email.',
-      });
-
-      // Reset form
-      setPaymentData({
-        organization: '',
-        category: '',
-        amount: '',
-        purpose: '',
-        payerName: '',
-        payerEmail: '',
-      });
-
-    } catch (error) {
+  // Form validation
+  const validatePaymentForm = () => {
+    if (!paymentData.organization) {
       setPaymentResult({
         success: false,
-        message: 'Payment failed. Please try again or contact support.',
+        message: 'Please select an organization',
+        error: 'validation'
+      });
+      return false;
+    }
+    if (!paymentData.category) {
+      setPaymentResult({
+        success: false,
+        message: 'Please select a category',
+        error: 'validation'
+      });
+      return false;
+    }
+    if (!paymentData.amount || isNaN(Number(paymentData.amount)) || Number(paymentData.amount) <= 0) {
+      setPaymentResult({
+        success: false,
+        message: 'Please enter a valid amount',
+        error: 'validation'
+      });
+      return false;
+    }
+    if (!paymentData.purpose) {
+      setPaymentResult({
+        success: false,
+        message: 'Please enter a purpose',
+        error: 'validation'
+      });
+      return false;
+    }
+    if (!paymentData.payerName.trim()) {
+      setPaymentResult({
+        success: false,
+        message: 'Please enter payer name',
+        error: 'validation'
+      });
+      return false;
+    }
+    if (!paymentData.payerEmail.trim() || !paymentData.payerEmail.includes('@')) {
+      setPaymentResult({
+        success: false,
+        message: 'Please enter a valid email address',
+        error: 'validation'
+      });
+      return false;
+    }
+    if (!paymentData.template) {
+      setPaymentResult({
+        success: false,
+        message: 'Please select a template',
+        error: 'validation'
+      });
+      return false;
+    }
+    return true;
+  };
+
+  // Payment processing
+  const handlePaymentSubmit = async () => {
+    if (!validatePaymentForm()) return;
+
+    setIsProcessing(true);
+    try {
+      // Process payment through PayMongo
+      const paymentResult = await paymongoService.processPayment({
+        amount: Number(paymentData.amount),
+        currency: 'PHP',
+        description: `${paymentData.purpose} - ${paymentData.organization}`,
+        payerName: paymentData.payerName,
+        payerEmail: paymentData.payerEmail,
+        organization: paymentData.organization,
+        category: paymentData.category
+      });
+
+      if (paymentResult.success) {
+        // Generate receipt number
+        const currentYear = new Date().getFullYear();
+        const receiptCount = Math.floor(Math.random() * 9999) + 1;
+        const receiptNumber = `OR-${currentYear}-${receiptCount.toString().padStart(4, '0')}`;
+
+        // Create receipt data
+        const receiptData = {
+          receiptNumber,
+          payer: paymentData.payerName,
+          amount: Number(paymentData.amount),
+          purpose: paymentData.purpose,
+          category: paymentData.category,
+          organization: paymentData.organization,
+          issuedBy: user?.fullName || 'System',
+          issuedAt: new Date().toISOString(),
+          templateId: paymentData.template,
+          emailStatus: 'pending' as const,
+          smsStatus: 'pending' as const,
+          paymentStatus: 'completed' as const,
+          paymentMethod: 'Paymongo' as const,
+        };
+
+        // Add receipt to mock data
+        const newReceipt = addReceipt(receiptData);
+
+        // Send email notification
+        let emailStatus = 'failed';
+        try {
+          const emailResult = await emailService.sendReceiptEmail(newReceipt, paymentData.payerEmail);
+          emailStatus = emailResult.success ? 'sent' : 'failed';
+        } catch (emailError) {
+          console.error('Email sending failed:', emailError);
+        }
+
+        // Update receipt with email status
+        newReceipt.emailStatus = emailStatus as 'sent' | 'failed';
+
+        // Set payment result
+        setPaymentResult({
+          success: true,
+          message: 'Payment processed successfully! Receipt has been generated and sent to your email.',
+          receipt: newReceipt,
+          paymentIntent: paymentResult.paymentIntent,
+          clientKey: paymentResult.clientKey
+        });
+
+      } else {
+        setPaymentResult({
+          success: false,
+          message: paymentResult.error || 'Payment failed',
+          error: 'payment'
+        });
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentResult({
+        success: false,
+        message: 'Payment processing failed. Please try again.',
+        error: 'payment'
       });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  /**
-   * Validates payment form data
-   * @returns {boolean} True if form is valid
-   */
-  const validatePaymentForm = () => {
-    if (!paymentData.organization || !paymentData.category || !paymentData.amount || 
-        !paymentData.purpose || !paymentData.payerName || !paymentData.payerEmail) {
-      Alert.alert('Validation Error', 'Please fill in all required fields');
-      return false;
-    }
-
-    if (parseFloat(paymentData.amount) <= 0) {
-      Alert.alert('Validation Error', 'Please enter a valid amount');
-      return false;
-    }
-
-    return true;
-  };
-
-  /**
-   * Handles input changes
-   * @param {string} field - Field name to update
-   * @param {string} value - New value for the field
-   */
-  const handleInputChange = (field: string, value: string) => {
-    setPaymentData(prev => ({ ...prev, [field]: value }));
-  };
-
-  /**
-   * Component to display payment result
-   * Shows receipt details after successful payment
-   */
-  const PaymentResult = () => (
-    <View style={styles.resultContainer}>
-      <View style={styles.resultHeader}>
-        <Text style={styles.resultTitle}>Payment Successful!</Text>
-        <View style={[styles.statusBadge, { backgroundColor: '#10b981' }]}>
-          <Text style={styles.statusText}>Completed</Text>
-        </View>
-      </View>
-      
-      <View style={styles.resultContent}>
-        <Text style={styles.successMessage}>{paymentResult.message}</Text>
-        
-        <View style={styles.receiptSummary}>
-          <Text style={styles.receiptSummaryTitle}>Receipt Summary</Text>
-          <View style={styles.receiptSummaryDetails}>
-            <Text style={styles.receiptDetail}>
-              <Text style={styles.receiptDetailLabel}>Receipt Number: </Text>
-              {paymentResult.receipt.receiptNumber}
-            </Text>
-            <Text style={styles.receiptDetail}>
-              <Text style={styles.receiptDetailLabel}>Amount: </Text>
-              ₱{paymentResult.receipt.amount.toLocaleString()}
-            </Text>
-            <Text style={styles.receiptDetail}>
-              <Text style={styles.receiptDetailLabel}>Purpose: </Text>
-              {paymentResult.receipt.purpose}
-            </Text>
-            <Text style={styles.receiptDetail}>
-              <Text style={styles.receiptDetailLabel}>Organization: </Text>
-              {paymentResult.receipt.organization}
-            </Text>
-            <Text style={styles.receiptDetail}>
-              <Text style={styles.receiptDetailLabel}>Email Status: </Text>
-              <Text style={[
-                styles.statusBadge,
-                { 
-                  backgroundColor: paymentResult.receipt.emailStatus === 'sent' ? '#10b981' : 
-                    paymentResult.receipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444',
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 4,
-                  fontSize: 12,
-                  color: 'white',
-                  fontWeight: '600'
-                }
-              ]}>
-                {paymentResult.receipt.emailStatus}
-              </Text>
-            </Text>
-          </View>
-        </View>
-
-        {/* QR Code Display */}
-        <View style={styles.qrCodeSection}>
-          <Text style={styles.qrCodeTitle}>Receipt QR Code</Text>
-          <Text style={styles.qrCodeDescription}>
-            This QR code contains the receipt information and can be scanned for verification
-          </Text>
-          <View style={styles.qrCodeContainer}>
-            <QRCode 
-              value={paymentResult.receipt.qrCode}
-              size={120}
-              color="black"
-              backgroundColor="white"
-            />
-            <Text style={styles.qrCodeNote}>
-              Scan this QR code to verify receipt authenticity
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
+      <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={styles.backButtonText}>← Back</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
           <Text style={styles.title}>Payment Gateway</Text>
-          <Text style={styles.subtitle}>Make secure payments through PayMongo and receive digital receipts</Text>
         </View>
 
-        {/* Payment Form */}
-        <View style={styles.form}>
-          {/* Organization and Category */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Payment Details</Text>
-            <View style={styles.formRow}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Organization *</Text>
-                <View style={styles.pickerContainer}>
-                  <Text style={styles.pickerText}>
-                    {paymentData.organization || 'Select organization'}
-                  </Text>
-                </View>
-                {mockOrganizations.map((org) => (
-                  <TouchableOpacity
-                    key={org.id}
-                    style={[
-                      styles.optionButton,
-                      paymentData.organization === org.name && styles.optionButtonActive
-                    ]}
-                    onPress={() => handleInputChange('organization', org.name)}
-                  >
-                    <Text style={[
-                      styles.optionButtonText,
-                      paymentData.organization === org.name && styles.optionButtonTextActive
-                    ]}>
-                      {org.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+        <View style={styles.content}>
+          <Text style={styles.subtitle}>Configure your payment and proceed to PayMongo</Text>
+          
+          {/* Payment Configuration Form */}
+          <View style={styles.formContainer}>
+            <Text style={styles.sectionTitle}>Payment Configuration</Text>
             
-            <View style={styles.formRow}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Category *</Text>
-                <View style={styles.pickerContainer}>
-                  <Text style={styles.pickerText}>
-                    {paymentData.category || 'Select category'}
-                  </Text>
-                </View>
-                {mockCategories.map((category) => (
+            {/* Organization Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Organization *</Text>
+              <View style={styles.dropdown}>
+                <Text style={styles.dropdownText}>
+                  {paymentData.organization || 'Select Organization'}
+                </Text>
+              </View>
+              <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
+                {mockOrganizations.map(org => (
                   <TouchableOpacity
-                    key={category.id}
-                    style={[
-                      styles.optionButton,
-                      paymentData.category === category.name && styles.optionButtonActive
-                    ]}
-                    onPress={() => handleInputChange('category', category.name)}
+                    key={org}
+                    style={styles.option}
+                    onPress={() => setPaymentData(prev => ({ ...prev, organization: org }))}
                   >
-                    <Text style={[
-                      styles.optionButtonText,
-                      paymentData.category === category.name && styles.optionButtonTextActive
-                    ]}>
-                      {category.name}
-                    </Text>
+                    <Text style={styles.optionText}>{org}</Text>
                   </TouchableOpacity>
                 ))}
-              </View>
+              </ScrollView>
             </View>
 
-            <View style={styles.formRow}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Amount (₱) *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={paymentData.amount}
-                  onChangeText={(value) => handleInputChange('amount', value)}
-                  placeholder="0.00"
-                  keyboardType="numeric"
-                  placeholderTextColor="#9ca3af"
-                />
+            {/* Category Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Category *</Text>
+              <View style={styles.dropdown}>
+                <Text style={styles.dropdownText}>
+                  {paymentData.category || 'Select Category'}
+                </Text>
               </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Purpose *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={paymentData.purpose}
-                  onChangeText={(value) => handleInputChange('purpose', value)}
-                  placeholder="e.g., Event Registration"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+              <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
+                {mockCategories.map(category => (
+                  <TouchableOpacity
+                    key={category}
+                    style={styles.option}
+                    onPress={() => setPaymentData(prev => ({ ...prev, category }))}
+                  >
+                    <Text style={styles.optionText}>{category}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
-          </View>
 
-          {/* Payer Information */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Payer Information</Text>
-            <View style={styles.formRow}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Full Name *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={paymentData.payerName}
-                  onChangeText={(value) => handleInputChange('payerName', value)}
-                  placeholder="Enter your full name"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Email Address *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={paymentData.payerEmail}
-                  onChangeText={(value) => handleInputChange('payerEmail', value)}
-                  placeholder="Enter your email address"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+            {/* Amount Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Amount (PHP) *</Text>
+              <TextInput
+                style={styles.input}
+                value={paymentData.amount}
+                onChangeText={(text) => setPaymentData(prev => ({ ...prev, amount: text }))}
+                placeholder="Enter amount"
+                keyboardType="numeric"
+              />
             </View>
-          </View>
 
-          {/* Summary */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Payment Summary</Text>
-            <View style={styles.summary}>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Organization:</Text>
-                <Text style={styles.summaryValue}>{paymentData.organization || 'Not selected'}</Text>
-              </View>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Category:</Text>
-                <Text style={styles.summaryValue}>{paymentData.category || 'Not selected'}</Text>
-              </View>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Amount:</Text>
-                <Text style={styles.summaryValue}>₱{paymentData.amount || '0.00'}</Text>
-              </View>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Purpose:</Text>
-                <Text style={styles.summaryValue}>{paymentData.purpose || 'Not specified'}</Text>
-              </View>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Email Delivery:</Text>
-                <Text style={styles.summaryValue}>Automatic to {paymentData.payerEmail || 'Not specified'}</Text>
-              </View>
+            {/* Purpose Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Purpose *</Text>
+              <TextInput
+                style={styles.input}
+                value={paymentData.purpose}
+                onChangeText={(text) => setPaymentData(prev => ({ ...prev, purpose: text }))}
+                placeholder="Enter payment purpose"
+              />
             </View>
-          </View>
 
-          {/* Action Button */}
-          <View style={styles.buttonContainer}>
+            {/* Payer Name */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Payer Name *</Text>
+              <TextInput
+                style={styles.input}
+                value={paymentData.payerName}
+                onChangeText={(text) => setPaymentData(prev => ({ ...prev, payerName: text }))}
+                placeholder="Enter payer name"
+              />
+            </View>
+
+            {/* Payer Email */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Payer Email *</Text>
+              <TextInput
+                style={styles.input}
+                value={paymentData.payerEmail}
+                onChangeText={(text) => setPaymentData(prev => ({ ...prev, payerEmail: text }))}
+                placeholder="Enter payer email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            {/* Template Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Receipt Template *</Text>
+              <View style={styles.dropdown}>
+                <Text style={styles.dropdownText}>
+                  {paymentData.template ? 
+                    `Template ${paymentData.template}` : 
+                    'Select Template'
+                  }
+                </Text>
+              </View>
+              <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
+                <TouchableOpacity
+                  style={styles.option}
+                  onPress={() => setPaymentData(prev => ({ ...prev, template: '1' }))}
+                >
+                  <Text style={styles.optionText}>Student Organization Receipt</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.option}
+                  onPress={() => setPaymentData(prev => ({ ...prev, template: '2' }))}
+                >
+                  <Text style={styles.optionText}>Administrative Receipt</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.option}
+                  onPress={() => setPaymentData(prev => ({ ...prev, template: '3' }))}
+                >
+                  <Text style={styles.optionText}>General Services Receipt</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.option}
+                  onPress={() => setPaymentData(prev => ({ ...prev, template: '4' }))}
+                >
+                  <Text style={styles.optionText}>Event Receipt</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+
+            {/* Submit Button */}
             <TouchableOpacity
-              style={[
-                styles.submitButton,
-                isProcessing && styles.submitButtonDisabled
-              ]}
+              style={[styles.submitButton, isProcessing && styles.submitButtonDisabled]}
               onPress={handlePaymentSubmit}
               disabled={isProcessing}
             >
               <Text style={styles.submitButtonText}>
-                {isProcessing ? 'Processing Payment...' : 'Pay Now'}
+                {isProcessing ? 'Processing...' : 'Proceed to PayMongo Payment'}
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Payment Result */}
-        {paymentResult && <PaymentResult />}
+          {/* Payment Result */}
+          {paymentResult && (
+            <View style={styles.resultContainer}>
+              {paymentResult.success ? (
+                <>
+                  <View style={styles.resultHeader}>
+                    <Text style={styles.resultTitle}>Payment Successful!</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: '#10b981' }]}>
+                      <Text style={styles.statusText}>Completed</Text>
+                    </View>
+                  </View>
+                  
+                  <Text style={styles.successMessage}>{paymentResult.message}</Text>
+                  
+                  {/* Receipt Template - Same as Encoder */}
+                  <View style={styles.receiptSection}>
+                    <Text style={styles.receiptSectionTitle}>Digital Receipt</Text>
+                    <ReceiptTemplate 
+                      receipt={paymentResult.receipt} 
+                      organization={paymentResult.receipt.organization}
+                    />
+                  </View>
+
+                  {/* Email Status */}
+                  <View style={styles.emailStatusSection}>
+                    <Text style={styles.emailStatusTitle}>Email Delivery Status</Text>
+                    <View style={styles.emailStatusRow}>
+                      <Text style={styles.emailStatusLabel}>Status:</Text>
+                      <View style={[
+                        styles.statusBadge,
+                        { 
+                          backgroundColor: paymentResult.receipt.emailStatus === 'sent' ? '#10b981' : 
+                            paymentResult.receipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444'
+                        }
+                      ]}>
+                        <Text style={styles.statusText}>{paymentResult.receipt.emailStatus}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.emailStatusNote}>
+                      Receipt has been sent to: {paymentData.payerEmail}
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View style={styles.resultHeader}>
+                    <Text style={[styles.resultTitle, { color: '#ef4444' }]}>Payment Failed</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: '#ef4444' }]}>
+                      <Text style={styles.statusText}>Error</Text>
+                    </View>
+                  </View>
+                  
+                  <Text style={[styles.successMessage, { color: '#ef4444' }]}>{paymentResult.message}</Text>
+                  
+                  <View style={styles.errorSection}>
+                    <Text style={styles.errorTitle}>Please check the following:</Text>
+                    <Text style={styles.errorText}>• Ensure all required fields are filled</Text>
+                    <Text style={styles.errorText}>• Verify email format is correct</Text>
+                    <Text style={styles.errorText}>• Check that amount is a valid number</Text>
+                    <Text style={styles.errorText}>• Try again after a moment</Text>
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-/**
- * Styles for the PaymentGatewayScreen component
- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -448,249 +410,190 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-  },
-  headerTop: {
-    width: '100%',
-    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    marginRight: 16,
   },
   backButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: 16,
+    color: '#007bff',
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginBottom: 8,
-    textAlign: 'center',
+    color: '#333',
+  },
+  content: {
+    padding: 16,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  form: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
+    color: '#666',
     marginBottom: 20,
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
-  section: {
-    marginBottom: 24,
+  formContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 16,
   },
-  formRow: {
-    marginBottom: 16,
-  },
-  formGroup: {
+  inputGroup: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
+    borderColor: '#ccc',
+    borderRadius: 4,
     padding: 12,
     fontSize: 14,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
   },
-  pickerContainer: {
+  dropdown: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
+    borderColor: '#ccc',
+    borderRadius: 4,
     padding: 12,
-    backgroundColor: 'white',
-    marginBottom: 8,
+    backgroundColor: '#fff',
   },
-  pickerText: {
+  dropdownText: {
     fontSize: 14,
-    color: '#374151',
+    color: '#333',
   },
-  optionButton: {
-    padding: 12,
+  optionsContainer: {
+    maxHeight: 150,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: 'white',
+    borderColor: '#ccc',
+    borderTopWidth: 0,
+    backgroundColor: '#fff',
   },
-  optionButtonActive: {
-    borderColor: '#1e3a8a',
-    backgroundColor: '#1e3a8a',
+  option: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  optionButtonText: {
+  optionText: {
     fontSize: 14,
-    color: '#374151',
-    textAlign: 'center',
-  },
-  optionButtonTextActive: {
-    color: 'white',
-    fontWeight: '600',
-  },
-  summary: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 16,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  summaryLabel: {
-    color: '#6b7280',
-    fontSize: 14,
-  },
-  summaryValue: {
-    fontWeight: '500',
-    color: '#374151',
-    fontSize: 14,
-  },
-  buttonContainer: {
-    alignItems: 'center',
-    marginTop: 20,
+    color: '#333',
   },
   submitButton: {
-    backgroundColor: '#1e3a8a',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    minWidth: 200,
+    backgroundColor: '#007bff',
+    padding: 16,
+    borderRadius: 4,
+    alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: '#ccc',
   },
   submitButtonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: 'bold',
   },
   resultContainer: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 20,
   },
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   resultTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1e3a8a',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#28a745',
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   statusText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
-  },
-  resultContent: {
-    flex: 1,
+    fontWeight: 'bold',
   },
   successMessage: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 20,
-    lineHeight: 22,
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 16,
   },
-  receiptSummary: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 16,
+  receiptSection: {
+    marginTop: 20,
     marginBottom: 20,
   },
-  receiptSummaryTitle: {
+  receiptSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
     marginBottom: 12,
   },
-  receiptSummaryDetails: {
-    gap: 8,
+  emailStatusSection: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
   },
-  receiptDetail: {
-    fontSize: 14,
-    color: '#6b7280',
+  emailStatusTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  emailStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  receiptDetailLabel: {
-    fontWeight: '600',
-    color: '#374151',
-  },
-  qrCodeSection: {
-    alignItems: 'center',
-  },
-  qrCodeTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12,
-  },
-  qrCodeDescription: {
+  emailStatusLabel: {
     fontSize: 14,
     color: '#6b7280',
-    marginBottom: 16,
-    textAlign: 'center',
-    lineHeight: 20,
+    marginRight: 8,
   },
-  qrCodeContainer: {
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-  },
-  qrCodeNote: {
-    fontSize: 12,
+  emailStatusNote: {
+    fontSize: 14,
     color: '#6b7280',
-    marginTop: 12,
-    textAlign: 'center',
   },
-
+  errorSection: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  errorTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#dc2626',
+    marginBottom: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#dc2626',
+    marginBottom: 4,
+  },
 });
 
 export default PaymentGatewayScreen;

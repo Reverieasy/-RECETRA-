@@ -59,16 +59,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Loads user data from AsyncStorage
-   * Called on app startup to restore user session
+   * Called on app startup - Modified to always start at login page
    */
   const loadUserFromStorage = async () => {
     try {
-      const userData = await AsyncStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
+      // Clear any stored user session to ensure app always starts at login page
+      await AsyncStorage.removeItem('user');
+      setUser(null);
     } catch (error) {
-      console.error('Error loading user from storage:', error);
+      console.error('Error clearing user from storage:', error);
     } finally {
       setIsLoading(false);
     }

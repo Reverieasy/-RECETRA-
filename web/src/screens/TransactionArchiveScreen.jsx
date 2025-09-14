@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockReceipts, getReceiptsByOrganization } from '../data/mockData';
 
 /**
@@ -16,11 +17,14 @@ import { mockReceipts, getReceiptsByOrganization } from '../data/mockData';
  * - Export transaction data
  */
 const TransactionArchiveScreen = () => {
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const { user } = useAuth();
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showResendConfirm, setShowResendConfirm] = useState(false);
+  const [transactionToResend, setTransactionToResend] = useState(null);
 
   /**
    * Gets all transactions for the user's organization
@@ -81,16 +85,30 @@ const TransactionArchiveScreen = () => {
    * @param {Object} transaction - Transaction to resend notifications for
    */
   const handleResendNotifications = (transaction) => {
-    const confirmed = window.confirm(
-      `Resend email and SMS notifications for receipt ${transaction.receiptNumber}?`
-    );
-    
-    if (confirmed) {
+    setTransactionToResend(transaction);
+    setShowResendConfirm(true);
+  };
+
+  /**
+   * Confirms resending notifications
+   */
+  const confirmResendNotifications = () => {
+    if (transactionToResend) {
       // Simulate resending notifications
       setTimeout(() => {
-        alert('Success: Notifications have been resent successfully!');
+        showSuccess('Notifications have been resent successfully!', 'Success');
       }, 1000);
     }
+    setShowResendConfirm(false);
+    setTransactionToResend(null);
+  };
+
+  /**
+   * Cancels resending notifications
+   */
+  const cancelResendNotifications = () => {
+    setShowResendConfirm(false);
+    setTransactionToResend(null);
   };
 
   /**
@@ -449,6 +467,49 @@ const TransactionArchiveScreen = () => {
 
         {/* Transaction Details Modal */}
         {showDetails && <TransactionDetailsModal />}
+
+        {/* Resend Notifications Confirmation Modal */}
+        {showResendConfirm && transactionToResend && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContent}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>Resend Notifications</h3>
+                <button 
+                  style={styles.closeButton}
+                  onClick={cancelResendNotifications}
+                >
+                  X
+                </button>
+              </div>
+              
+              <div style={styles.modalBody}>
+                <div style={styles.confirmMessage}>
+                  <p style={styles.confirmText}>
+                    Resend email and SMS notifications for receipt <strong>"{transactionToResend.receiptNumber}"</strong>?
+                  </p>
+                  <p style={styles.confirmSubtext}>
+                    This will send new notification emails and SMS messages to the payer.
+                  </p>
+                </div>
+              </div>
+              
+              <div style={styles.modalFooter}>
+                <button
+                  style={styles.cancelButton}
+                  onClick={cancelResendNotifications}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={styles.resendConfirmButton}
+                  onClick={confirmResendNotifications}
+                >
+                  Resend Notifications
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
@@ -789,6 +850,47 @@ const styles = {
   
   closeModalButton: {
     backgroundColor: '#6b7280',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+
+  // Confirmation modal styles
+  confirmMessage: {
+    textAlign: 'center',
+    padding: '20px 0',
+  },
+
+  confirmText: {
+    fontSize: '16px',
+    color: '#374151',
+    marginBottom: '12px',
+    margin: '0 0 12px 0',
+  },
+
+  confirmSubtext: {
+    fontSize: '14px',
+    color: '#6b7280',
+    margin: 0,
+  },
+
+  cancelButton: {
+    backgroundColor: '#6b7280',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+
+  resendConfirmButton: {
+    backgroundColor: '#1e3a8a',
     color: 'white',
     padding: '10px 20px',
     borderRadius: '8px',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { mockUsers, mockOrganizations } from '../data/mockData';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 
 /**
  * User Management Screen Component
@@ -15,6 +16,7 @@ import { mockUsers, mockOrganizations } from '../data/mockData';
  * - User status management
  */
 const UserManagementScreen = () => {
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [users, setUsers] = useState(mockUsers);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -31,6 +33,8 @@ const UserManagementScreen = () => {
   });
   const [addUserErrorModal, setAddUserErrorModal] = useState(false);
   const [addUserSuccessModal, setAddUserSuccessModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [userToRemove, setUserToRemove] = useState(null);
 
   /**
    * Filters users based on selected role and organization
@@ -108,7 +112,7 @@ const UserManagementScreen = () => {
     setUsers(updatedUsers);
     setShowEditModal(false);
     setSelectedUser(null);
-    alert('Success: User updated successfully!');
+    showSuccess('User updated successfully!', 'Success');
   };
 
   /**
@@ -116,15 +120,29 @@ const UserManagementScreen = () => {
    * Shows confirmation dialog before removal
    */
   const handleRemoveUser = (user) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to remove "${user.fullName}"? This action cannot be undone.`
-    );
-    
-    if (confirmed) {
-      const updatedUsers = users.filter(u => u.id !== user.id);
+    setUserToRemove(user);
+    setShowConfirmModal(true);
+  };
+
+  /**
+   * Confirms user removal
+   */
+  const confirmRemoveUser = () => {
+    if (userToRemove) {
+      const updatedUsers = users.filter(u => u.id !== userToRemove.id);
       setUsers(updatedUsers);
-      alert('Success: User removed successfully!');
+      showSuccess('User removed successfully!', 'Success');
     }
+    setShowConfirmModal(false);
+    setUserToRemove(null);
+  };
+
+  /**
+   * Cancels user removal
+   */
+  const cancelRemoveUser = () => {
+    setShowConfirmModal(false);
+    setUserToRemove(null);
   };
 
   /**
@@ -145,7 +163,7 @@ const UserManagementScreen = () => {
       u.id === user.id ? { ...u, isActive: !u.isActive } : u
     );
     setUsers(updatedUsers);
-    alert(`Success: User ${user.isActive ? 'deactivated' : 'activated'} successfully!`);
+    showSuccess(`User ${user.isActive ? 'deactivated' : 'activated'} successfully!`, 'Success');
   };
 
   /**
@@ -555,6 +573,49 @@ const UserManagementScreen = () => {
         {/* Modals */}
         {showAddModal && <AddUserModal />}
         {showEditModal && <EditUserModal />}
+        
+        {/* Confirmation Modal for User Removal */}
+        {showConfirmModal && userToRemove && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContent}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>Confirm User Removal</h3>
+                <button 
+                  style={styles.closeButton}
+                  onClick={cancelRemoveUser}
+                >
+                  X
+                </button>
+              </div>
+              
+              <div style={styles.modalBody}>
+                <div style={styles.confirmMessage}>
+                  <p style={styles.confirmText}>
+                    Are you sure you want to remove <strong>"{userToRemove.fullName}"</strong>?
+                  </p>
+                  <p style={styles.confirmSubtext}>
+                    This action cannot be undone. The user will be permanently removed from the system.
+                  </p>
+                </div>
+              </div>
+              
+              <div style={styles.modalFooter}>
+                <button
+                  style={styles.cancelButton}
+                  onClick={cancelRemoveUser}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={styles.removeConfirmButton}
+                  onClick={confirmRemoveUser}
+                >
+                  Remove User
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error Modal for Add User Required Fields */}
         {addUserErrorModal && (
@@ -982,6 +1043,37 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
+  },
+
+  // Confirmation modal styles
+  confirmMessage: {
+    textAlign: 'center',
+    padding: '20px 0',
+  },
+
+  confirmText: {
+    fontSize: '16px',
+    color: '#374151',
+    marginBottom: '12px',
+    margin: '0 0 12px 0',
+  },
+
+  confirmSubtext: {
+    fontSize: '14px',
+    color: '#6b7280',
+    margin: 0,
+  },
+
+  removeConfirmButton: {
+    backgroundColor: '#1e3a8a',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginRight: '10px',
   },
 };
 

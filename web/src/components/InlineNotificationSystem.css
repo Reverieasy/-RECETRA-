@@ -1,0 +1,34 @@
+/* Inline Notification System Styles - Modal Style */
+@keyframes modalSlideIn {
+  from {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideOut {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .inline-notification-container {
+    padding: 16px;
+  }
+  
+  .inline-notification-item {
+    max-width: 100%;
+    width: 100%;
+  }
+}

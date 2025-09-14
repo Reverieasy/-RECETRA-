@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 const SignupScreen = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showError, showSuccess } = useInlineNotification();
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -82,12 +83,13 @@ const SignupScreen = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       const newUser = createUser(formData);
 
-      alert(
-        `Account Created Successfully!\n\nWelcome ${newUser.fullName}!\nRole: ${newUser.role} (Default)\nOrganization: ${newUser.organization}\n\nPlease log in with your email and password.`
+      showSuccess(
+        `Account Created Successfully!\n\nWelcome ${newUser.fullName}!\nRole: ${newUser.role} (Default)\nOrganization: ${newUser.organization}\n\nPlease log in with your email and password.`,
+        'Account Created Successfully!'
       );
       navigate('/login');
     } catch (error) {
-      alert('Error creating account. Please try again.');
+      showError('Error creating account. Please try again.', 'Signup Error');
       console.error('Signup error:', error);
     } finally {
       setIsSubmitting(false);
@@ -316,10 +318,10 @@ const styles = {
     boxSizing: 'border-box',
   },
   inputError: {
-    borderColor: '#ef4444',
+    borderColor: '#1e3a8a',
   },
   errorText: {
-    color: '#ef4444',
+    color: '#1e3a8a',
     fontSize: '12px',
     marginTop: '4px',
     display: 'block',

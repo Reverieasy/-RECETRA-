@@ -49,6 +49,7 @@ const ProfileScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   /**
    * Handles change password action
@@ -182,10 +183,22 @@ const ProfileScreen = () => {
    * Handles logout confirmation
    */
   const handleLogout = async () => {
-    const confirmed = window.confirm('Are you sure you want to log out?');
-    if (confirmed) {
-      await logout();
-    }
+    setShowLogoutConfirm(true);
+  };
+
+  /**
+   * Confirms logout
+   */
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);
+    await logout();
+  };
+
+  /**
+   * Cancels logout
+   */
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -384,7 +397,7 @@ const ProfileScreen = () => {
                 <h3 style={{ marginBottom: 18, textAlign: 'center', color: '#1e3a8a', fontWeight: 700 }}>Change Password</h3>
                 <form onSubmit={handleSubmitPassword} autoComplete="off">
                   {passwordError && (
-                    <div style={{ background: '#fef3f2', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 14 }}>{passwordError}</div>
+                    <div style={{ background: '#eff6ff', color: '#1e3a8a', border: '1px solid #3b82f6', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 14 }}>{passwordError}</div>
                   )}
                   {passwordSuccess && (
                     <div style={{ background: '#e0f2f7', color: '#047857', border: '1px solid #90cdf4', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 14 }}>{passwordSuccess}</div>
@@ -445,6 +458,39 @@ const ProfileScreen = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Logout Confirmation Modal */}
+          {showLogoutConfirm && (
+            <div style={modalStyles.overlay}>
+              <div style={{ ...modalStyles.modal, maxWidth: 400, width: '100%' }}>
+                <h3 style={{ marginBottom: 18, textAlign: 'center', color: '#1e3a8a', fontWeight: 700 }}>Confirm Logout</h3>
+                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                  <p style={{ fontSize: 16, color: '#374151', marginBottom: 12, margin: '0 0 12px 0' }}>
+                    Are you sure you want to log out?
+                  </p>
+                  <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
+                    You will need to log in again to access your account.
+                  </p>
+                </div>
+                <div style={modalStyles.buttonRow}>
+                  <button
+                    type="button"
+                    style={{ ...modalStyles.saveButton, backgroundColor: '#1e3a8a', minWidth: 90 }}
+                    onClick={confirmLogout}
+                  >
+                    Logout
+                  </button>
+                  <button
+                    type="button"
+                    style={modalStyles.cancelButton}
+                    onClick={cancelLogout}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -745,8 +791,8 @@ const styles = {
   },
 
   errorContainer: {
-    backgroundColor: '#fef3f2',
-    border: '1px solid #fca5a5',
+    backgroundColor: '#eff6ff',
+    border: '1px solid #3b82f6',
     borderRadius: '8px',
     padding: '12px 16px',
     marginTop: '16px',
@@ -820,11 +866,11 @@ const styles = {
     textAlign: 'left',
     fontSize: '16px',
     fontWeight: '500',
-    color: '#dc2626',
+    color: '#1e3a8a',
   },
   
   logoutButtonText: {
-    color: '#dc2626',
+    color: '#1e3a8a',
   },
   
   roleSection: {

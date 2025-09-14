@@ -26,27 +26,45 @@ goto :end
 
 :web
 echo Starting Web Server...
-cd web
+echo Stopping any existing processes...
+taskkill /f /im node.exe >nul 2>&1
+taskkill /f /im npm.exe >nul 2>&1
+timeout /t 2 /nobreak >nul
+cd /d "C:\Users\Asus\Downloads\-RECETRA-\web"
 start "Web Server" cmd /k "npm run dev"
-cd ..
+echo Web Server starting at http://localhost:5173
 goto :end
 
 :mobile
 echo Starting Mobile Server...
-cd mobile
+echo Stopping any existing processes...
+taskkill /f /im node.exe >nul 2>&1
+taskkill /f /im npm.exe >nul 2>&1
+timeout /t 2 /nobreak >nul
+cd /d "C:\Users\Asus\Downloads\-RECETRA-\mobile"
 start "Mobile Server" cmd /k "npm start"
-cd ..
+echo Mobile Server starting - Check Expo for QR code
 goto :end
 
 :both
 echo Starting Both Servers...
-cd web
+echo Stopping any existing processes...
+taskkill /f /im node.exe >nul 2>&1
+taskkill /f /im npm.exe >nul 2>&1
+timeout /t 2 /nobreak >nul
+
+echo Starting Web Server...
+cd /d "C:\Users\Asus\Downloads\-RECETRA-\web"
 start "Web Server" cmd /k "npm run dev"
-cd ..
-timeout /t 3 /nobreak >nul
-cd mobile
+timeout /t 5 /nobreak >nul
+
+echo Starting Mobile Server...
+cd /d "C:\Users\Asus\Downloads\-RECETRA-\mobile"
 start "Mobile Server" cmd /k "npm start"
-cd ..
+
+echo Both servers are starting up!
+echo Web Server: http://localhost:5173
+echo Mobile Server: Check Expo for QR code
 goto :end
 
 :stop

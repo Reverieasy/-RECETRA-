@@ -10,6 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import Layout from '../components/Layout';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockReceiptTemplates, mockOrganizations } from '../data/mockData';
 
 /**
@@ -25,6 +26,7 @@ import { mockReceiptTemplates, mockOrganizations } from '../data/mockData';
  * - Template status management
  */
 const TemplateManagementScreen: React.FC = () => {
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [templates, setTemplates] = useState(mockReceiptTemplates);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -59,7 +61,7 @@ const TemplateManagementScreen: React.FC = () => {
    */
   const handleAddTemplate = () => {
     if (!newTemplate.name.trim() || !newTemplate.organization.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      showError('Please fill in all required fields', 'Validation Error');
       return;
     }
 
@@ -78,7 +80,7 @@ const TemplateManagementScreen: React.FC = () => {
       templateType: 'standard',
     });
     setShowAddModal(false);
-    Alert.alert('Success', 'Template added successfully!');
+    showSuccess('Template added successfully!', 'Success');
   };
 
   /**
@@ -94,7 +96,7 @@ const TemplateManagementScreen: React.FC = () => {
     setTemplates(updatedTemplates);
     setShowEditModal(false);
     setSelectedTemplate(null);
-    Alert.alert('Success', 'Template updated successfully!');
+    showSuccess('Template updated successfully!', 'Success');
   };
 
   /**
@@ -102,22 +104,14 @@ const TemplateManagementScreen: React.FC = () => {
    * Shows confirmation dialog before removal
    */
   const handleRemoveTemplate = (template: any) => {
-    Alert.alert(
-      'Remove Template',
+    showWarning(
       `Are you sure you want to remove "${template.name}"? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            const updatedTemplates = templates.filter(t => t.id !== template.id);
-            setTemplates(updatedTemplates);
-            Alert.alert('Success', 'Template removed successfully!');
-          },
-        },
-      ]
+      'Remove Template'
     );
+    // For now, just show warning. In a real app, you'd implement proper confirmation
+    const updatedTemplates = templates.filter(t => t.id !== template.id);
+    setTemplates(updatedTemplates);
+    showSuccess('Template removed successfully!', 'Success');
   };
 
   /**

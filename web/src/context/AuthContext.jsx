@@ -50,16 +50,15 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Loads user data from localStorage
-   * Called on app startup to restore user session
+   * Called on app startup - Modified to always start at login page
    */
   const loadUserFromStorage = async () => {
     try {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
+      // Clear any stored user session to ensure app always starts at login page
+      localStorage.removeItem('user');
+      setUser(null);
     } catch (error) {
-      console.error('Error loading user from storage:', error);
+      console.error('Error clearing user from storage:', error);
     } finally {
       setIsLoading(false);
     }

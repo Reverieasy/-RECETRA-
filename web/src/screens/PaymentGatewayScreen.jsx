@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { mockOrganizations, mockCategories, addReceipt } from '../data/mockData';
 import { emailService } from '../services/emailService';
-import QRCode from 'qrcode.react';
+import ReceiptTemplate from '../components/ReceiptTemplate';
 
 /**
  * Payment Gateway Screen Component
@@ -27,7 +27,6 @@ const PaymentGatewayScreen = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
-  const [errorModal, setErrorModal] = useState(false);
 
   /**
    * Handles payment submission
@@ -145,7 +144,7 @@ const PaymentGatewayScreen = () => {
   const validatePaymentForm = () => {
     if (!paymentData.organization || !paymentData.category || !paymentData.amount || 
         !paymentData.purpose || !paymentData.payerName || !paymentData.payerEmail) {
-      setErrorModal(true);
+      alert('Please fill in all required fields');
       return false;
     }
 
@@ -168,7 +167,7 @@ const PaymentGatewayScreen = () => {
 
   /**
    * Component to display payment result
-   * Shows receipt details after successful payment
+   * Shows receipt details after successful payment using ReceiptTemplate
    */
   const PaymentResult = () => (
     <div style={styles.resultContainer}>
@@ -182,43 +181,31 @@ const PaymentGatewayScreen = () => {
       <div style={styles.resultContent}>
         <p style={styles.successMessage}>{paymentResult.message}</p>
         
-        <div style={styles.receiptSummary}>
-          <h4 style={styles.receiptSummaryTitle}>Receipt Summary</h4>
-          <div style={styles.receiptSummaryDetails}>
-            <p><strong>Receipt Number:</strong> {paymentResult.receipt.receiptNumber}</p>
-            <p><strong>Amount:</strong> ₱{paymentResult.receipt.amount.toLocaleString()}</p>
-            <p><strong>Purpose:</strong> {paymentResult.receipt.purpose}</p>
-            <p><strong>Organization:</strong> {paymentResult.receipt.organization}</p>
-            <p><strong>Email Status:</strong> 
-              <span style={{
-                ...styles.statusBadge,
-                backgroundColor: paymentResult.receipt.emailStatus === 'sent' ? '#10b981' : 
-                  paymentResult.receipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444'
-              }}>
-                {paymentResult.receipt.emailStatus}
-              </span>
-            </p>
-          </div>
+        {/* Receipt Template - Same as Encoder */}
+        <div style={styles.receiptSection}>
+          <h4 style={styles.receiptSectionTitle}>Digital Receipt</h4>
+          <ReceiptTemplate 
+            receipt={paymentResult.receipt} 
+            organization={paymentResult.receipt.organization}
+          />
         </div>
 
-        {/* QR Code Display */}
-        <div style={styles.qrCodeSection}>
-          <h4 style={styles.qrCodeTitle}>Receipt QR Code</h4>
-          <p style={styles.qrCodeDescription}>
-            This QR code contains the receipt information and can be scanned for verification
-          </p>
-          <div style={styles.qrCodeContainer}>
-            <QRCode 
-              value={paymentResult.receipt.qrCode}
-              size={40}
-              level="M"
-              includeMargin={true}
-              style={styles.qrCode}
-            />
-            <p style={styles.qrCodeNote}>
-              Scan this QR code to verify receipt authenticity
-            </p>
+        {/* Email Status */}
+        <div style={styles.emailStatusSection}>
+          <h4 style={styles.emailStatusTitle}>Email Delivery Status</h4>
+          <div style={styles.emailStatusRow}>
+            <span style={styles.emailStatusLabel}>Status:</span>
+            <span style={{
+              ...styles.statusBadge,
+              backgroundColor: paymentResult.receipt.emailStatus === 'sent' ? '#10b981' : 
+                paymentResult.receipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444'
+            }}>
+              {paymentResult.receipt.emailStatus}
+            </span>
           </div>
+          <p style={styles.emailStatusNote}>
+            Receipt has been sent to: {paymentResult.receipt.payerEmail}
+          </p>
         </div>
       </div>
     </div>
@@ -373,26 +360,6 @@ const PaymentGatewayScreen = () => {
 
             {/* Payment Result */}
             {paymentResult && <PaymentResult />}
-
-            {/* Error Modal for missing required fields */}
-            {errorModal && (
-              <div style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(0,0,0,0.2)', zIndex: 1000,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <div style={{
-                  background: 'white', borderRadius: 12, padding: '28px 24px',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.15)', minWidth: 320, maxWidth: '90vw', textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1e3a8a', marginBottom: 12 }}>Missing Required Fields</div>
-                  <div style={{ fontSize: 15, color: '#000000ff', marginBottom: 18 }}>Please fill in all required fields.</div>
-                  <button style={{ backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 90 }} onClick={() => setErrorModal(false)}>
-                    OK
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -600,53 +567,44 @@ const styles = {
     color: '#6b7280',
     marginTop: 8,
   },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
+  receiptSection: {
+    marginTop: 20,
+    marginBottom: 20,
   },
-  modalContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-  },
-  modalTitle: {
-    fontSize: 18,
+  receiptSectionTitle: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  modalMessage: {
+  emailStatusSection: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+  },
+  emailStatusTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  emailStatusRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: 8,
+  },
+  emailStatusLabel: {
     fontSize: 14,
     color: '#6b7280',
-    marginBottom: 24,
-    lineHeight: 1.5,
   },
-  modalActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  modalButton: {
-    backgroundColor: '#1e3a8a',
-    color: 'white',
-    border: 'none',
-    borderRadius: 8,
-    padding: '12px 24px',
+  emailStatusNote: {
     fontSize: 14,
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    color: '#6b7280',
+    margin: 0,
   },
+
 };
 
 export default PaymentGatewayScreen;

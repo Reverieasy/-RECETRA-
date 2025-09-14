@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 
 /**
  * Login Screen Component
@@ -27,6 +28,7 @@ import { useAuth } from '../context/AuthContext';
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { login } = useAuth();
+  const { showError, showSuccess } = useInlineNotification();
   const [credentials, setCredentials] = useState({
     username: '',
     password: '',
@@ -39,7 +41,7 @@ const LoginScreen: React.FC = () => {
    */
   const handleLogin = async () => {
     if (!credentials.username.trim() || !credentials.password.trim()) {
-      Alert.alert('Error', 'Please enter both username and password');
+      showError('Please enter both username and password', 'Validation Error');
       return;
     }
 
@@ -48,7 +50,7 @@ const LoginScreen: React.FC = () => {
     try {
       await login(credentials.username, credentials.password);
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid username or password');
+      showError('Login Failed: Invalid username or password', 'Login Error');
     } finally {
       setIsLoading(false);
     }

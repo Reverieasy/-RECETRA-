@@ -1,10 +1,12 @@
  import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockSystemStats, mockUsers, mockReceiptTemplates } from '../data/mockData';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
 
   const StatCard = ({ title, value, subtitle }) => (
     <div style={styles.statCard}>
@@ -61,7 +63,7 @@ const AdminDashboard = () => {
                 key={user.id} 
                 style={styles.listItem}
                 onClick={() => {
-                  alert(`User: ${user.fullName}\nRole: ${user.role}\nOrganization: ${user.organization}`);
+                  showInfo(`User: ${user.fullName}\nRole: ${user.role}\nOrganization: ${user.organization}`, 'User Details');
                 }}
               >
                 <div>
@@ -85,7 +87,7 @@ const AdminDashboard = () => {
                 key={template.id} 
                 style={styles.listItem}
                 onClick={() => {
-                  alert(`Template: ${template.name}\nDescription: ${template.description}\nOrganization: ${template.organization}`);
+                  showInfo(`Template: ${template.name}\nDescription: ${template.description}\nOrganization: ${template.organization}`, 'Template Details');
                 }}
               >
                 <div>

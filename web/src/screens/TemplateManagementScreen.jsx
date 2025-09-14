@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockReceiptTemplates, mockOrganizations } from '../data/mockData';
 
 /**
@@ -15,6 +16,7 @@ import { mockReceiptTemplates, mockOrganizations } from '../data/mockData';
  * - Template status management
  */
 const TemplateManagementScreen = () => {
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [templates, setTemplates] = useState(mockReceiptTemplates);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -29,6 +31,8 @@ const TemplateManagementScreen = () => {
     templateType: 'standard',
   });
   const [addTemplateErrorModal, setAddTemplateErrorModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [templateToRemove, setTemplateToRemove] = useState(null);
 
   /**
    * Filters templates based on selected organization and status
@@ -69,7 +73,7 @@ const TemplateManagementScreen = () => {
       templateType: 'standard',
     });
     setShowAddModal(false);
-    alert('Success: Template added successfully!');
+    showSuccess('Template added successfully!', 'Success');
   };
 
   /**
@@ -85,7 +89,7 @@ const TemplateManagementScreen = () => {
     setTemplates(updatedTemplates);
     setShowEditModal(false);
     setSelectedTemplate(null);
-    alert('Success: Template updated successfully!');
+    showSuccess('Template updated successfully!', 'Success');
   };
 
   /**
@@ -93,15 +97,29 @@ const TemplateManagementScreen = () => {
    * Shows confirmation dialog before removal
    */
   const handleRemoveTemplate = (template) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to remove "${template.name}"? This action cannot be undone.`
-    );
-    
-    if (confirmed) {
-      const updatedTemplates = templates.filter(t => t.id !== template.id);
+    setTemplateToRemove(template);
+    setShowConfirmModal(true);
+  };
+
+  /**
+   * Confirms template removal
+   */
+  const confirmRemoveTemplate = () => {
+    if (templateToRemove) {
+      const updatedTemplates = templates.filter(t => t.id !== templateToRemove.id);
       setTemplates(updatedTemplates);
-      alert('Success: Template removed successfully!');
+      showSuccess('Template removed successfully!', 'Success');
     }
+    setShowConfirmModal(false);
+    setTemplateToRemove(null);
+  };
+
+  /**
+   * Cancels template removal
+   */
+  const cancelRemoveTemplate = () => {
+    setShowConfirmModal(false);
+    setTemplateToRemove(null);
   };
 
   /**
@@ -447,6 +465,49 @@ const TemplateManagementScreen = () => {
         {/* Modals */}
         {showAddModal && <AddTemplateModal />}
         {showEditModal && <EditTemplateModal />}
+        
+        {/* Confirmation Modal for Template Removal */}
+        {showConfirmModal && templateToRemove && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContent}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>Confirm Template Removal</h3>
+                <button 
+                  style={styles.closeButton}
+                  onClick={cancelRemoveTemplate}
+                >
+                  X
+                </button>
+              </div>
+              
+              <div style={styles.modalBody}>
+                <div style={styles.confirmMessage}>
+                  <p style={styles.confirmText}>
+                    Are you sure you want to remove <strong>"{templateToRemove.name}"</strong>?
+                  </p>
+                  <p style={styles.confirmSubtext}>
+                    This action cannot be undone. The template will be permanently removed from the system.
+                  </p>
+                </div>
+              </div>
+              
+              <div style={styles.modalFooter}>
+                <button
+                  style={styles.cancelButton}
+                  onClick={cancelRemoveTemplate}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={styles.removeConfirmButton}
+                  onClick={confirmRemoveTemplate}
+                >
+                  Remove Template
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error Modal for Add Template Required Fields */}
         {addTemplateErrorModal && (
@@ -820,6 +881,37 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
+  },
+
+  // Confirmation modal styles
+  confirmMessage: {
+    textAlign: 'center',
+    padding: '20px 0',
+  },
+
+  confirmText: {
+    fontSize: '16px',
+    color: '#374151',
+    marginBottom: '12px',
+    margin: '0 0 12px 0',
+  },
+
+  confirmSubtext: {
+    fontSize: '14px',
+    color: '#6b7280',
+    margin: 0,
+  },
+
+  removeConfirmButton: {
+    backgroundColor: '#1e3a8a',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginRight: '10px',
   },
 };
 

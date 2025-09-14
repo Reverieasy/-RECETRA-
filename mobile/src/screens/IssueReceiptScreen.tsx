@@ -10,6 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockOrganizations, mockCategories, addReceipt } from '../data/mockData';
 import { emailService } from '../services/emailService';
 import QRCode from 'react-native-qrcode-svg';
@@ -26,15 +27,194 @@ import QRCode from 'react-native-qrcode-svg';
  */
 const IssueReceiptScreen = ({ navigation }: any) => {
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [receiptData, setReceiptData] = useState({
-    organization: '',
+    organization: user?.organization || '',
     category: '',
     amount: '',
     purpose: '',
     payerName: '',
     payerEmail: '',
+    template: '',
   });
   const [generatedReceipt, setGeneratedReceipt] = useState<any>(null);
+
+  // Organization mapping for auto-fill
+  const organizationMapping = {
+    'Computer Science Society': {
+      purpose: 'Computer Science Society Activities',
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'Student Council': {
+      purpose: 'Student Council Activities',
+      category: 'Student Government',
+      template: '2' // Student Government Receipt
+    },
+    'Engineering Society': {
+      purpose: 'Engineering Society Activities',
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'NU Dasma Admin': {
+      purpose: 'Administrative Services',
+      category: 'Administration',
+      template: '3' // Administrative Receipt
+    }
+  };
+
+  // Category mapping for auto-fill
+  const categoryMapping = {
+    'Student Organization': {
+      purpose: 'Student Organization Activities',
+      template: '1' // Student Organization Receipt
+    },
+    'Student Government': {
+      purpose: 'Student Government Activities',
+      template: '2' // Student Government Receipt
+    },
+    'Administration': {
+      purpose: 'Administrative Services',
+      template: '3' // Administrative Receipt
+    },
+    'Event Registration': {
+      purpose: 'Event Registration Fee',
+      template: '4' // Event Registration Receipt
+    },
+    'Membership': {
+      purpose: 'Membership Fee',
+      template: '5' // Membership Fee Receipt
+    }
+  };
+
+  // Purpose mapping for auto-fill
+  const purposeMapping = {
+    'Event Registration': {
+      category: 'Event Registration',
+      template: '4' // Event Registration Receipt
+    },
+    'Membership Fee': {
+      category: 'Membership',
+      template: '5' // Membership Fee Receipt
+    },
+    'Activity Fee': {
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'Administrative Services': {
+      category: 'Administration',
+      template: '3' // Administrative Receipt
+    },
+    'Computer Science Society Activities': {
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    },
+    'Student Council Activities': {
+      category: 'Student Government',
+      template: '2' // Student Government Receipt
+    },
+    'Engineering Society Activities': {
+      category: 'Student Organization',
+      template: '1' // Student Organization Receipt
+    }
+  };
+
+  // Template mapping for auto-fill
+  const templateMapping = {
+    '1': {
+      category: 'Student Organization',
+      purpose: 'Student Organization Activities'
+    },
+    '2': {
+      category: 'Student Government',
+      purpose: 'Student Government Activities'
+    },
+    '3': {
+      category: 'Administration',
+      purpose: 'Administrative Services'
+    },
+    '4': {
+      category: 'Event Registration',
+      purpose: 'Event Registration Fee'
+    },
+    '5': {
+      category: 'Membership',
+      purpose: 'Membership Fee'
+    }
+  };
+
+  // Available organizations for dropdown
+  const availableOrganizations = [
+    'Computer Science Society',
+    'Student Council', 
+    'Engineering Society',
+    'NU Dasma Admin'
+  ];
+
+  // Available purposes for dropdown
+  const availablePurposes = [
+    'Event Registration',
+    'Membership Fee',
+    'Activity Fee',
+    'Administrative Services',
+    'Computer Science Society Activities',
+    'Student Council Activities',
+    'Engineering Society Activities',
+    'Other'
+  ];
+
+  /**
+   * Handles organization change and auto-fills related fields
+   */
+  const handleOrganizationChange = (organization: string) => {
+    const mapping = organizationMapping[organization] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      organization,
+      purpose: mapping.purpose || prev.purpose,
+      category: mapping.category || prev.category,
+      template: mapping.template || prev.template
+    }));
+  };
+
+  /**
+   * Handles category change and auto-fills related fields
+   */
+  const handleCategoryChange = (category: string) => {
+    const mapping = categoryMapping[category] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      category,
+      purpose: mapping.purpose || prev.purpose,
+      template: mapping.template || prev.template
+    }));
+  };
+
+  /**
+   * Handles purpose change and auto-fills related fields
+   */
+  const handlePurposeChange = (purpose: string) => {
+    const mapping = purposeMapping[purpose] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      purpose,
+      category: mapping.category || prev.category,
+      template: mapping.template || prev.template
+    }));
+  };
+
+  /**
+   * Handles template change and auto-fills related fields
+   */
+  const handleTemplateChange = (template: string) => {
+    const mapping = templateMapping[template] || {};
+    setReceiptData(prev => ({
+      ...prev,
+      template,
+      category: mapping.category || prev.category,
+      purpose: mapping.purpose || prev.purpose
+    }));
+  };
 
   /**
    * Handles receipt submission
@@ -113,9 +293,9 @@ const IssueReceiptScreen = ({ navigation }: any) => {
         payerEmail: '',
       });
 
-      Alert.alert('Success', 'Receipt generated successfully and email sent to payer!');
+      showSuccess('Receipt generated successfully and email sent to payer!', 'Success');
     } catch (error) {
-      Alert.alert('Error', 'Failed to generate receipt. Please try again.');
+      showError('Failed to generate receipt. Please try again.', 'Error');
     }
   };
 
@@ -126,12 +306,12 @@ const IssueReceiptScreen = ({ navigation }: any) => {
   const validateForm = () => {
     if (!receiptData.organization || !receiptData.category || !receiptData.amount || 
         !receiptData.purpose || !receiptData.payerName || !receiptData.payerEmail) {
-      Alert.alert('Validation Error', 'Please fill in all required fields');
+      showError('Please fill in all required fields', 'Validation Error');
       return false;
     }
 
     if (parseFloat(receiptData.amount) <= 0) {
-      Alert.alert('Validation Error', 'Please enter a valid amount');
+      showError('Please enter a valid amount', 'Validation Error');
       return false;
     }
 
@@ -192,20 +372,20 @@ const IssueReceiptScreen = ({ navigation }: any) => {
                     {receiptData.organization || 'Select organization'}
                   </Text>
                 </View>
-                {mockOrganizations.map((org: any) => (
+                {availableOrganizations.map((org: string) => (
                   <TouchableOpacity
-                    key={org.id}
+                    key={org}
                     style={[
                       styles.optionButton,
-                      receiptData.organization === org.name && styles.optionButtonActive
+                      receiptData.organization === org && styles.optionButtonActive
                     ]}
-                    onPress={() => handleInputChange('organization', org.name)}
+                    onPress={() => handleOrganizationChange(org)}
                   >
                     <Text style={[
                       styles.optionButtonText,
-                      receiptData.organization === org.name && styles.optionButtonTextActive
+                      receiptData.organization === org && styles.optionButtonTextActive
                     ]}>
-                      {org.name}
+                      {org}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -227,7 +407,7 @@ const IssueReceiptScreen = ({ navigation }: any) => {
                       styles.optionButton,
                       receiptData.category === category.name && styles.optionButtonActive
                     ]}
-                    onPress={() => handleInputChange('category', category.name)}
+                    onPress={() => handleCategoryChange(category.name)}
                   >
                     <Text style={[
                       styles.optionButtonText,
@@ -254,13 +434,28 @@ const IssueReceiptScreen = ({ navigation }: any) => {
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Purpose *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={receiptData.purpose}
-                  onChangeText={(value) => handleInputChange('purpose', value)}
-                  placeholder="e.g., Event Registration"
-                  placeholderTextColor="#9ca3af"
-                />
+                <View style={styles.pickerContainer}>
+                  <Text style={styles.pickerText}>
+                    {receiptData.purpose || 'Select purpose'}
+                  </Text>
+                </View>
+                {availablePurposes.map((purpose: string) => (
+                  <TouchableOpacity
+                    key={purpose}
+                    style={[
+                      styles.optionButton,
+                      receiptData.purpose === purpose && styles.optionButtonActive
+                    ]}
+                    onPress={() => handlePurposeChange(purpose)}
+                  >
+                    <Text style={[
+                      styles.optionButtonText,
+                      receiptData.purpose === purpose && styles.optionButtonTextActive
+                    ]}>
+                      {purpose}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
           </View>

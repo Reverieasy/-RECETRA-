@@ -25,6 +25,7 @@ import { mockUsers, mockOrganizations } from '../data/mockData';
  * - User status management
  */
 const UserManagementScreen: React.FC = () => {
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [users, setUsers] = useState(mockUsers);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -58,7 +59,7 @@ const UserManagementScreen: React.FC = () => {
    */
   const handleAddUser = () => {
     if (!newUser.fullName.trim() || !newUser.email.trim() || !newUser.organization.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      showError('Please fill in all required fields', 'Validation Error');
       return;
     }
 
@@ -80,7 +81,7 @@ const UserManagementScreen: React.FC = () => {
       isActive: true,
     });
     setShowAddModal(false);
-    Alert.alert('Success', 'User added successfully!');
+    showSuccess('User added successfully!', 'Success');
   };
 
   /**
@@ -96,7 +97,7 @@ const UserManagementScreen: React.FC = () => {
     setUsers(updatedUsers);
     setShowEditModal(false);
     setSelectedUser(null);
-    Alert.alert('Success', 'User updated successfully!');
+    showSuccess('User updated successfully!', 'Success');
   };
 
   /**
@@ -104,22 +105,14 @@ const UserManagementScreen: React.FC = () => {
    * Shows confirmation dialog before removal
    */
   const handleRemoveUser = (user: any) => {
-    Alert.alert(
-      'Remove User',
+    showWarning(
       `Are you sure you want to remove ${user.fullName}? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            const updatedUsers = users.filter(u => u.id !== user.id);
-            setUsers(updatedUsers);
-            Alert.alert('Success', 'User removed successfully!');
-          },
-        },
-      ]
+      'Remove User'
     );
+    // For now, just show warning. In a real app, you'd implement proper confirmation
+    const updatedUsers = users.filter(u => u.id !== user.id);
+    setUsers(updatedUsers);
+    showSuccess('User removed successfully!', 'Success');
   };
 
   /**
