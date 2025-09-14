@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Layout from '../components/Layout';
+import ReceiptTemplate from '../components/ReceiptTemplate';
 import { useAuth } from '../context/AuthContext';
 import { mockCategories, mockReceiptTemplates, addReceipt } from '../data/mockData';
 import { emailService } from '../services/emailService';
 import QRCode from 'qrcode.react';
+import * as htmlToImage from 'html-to-image';
 
 /**
  * Issue Receipt Screen Component
@@ -29,6 +31,7 @@ const IssueReceiptScreen = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedReceipt, setGeneratedReceipt] = useState(null);
+  const receiptRef = useRef(null);
 
   /**
    * Handles receipt submission
@@ -158,6 +161,45 @@ const IssueReceiptScreen = () => {
       template: '',
     });
     setGeneratedReceipt(null);
+  };
+
+  /**
+   * Handles receipt download as image
+   */
+  const handleDownloadReceipt = async () => {
+    if (!receiptRef.current) {
+      alert('No receipt to download');
+      return;
+    }
+
+    try {
+      console.log('Starting download...');
+      
+      const dataUrl = await htmlToImage.toPng(receiptRef.current, {
+        quality: 1.0,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        includeQueryParams: true,
+        skipFonts: false,
+        style: {
+          backgroundColor: '#ffffff',
+          margin: '0',
+          padding: '0'
+        }
+      });
+      
+      console.log('Image generated, creating download link...');
+      const link = document.createElement('a');
+      link.download = `receipt-${generatedReceipt.receiptNumber}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      console.log('Download completed');
+    } catch (error) {
+      console.error('Error downloading receipt:', error);
+      alert('Error downloading receipt: ' + error.message);
+    }
   };
 
   return (
@@ -315,41 +357,24 @@ const IssueReceiptScreen = () => {
           {/* Generated Receipt Display */}
           {generatedReceipt && (
             <div style={styles.receiptDisplay}>
-              <h3 style={styles.receiptTitle}>Generated Receipt</h3>
-              <div style={styles.receiptContent}>
-                <div style={styles.receiptInfo}>
-                  <p><strong>Receipt Number:</strong> {generatedReceipt.receiptNumber}</p>
-                  <p><strong>Payer:</strong> {generatedReceipt.payer}</p>
-                  <p><strong>Amount:</strong> ₱{generatedReceipt.amount.toLocaleString()}</p>
-                  <p><strong>Purpose:</strong> {generatedReceipt.purpose}</p>
-                  <p><strong>Email Status:</strong> 
-                    <span style={{
-                      ...styles.statusBadge,
-                      backgroundColor: generatedReceipt.emailStatus === 'sent' ? '#10b981' : 
-                        generatedReceipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444'
-                    }}>
-                      {generatedReceipt.emailStatus}
-                    </span>
-                  </p>
-                </div>
-                <div style={styles.qrCodeSection}>
-                  <h4 style={styles.qrCodeTitle}>Receipt QR Code</h4>
-                  <p style={styles.qrCodeDescription}>
-                    This QR code contains the receipt information and can be scanned for verification
-                  </p>
-                  <div style={styles.qrCodeContainer}>
-                                                               <QRCode 
-                        value={generatedReceipt.qrCode}
-                        size={40}
-                        level="M"
-                        includeMargin={true}
-                        style={styles.qrCode}
-                      />
-                    <p style={styles.qrCodeNote}>
-                      Scan this QR code to verify receipt authenticity
-                    </p>
-                  </div>
-                </div>
+              <div style={styles.receiptHeader}>
+                <h3 style={styles.receiptTitle}>Generated Receipt</h3>
+                <button
+                  style={styles.downloadButton}
+                  onClick={handleDownloadReceipt}
+                >
+                  📥 Download Receipt
+                </button>
+              </div>
+              <div ref={receiptRef} style={{ 
+                backgroundColor: 'white', 
+                padding: '0', 
+                margin: '0'
+              }}>
+                <ReceiptTemplate 
+                  receipt={generatedReceipt} 
+                  organization={user?.organization} 
+                />
               </div>
             </div>
           )}
@@ -543,14 +568,34 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   
+  receiptHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+    borderBottom: '2px solid #e5e7eb',
+    paddingBottom: '12px',
+  },
+  
   receiptTitle: {
     fontSize: '20px',
     fontWeight: 'bold',
     color: '#374151',
-    marginBottom: '16px',
-    margin: '0 0 16px 0',
-    borderBottom: '2px solid #e5e7eb',
-    paddingBottom: '8px',
+    margin: '0',
+  },
+  
+  downloadButton: {
+    backgroundColor: '#10b981',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   },
   
   receiptContent: {
