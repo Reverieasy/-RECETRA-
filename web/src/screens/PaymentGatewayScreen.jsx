@@ -144,12 +144,29 @@ const PaymentGatewayScreen = () => {
   const validatePaymentForm = () => {
     if (!paymentData.organization || !paymentData.category || !paymentData.amount || 
         !paymentData.purpose || !paymentData.payerName || !paymentData.payerEmail) {
-      alert('Please fill in all required fields');
+      setPaymentResult({
+        success: false,
+        message: 'Please fill in all required fields',
+        error: 'validation'
+      });
       return false;
     }
 
     if (parseFloat(paymentData.amount) <= 0) {
-      alert('Please enter a valid amount');
+      setPaymentResult({
+        success: false,
+        message: 'Please enter a valid amount',
+        error: 'validation'
+      });
+      return false;
+    }
+
+    if (!paymentData.payerEmail.includes('@')) {
+      setPaymentResult({
+        success: false,
+        message: 'Please enter a valid email address',
+        error: 'validation'
+      });
       return false;
     }
 
@@ -171,43 +188,74 @@ const PaymentGatewayScreen = () => {
    */
   const PaymentResult = () => (
     <div style={styles.resultContainer}>
-      <div style={styles.resultHeader}>
-        <h3 style={styles.resultTitle}>Payment Successful!</h3>
-        <div style={{...styles.statusBadge, backgroundColor: '#10b981'}}>
-          <span style={styles.statusText}>Completed</span>
-        </div>
-      </div>
-      
-      <div style={styles.resultContent}>
-        <p style={styles.successMessage}>{paymentResult.message}</p>
-        
-        {/* Receipt Template - Same as Encoder */}
-        <div style={styles.receiptSection}>
-          <h4 style={styles.receiptSectionTitle}>Digital Receipt</h4>
-          <ReceiptTemplate 
-            receipt={paymentResult.receipt} 
-            organization={paymentResult.receipt.organization}
-          />
-        </div>
-
-        {/* Email Status */}
-        <div style={styles.emailStatusSection}>
-          <h4 style={styles.emailStatusTitle}>Email Delivery Status</h4>
-          <div style={styles.emailStatusRow}>
-            <span style={styles.emailStatusLabel}>Status:</span>
-            <span style={{
-              ...styles.statusBadge,
-              backgroundColor: paymentResult.receipt.emailStatus === 'sent' ? '#10b981' : 
-                paymentResult.receipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444'
-            }}>
-              {paymentResult.receipt.emailStatus}
-            </span>
+      {paymentResult.success ? (
+        <>
+          <div style={styles.resultHeader}>
+            <h3 style={styles.resultTitle}>Payment Successful!</h3>
+            <div style={{...styles.statusBadge, backgroundColor: '#10b981'}}>
+              <span style={styles.statusText}>Completed</span>
+            </div>
           </div>
-          <p style={styles.emailStatusNote}>
-            Receipt has been sent to: {paymentResult.receipt.payerEmail}
-          </p>
-        </div>
-      </div>
+          
+          <div style={styles.resultContent}>
+            <p style={styles.successMessage}>{paymentResult.message}</p>
+            
+            {/* Receipt Template - Same as Encoder */}
+            {paymentResult.receipt && (
+              <div style={styles.receiptSection}>
+                <h4 style={styles.receiptSectionTitle}>Digital Receipt</h4>
+                <ReceiptTemplate 
+                  receipt={paymentResult.receipt} 
+                  organization={paymentResult.receipt.organization}
+                />
+              </div>
+            )}
+
+            {/* Email Status */}
+            {paymentResult.receipt && (
+              <div style={styles.emailStatusSection}>
+                <h4 style={styles.emailStatusTitle}>Email Delivery Status</h4>
+                <div style={styles.emailStatusRow}>
+                  <span style={styles.emailStatusLabel}>Status:</span>
+                  <span style={{
+                    ...styles.statusBadge,
+                    backgroundColor: paymentResult.receipt.emailStatus === 'sent' ? '#10b981' : 
+                      paymentResult.receipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444'
+                  }}>
+                    {paymentResult.receipt.emailStatus}
+                  </span>
+                </div>
+                <p style={styles.emailStatusNote}>
+                  Receipt has been sent to: {paymentResult.receipt.payerEmail}
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={styles.resultHeader}>
+            <h3 style={{...styles.resultTitle, color: '#ef4444'}}>Validation Error</h3>
+            <div style={{...styles.statusBadge, backgroundColor: '#ef4444'}}>
+              <span style={styles.statusText}>Error</span>
+            </div>
+          </div>
+          
+          <div style={styles.resultContent}>
+            <p style={{...styles.successMessage, color: '#ef4444'}}>{paymentResult.message}</p>
+            
+            <div style={styles.errorSection}>
+              <h4 style={styles.errorTitle}>Please check the following:</h4>
+              <ul style={styles.errorList}>
+                <li style={styles.errorText}>Ensure all required fields are filled</li>
+                <li style={styles.errorText}>Verify email format is correct</li>
+                <li style={styles.errorText}>Check that amount is a valid number</li>
+                <li style={styles.errorText}>Try again after fixing the issues</li>
+              </ul>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -603,6 +651,29 @@ const styles = {
     fontSize: 14,
     color: '#6b7280',
     margin: 0,
+  },
+  errorSection: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 16,
+    border: '1px solid #fecaca',
+  },
+  errorTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#dc2626',
+    marginBottom: 12,
+    margin: 0,
+  },
+  errorList: {
+    margin: 0,
+    paddingLeft: 20,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#dc2626',
+    marginBottom: 4,
   },
 
 };

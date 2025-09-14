@@ -26,6 +26,7 @@ import { mockReceipts, getReceiptsByOrganization } from '../data/mockData';
 const ViewerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation();
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const organizationReceipts = user ? getReceiptsByOrganization(user.organization) : [];
 
   /**
@@ -110,7 +111,8 @@ const ViewerDashboard: React.FC = () => {
                 key={receipt.id} 
                 style={styles.listItem}
                 onPress={() => {
-                  alert(`Receipt: ${receipt.receiptNumber}\nPayer: ${receipt.payer}\nAmount: ₱${receipt.amount}\nPurpose: ${receipt.purpose}\nIssued by: ${receipt.issuedBy}`);
+                  // Show receipt details in UI instead of alert
+                  setSelectedReceipt(receipt);
                 }}
               >
                 <View style={styles.listItemContent}>
@@ -168,6 +170,52 @@ const ViewerDashboard: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Receipt Details Modal */}
+      {selectedReceipt && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Receipt Details</Text>
+              <TouchableOpacity 
+                onPress={() => setSelectedReceipt(null)}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeButtonText}>×</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Receipt Number:</Text>
+                <Text style={styles.detailValue}>{selectedReceipt.receiptNumber}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Payer:</Text>
+                <Text style={styles.detailValue}>{selectedReceipt.payer}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Amount:</Text>
+                <Text style={styles.detailValue}>₱{selectedReceipt.amount.toLocaleString()}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Purpose:</Text>
+                <Text style={styles.detailValue}>{selectedReceipt.purpose}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Issued by:</Text>
+                <Text style={styles.detailValue}>{selectedReceipt.issuedBy}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Date:</Text>
+                <Text style={styles.detailValue}>
+                  {new Date(selectedReceipt.issuedAt).toLocaleDateString()}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </Layout>
   );
 };
@@ -368,6 +416,86 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     lineHeight: 18,
+  },
+  
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    margin: 20,
+    maxWidth: '90%',
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e3a8a',
+  },
+  closeButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#ef4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalBody: {
+    maxHeight: 400,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#1f2937',
+    flex: 2,
+    textAlign: 'right',
   },
 });
 
