@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockOrganizations, mockCategories, addReceipt } from '../data/mockData';
 import { emailService } from '../services/emailService';
-import QRCode from 'react-native-qrcode-svg';
+import ReceiptTemplate from '../components/ReceiptTemplate';
 
 /**
  * Issue Receipt Screen Component
@@ -290,6 +290,7 @@ const IssueReceiptScreen = ({ navigation }: any) => {
         purpose: '',
         payerName: '',
         payerEmail: '',
+        template: '',
       });
 
       showSuccess('Receipt generated successfully and email sent to payer!', 'Success');
@@ -337,6 +338,7 @@ const IssueReceiptScreen = ({ navigation }: any) => {
       purpose: '',
       payerName: '',
       payerEmail: '',
+      template: '',
     });
     setGeneratedReceipt(null);
   };
@@ -543,64 +545,31 @@ const IssueReceiptScreen = ({ navigation }: any) => {
               </View>
             </View>
             
-            <View style={styles.resultContent}>
-              <View style={styles.receiptSummary}>
-                <Text style={styles.receiptSummaryTitle}>Receipt Summary</Text>
-                <View style={styles.receiptSummaryDetails}>
-                  <Text style={styles.receiptDetail}>
-                    <Text style={styles.receiptDetailLabel}>Receipt Number: </Text>
-                    {generatedReceipt.receiptNumber}
-                  </Text>
-                  <Text style={styles.receiptDetail}>
-                    <Text style={styles.receiptDetailLabel}>Amount: </Text>
-                    ₱{generatedReceipt.amount.toLocaleString()}
-                  </Text>
-                  <Text style={styles.receiptDetail}>
-                    <Text style={styles.receiptDetailLabel}>Purpose: </Text>
-                    {generatedReceipt.purpose}
-                  </Text>
-                  <Text style={styles.receiptDetail}>
-                    <Text style={styles.receiptDetailLabel}>Organization: </Text>
-                    {generatedReceipt.organization}
-                  </Text>
-                  <Text style={styles.receiptDetail}>
-                    <Text style={styles.receiptDetailLabel}>Email Status: </Text>
-                    <Text style={[
-                      styles.statusBadge,
-                      { 
-                        backgroundColor: generatedReceipt.emailStatus === 'sent' ? '#10b981' : 
-                          generatedReceipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444',
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 4,
-                        fontSize: 12,
-                        color: 'white',
-                        fontWeight: '600'
-                      }
-                    ]}>
-                      {generatedReceipt.emailStatus}
-                    </Text>
-                  </Text>
-                </View>
-              </View>
+            {/* Display the receipt using the same template as verification */}
+            <View style={styles.receiptDisplay}>
+              <ReceiptTemplate 
+                receipt={generatedReceipt} 
+                organization={generatedReceipt.organization}
+                paymentMethod="Cash"
+              />
+            </View>
 
-              {/* QR Code Display */}
-              <View style={styles.qrCodeSection}>
-                <Text style={styles.qrCodeTitle}>Receipt QR Code</Text>
-                <Text style={styles.qrCodeDescription}>
-                  This QR code contains the receipt information and can be scanned for verification
+            {/* Email Status */}
+            <View style={styles.emailStatusContainer}>
+              <Text style={styles.emailStatusLabel}>Email Status: </Text>
+              <View style={[
+                styles.statusBadge,
+                { 
+                  backgroundColor: generatedReceipt.emailStatus === 'sent' ? '#10b981' : 
+                    generatedReceipt.emailStatus === 'pending' ? '#f59e0b' : '#ef4444',
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 4,
+                }
+              ]}>
+                <Text style={styles.statusText}>
+                  {generatedReceipt.emailStatus}
                 </Text>
-                <View style={styles.qrCodeContainer}>
-                  <QRCode 
-                    value={generatedReceipt.qrCode}
-                    size={120}
-                    color="black"
-                    backgroundColor="white"
-                  />
-                  <Text style={styles.qrCodeNote}>
-                    Scan this QR code to verify receipt authenticity
-                  </Text>
-                </View>
               </View>
             </View>
           </View>
@@ -870,6 +839,25 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginTop: 12,
     textAlign: 'center',
+  },
+  receiptDisplay: {
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  emailStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+  },
+  emailStatusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginRight: 8,
   },
 
 });

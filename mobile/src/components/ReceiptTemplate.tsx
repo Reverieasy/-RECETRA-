@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+
+// Get screen dimensions for responsive design
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 /**
  * RECETRA Receipt Template Component
@@ -84,116 +87,107 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
   const amountInWords = convertAmountToWords(receipt.amount) + ' Pesos';
 
   return (
-    <View style={styles.receiptContainer}>
-      <View style={styles.receipt}>
-        {/* Header with RECETRA Logo Only */}
-        <View style={styles.header}>
-          <View style={styles.logoSection}>
+    <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <View style={styles.receiptContainer}>
+        <View style={styles.receipt}>
+          {/* Header with RECETRA Logo Only */}
+          <View style={styles.header}>
+            <View style={styles.logoSection}>
             <Image 
               source={require('../../assets/Logo_with_Color.png')}
               style={styles.logo}
               onError={() => {}}
+              fadeDuration={0}
+              resizeMode="contain"
             />
-          </View>
-        </View>
-
-        {/* Receipt Title */}
-        <View style={styles.titleSection}>
-          <Text style={styles.receiptTitle}>ACKNOWLEDGMENT RECEIPT</Text>
-        </View>
-
-        {/* Receipt Header */}
-        <View style={styles.receiptHeader}>
-          <View style={styles.receiptNumber}>
-            <Text style={styles.noLabel}>NO:</Text>
-            <Text style={styles.receiptNumberValue}>{receipt.receiptNumber}</Text>
-          </View>
-          <View style={styles.receiptDate}>
-            <Text style={styles.dateLabel}>Date:</Text>
-            <Text style={styles.dateValue}>{formatDate(receipt.issuedAt)}</Text>
-          </View>
-        </View>
-
-        {/* Main Acknowledgment Text */}
-        <View style={styles.acknowledgmentText}>
-          <Text style={styles.acknowledgmentParagraph}>
-            This is to acknowledge that{' '}
-            <Text style={styles.underlinedSpace}>{orgDetails.fullName}</Text>{' '}
-            received from{' '}
-            <Text style={styles.underlinedName}>{receipt.payer}</Text>{' '}
-            the amount of{' '}
-            <Text style={styles.underlinedSpace}>{amountInWords}</Text>{' '}
-            <Text style={styles.underlinedSpace}>(P {receipt.amount.toLocaleString()})</Text>{' '}
-            as payment for{' '}
-            <Text style={styles.underlinedSpace}>{receipt.purpose}</Text>.
-          </Text>
-        </View>
-
-        {/* Payment Details */}
-        <View style={styles.paymentDetailsSection}>
-          <Text style={styles.paymentDetailsLabel}>Payment Details: </Text>
-          <Text style={styles.checkbox}>{paymentMethod === 'Cash' ? '☑' : '☐'}</Text> Cash
-          <Text style={styles.checkbox}>{paymentMethod === 'Online' ? '☑' : '☐'}</Text> Online
-        </View>
-
-
-      </View>
-
-      {/* Separate Details Card */}
-      <View style={styles.detailsCard}>
-        <Text style={styles.detailsHeading}>Details</Text>
-        <View style={styles.detailsSection}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Organization</Text>
-            <Text style={styles.detailValue}>{orgDetails.fullName}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Received From</Text>
-            <Text style={styles.detailValue}>{receipt.payer}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount (in words)</Text>
-            <Text style={styles.detailValue}>{amountInWords}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount (in figures)</Text>
-            <Text style={styles.detailValue}>P {receipt.amount.toLocaleString()}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Purpose</Text>
-            <Text style={styles.detailValue}>{receipt.purpose}</Text>
-          </View>
-        </View>
-
-        {/* QR Code Section */}
-        {receipt.qrCode && (
-          <View style={styles.qrCodeSection}>
-            <View style={styles.qrCodeContainer}>
-              <QRCode 
-                value={receipt.qrCode} 
-                size={120}
-              />
             </View>
-            <Text style={styles.qrCodeNote}>
-              Scan this QR code to verify receipt authenticity
+          </View>
+
+          {/* Receipt Title */}
+          <View style={styles.titleSection}>
+            <Text style={styles.receiptTitle}>ACKNOWLEDGMENT RECEIPT</Text>
+          </View>
+
+          {/* Receipt Header */}
+          <View style={styles.receiptHeader}>
+            <View style={styles.receiptNumber}>
+              <Text style={styles.noLabel}>NO:</Text>
+              <Text style={styles.receiptNumberValue}>{receipt.receiptNumber}</Text>
+            </View>
+            <View style={styles.receiptDate}>
+              <Text style={styles.dateLabel}>Date:</Text>
+              <Text style={styles.dateValue}>{formatDate(receipt.issuedAt)}</Text>
+            </View>
+          </View>
+
+          {/* Main Acknowledgment Text */}
+          <View style={styles.acknowledgmentText}>
+            <Text style={styles.acknowledgmentParagraph}>
+              This is to acknowledge that{' '}
+              <Text style={styles.underlinedSpace}>{orgDetails.fullName}</Text>{' '}
+              received from{' '}
+              <Text style={styles.underlinedName}>{receipt.payer}</Text>{' '}
+              the amount of{' '}
+              <Text style={styles.underlinedSpace}>{amountInWords}</Text>{' '}
+              <Text style={styles.underlinedSpace}>(P {receipt.amount.toLocaleString()})</Text>{' '}
+              as payment for{' '}
+              <Text style={styles.underlinedSpace}>{receipt.purpose}</Text>.
             </Text>
           </View>
-        )}
+
+          {/* Payment Details */}
+          <View style={styles.paymentDetailsSection}>
+            <Text style={styles.paymentDetailsLabel}>Payment Details: </Text>
+            <View style={styles.paymentOptions}>
+              <Text style={styles.checkbox}>{paymentMethod === 'Cash' ? '☑' : '☐'}</Text>
+              <Text style={styles.paymentOption}> Cash</Text>
+              <Text style={styles.checkbox}>{paymentMethod === 'Online' ? '☑' : '☐'}</Text>
+              <Text style={styles.paymentOption}> Online</Text>
+            </View>
+          </View>
+
+          {/* Received By Section */}
+          <View style={styles.receivedBySection}>
+            <View style={styles.receivedByRow}>
+              <Text style={styles.receivedByLabel}>Received By:</Text>
+              <Text style={styles.receivedByValue}>{receipt.issuedBy || 'System'}</Text>
+            </View>
+          </View>
+
+          {/* QR Code Section */}
+          {receipt.qrCode && (
+            <View style={styles.qrCodeSection}>
+              <View style={styles.qrCodeContainer}>
+                <QRCode 
+                  value={receipt.qrCode} 
+                  size={Math.min(screenWidth * 0.1, 50)}
+                />
+              </View>
+              <Text style={styles.qrCodeNote}>
+                Scan this QR code to verify receipt authenticity
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
   receiptContainer: {
     justifyContent: 'center',
-    padding: 20,
+    padding: screenWidth * 0.01, // Minimal padding to maximize space
     backgroundColor: '#f5f5f5',
   },
   receipt: {
     backgroundColor: 'white',
-    paddingVertical: 50,
-    paddingHorizontal: 50,
+    paddingVertical: screenHeight * 0.01, // 1% of screen height
+    paddingHorizontal: screenWidth * 0.02, // 2% of screen width
     borderRadius: 0,
     margin: 0,
     shadowColor: '#000',
@@ -204,6 +198,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    height: screenHeight * 0.45, // Slightly smaller height
+    width: screenWidth * 0.98, // 98% of screen width for more space
+    alignSelf: 'center',
   },
   header: {
     alignItems: 'center',
@@ -215,13 +212,14 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   logo: {
-    height: 220,
-    width: 220,
+    height: Math.min(screenWidth * 0.15, 80), // Much smaller logo for landscape rectangle
+    width: Math.min(screenWidth * 0.15, 80),
     marginBottom: 0,
+    resizeMode: 'contain',
   },
   logoPlaceholder: {
-    height: 220,
-    width: 220,
+    height: Math.min(screenWidth * 0.4, 200),
+    width: Math.min(screenWidth * 0.4, 200),
     backgroundColor: '#4CAF50',
     borderRadius: 8,
     alignItems: 'center',
@@ -230,17 +228,17 @@ const styles = StyleSheet.create({
   },
   logoText: {
     color: 'white',
-    fontSize: 28,
+    fontSize: Math.min(screenWidth * 0.08, 28),
     fontWeight: 'bold',
     letterSpacing: 3,
   },
   titleSection: {
     alignItems: 'center',
-    marginTop: 0,
-    marginBottom: 30,
+    marginTop: screenHeight * 0.005, // Minimal margin
+    marginBottom: screenHeight * 0.01, // Minimal margin
   },
   receiptTitle: {
-    fontSize: 22,
+    fontSize: Math.min(screenWidth * 0.04, 16), // Smaller font for landscape
     fontWeight: 'bold',
     color: '#000',
     letterSpacing: 1,
@@ -250,125 +248,82 @@ const styles = StyleSheet.create({
   receiptHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 40,
+    marginBottom: screenHeight * 0.005, // Minimal margin for landscape
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
   },
   receiptNumber: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4, // Reduced gap
+    flex: 1,
+    minWidth: screenWidth * 0.35, // Reduced minimum width
   },
   receiptDate: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4, // Reduced gap
+    flex: 1,
+    minWidth: screenWidth * 0.35, // Reduced minimum width
   },
   noLabel: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
     color: '#d32f2f',
     fontWeight: 'bold',
   },
   receiptNumberValue: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
     color: '#000',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
+    flex: 1,
   },
   dateLabel: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
     color: '#000',
     fontWeight: 'bold',
   },
   dateValue: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
     color: '#000',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
+    flex: 1,
   },
   acknowledgmentText: {
-    marginBottom: 40,
+    marginBottom: screenHeight * 0.01, // Minimal margin for landscape
   },
   acknowledgmentParagraph: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.03, 12), // Much smaller font for landscape
     color: '#000',
-    lineHeight: 20,
+    lineHeight: Math.min(screenWidth * 0.035, 14), // Tighter line height
     textAlign: 'left',
   },
-  detailsCard: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 6,
-    padding: 16,
-    marginTop: 12,
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  detailsHeading: {
-    marginBottom: 12,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111',
-  },
-  detailsSection: {
-    marginBottom: 20,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  detailLabel: {
-    width: 160,
-    fontSize: 15,
-    color: '#111',
-    fontWeight: 'bold',
-  },
-  detailValue: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-  },
-  highlightedText: {
-    fontSize: 16,
-    color: '#000',
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
   underlinedSpace: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.03, 12), // Much smaller font for landscape
     color: '#000',
     fontWeight: 'bold',
     borderBottomWidth: 1,
     borderBottomColor: '#000',
-    paddingBottom: 2,
-    minWidth: 80,
+    paddingBottom: 1,
+    minWidth: Math.min(screenWidth * 0.1, 40), // Much smaller min width
     textAlign: 'center',
   },
   underlinedName: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.03, 12), // Much smaller font for landscape
     color: '#000',
     fontWeight: 'bold',
     borderBottomWidth: 1,
     borderBottomColor: '#000',
-    paddingBottom: 2,
-    minWidth: 120,
+    paddingBottom: 1,
+    minWidth: Math.min(screenWidth * 0.15, 60), // Much smaller min width
     textAlign: 'center',
   },
-  amountFigures: {
-    fontSize: 20,
-    color: '#000',
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
   paymentDetailsSection: {
-    marginBottom: 40,
+    marginBottom: screenHeight * 0.01, // Minimal margin for landscape
   },
   paymentDetailsLabel: {
-    fontSize: 15,
+    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
     color: '#000',
     fontWeight: 'bold',
     marginBottom: 0,
@@ -376,46 +331,67 @@ const styles = StyleSheet.create({
     margin: 0,
     lineHeight: 1,
   },
-  paymentOptions: {
-    flexDirection: 'row',
-    gap: 20,
-    alignItems: 'center',
-    marginTop: 0,
-    marginBottom: 0,
-    margin: 0,
-  },
-  paymentOption: {
-    fontSize: 15,
-    color: '#000',
-    marginLeft: 20,
-  },
   checkbox: {
-    fontSize: 16,
+    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
     color: '#000',
     fontWeight: 'bold',
-    marginLeft: 20,
+    marginLeft: 10, // Reduced margin
+  },
+  paymentOptions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  paymentOption: {
+    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    color: '#000',
+    marginLeft: 5,
+  },
+  receivedBySection: {
+    marginTop: screenHeight * 0.01, // Minimal margin for landscape
+    marginBottom: screenHeight * 0.005, // Minimal margin
+  },
+  receivedByRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: screenHeight * 0.005, // Minimal margin
+  },
+  receivedByLabel: {
+    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  receivedByValue: {
+    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    color: '#000',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+    flex: 1,
+    textAlign: 'right',
   },
 
   // QR Code Section Styles
   qrCodeSection: {
     alignItems: 'center',
-    marginTop: 30,
-    padding: 20,
-    borderWidth: 2,
+    marginTop: screenHeight * 0.005, // Minimal margin for landscape
+    padding: screenWidth * 0.02, // Minimal padding
+    borderWidth: 1, // Thinner border
     borderStyle: 'dashed',
     borderColor: '#ccc',
-    borderRadius: 8,
+    borderRadius: 4, // Smaller border radius
     backgroundColor: '#f9f9f9',
   },
   qrCodeContainer: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 4, // Minimal margin
   },
   qrCodeNote: {
-    fontSize: 12,
+    fontSize: Math.min(screenWidth * 0.02, 8), // Much smaller font
     color: '#666',
     fontStyle: 'italic',
     textAlign: 'center',
+    paddingHorizontal: 2, // Minimal padding
   },
 });
 

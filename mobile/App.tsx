@@ -16,8 +16,9 @@ import UserManagementScreen from './src/screens/UserManagementScreen';
 import TemplateManagementScreen from './src/screens/TemplateManagementScreen';
 import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
 import TransactionArchiveScreen from './src/screens/TransactionArchiveScreen';
-import { View, Image, StyleSheet, Animated } from 'react-native';
+import { View, Image, StyleSheet, Animated, ImageBackground } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import * as Font from 'expo-font';
 
 const Stack = createStackNavigator();
 
@@ -55,17 +56,42 @@ type SignupScreenProps = {
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [showLoading, setShowLoading] = useState(true);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.7)).current;
 
   useEffect(() => {
+    // Preload assets
+    const preloadAssets = async () => {
+      try {
+        // Preload fonts
+        await Font.loadAsync({
+          // Add any custom fonts here if needed
+        });
+        
+        // Preload critical images
+        const imagePromises = [
+          Image.prefetch(require('./assets/Logo_with_Color.png')),
+          Image.prefetch(require('./assets/LogoIcon.png')),
+        ];
+        
+        await Promise.all(imagePromises);
+        setAssetsLoaded(true);
+      } catch (error) {
+        console.warn('Asset preloading failed:', error);
+        setAssetsLoaded(true); // Continue anyway
+      }
+    };
+
+    preloadAssets();
+
     // Start animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1200,
+        duration: 800, // Reduced duration
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
@@ -75,10 +101,10 @@ const AppContent: React.FC = () => {
       }),
     ]).start();
 
-    // Add a delay of 2 seconds (2000 ms)
+    // Reduced delay to 1 second
     const timer = setTimeout(() => {
       setShowLoading(false);
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -180,8 +206,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', // or your preferred color
   },
   loadingImage: {
-    width: 250,
-    height: 250,
+    width: 150,
+    height: 150,
   },
 });
 

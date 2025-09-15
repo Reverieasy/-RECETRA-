@@ -10,6 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import Layout from '../components/Layout';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import { mockUsers, mockOrganizations } from '../data/mockData';
 
 /**

@@ -155,7 +155,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, showBackButton = false
             {/* Sidebar Header */}
               <Image
                 source={require('../../assets/Logo_with_Color.png')}
-                style={{ width: 300, height: 200, marginTop: 0, marginBottom: -110, alignSelf: 'center', }}
+                style={{ width: 200, height: 120, marginTop: 0, marginBottom: -60, alignSelf: 'center', }}
                 resizeMode="contain"
               />
             

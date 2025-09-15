@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   Modal,
   Platform,
   StatusBar,
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
 import Layout from '../components/Layout';
+import { useInlineNotification } from '../components/InlineNotificationSystem';
 import ReceiptTemplate from '../components/ReceiptTemplate';
 import { mockReceipts } from '../data/mockData';
 import QRCode from 'react-native-qrcode-svg';
@@ -40,6 +40,7 @@ const ReceiptVerificationScreen: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const { showSuccess, showError, showWarning } = useInlineNotification();
 
   /**
    * Handles manual receipt verification
@@ -47,7 +48,7 @@ const ReceiptVerificationScreen: React.FC = () => {
    */
   const handleManualVerification = () => {
     if (!receiptNumber.trim()) {
-      Alert.alert('Error', 'Please enter a receipt number');
+      showError('Please enter a receipt number', 'Error');
       return;
     }
 
@@ -71,15 +72,11 @@ const ReceiptVerificationScreen: React.FC = () => {
       if (status === 'granted') {
         setShowScanner(true);
       } else {
-        Alert.alert(
-          'Camera Permission',
-          'Camera access is required to scan QR codes. Please enable it in Settings.',
-          [{ text: 'OK' }]
-        );
+        showWarning('Camera access is required to scan QR codes. Please enable it in Settings.', 'Camera Permission');
       }
     } catch (error) {
       console.log('Permission request failed:', error);
-      Alert.alert('Error', 'Failed to request camera permission');
+      showError('Failed to request camera permission', 'Error');
     }
   };
 
@@ -93,18 +90,12 @@ const ReceiptVerificationScreen: React.FC = () => {
     setIsScanning(true);
     setShowScanner(false);
     setReceiptNumber(data);
-    
-    Alert.alert(
-      'QR Code Scanned!',
-      `Receipt number: ${data}`,
-      [
-        { text: 'Cancel', style: 'cancel', onPress: () => setIsScanning(false) },
-        { text: 'Verify', onPress: () => {
-          setIsScanning(false);
-          handleManualVerification();
-        }}
-      ]
-    );
+    showSuccess(`QR Code scanned: ${data}`, 'QR Code Scanned');
+    // Auto-verify after scanning
+    setTimeout(() => {
+      setIsScanning(false);
+      handleManualVerification();
+    }, 1000);
   };
 
   /**

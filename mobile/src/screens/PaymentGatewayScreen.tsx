@@ -200,11 +200,11 @@ const PaymentGatewayScreen = ({ navigation }: any) => {
               <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
                 {mockOrganizations.map(org => (
                   <TouchableOpacity
-                    key={org}
+                    key={org.id}
                     style={styles.option}
-                    onPress={() => setPaymentData(prev => ({ ...prev, organization: org }))}
+                    onPress={() => setPaymentData(prev => ({ ...prev, organization: org.name }))}
                   >
-                    <Text style={styles.optionText}>{org}</Text>
+                    <Text style={styles.optionText}>{org.name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -221,11 +221,11 @@ const PaymentGatewayScreen = ({ navigation }: any) => {
               <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
                 {mockCategories.map(category => (
                   <TouchableOpacity
-                    key={category}
+                    key={category.id}
                     style={styles.option}
-                    onPress={() => setPaymentData(prev => ({ ...prev, category }))}
+                    onPress={() => setPaymentData(prev => ({ ...prev, category: category.name }))}
                   >
-                    <Text style={styles.optionText}>{category}</Text>
+                    <Text style={styles.optionText}>{category.name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>

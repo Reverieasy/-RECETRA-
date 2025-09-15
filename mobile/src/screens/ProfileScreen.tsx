@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  Alert,
   Image,
 } from 'react-native';
 import Layout from '../components/Layout';
@@ -28,6 +27,7 @@ import Modal from 'react-native-modal';
  */
 const ProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
+  const { showSuccess, showError, showWarning } = useInlineNotification();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     fullName: user?.fullName || '',
@@ -56,11 +56,11 @@ const ProfileScreen: React.FC = () => {
   const handleSubmitPassword = () => {
     // Dummy validation example. Replace this with your API call.
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('Please fill all fields.');
+      showError('Please fill all fields.', 'Validation Error');
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert('Passwords do not match.');
+      showError('Passwords do not match.', 'Validation Error');
       return;
     }
     // TODO: Call your API endpoint here. Example:
@@ -69,7 +69,7 @@ const ProfileScreen: React.FC = () => {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    Alert.alert('Password changed successfully!');
+    showSuccess('Password changed successfully!', 'Success');
   };
 
   /**
@@ -80,7 +80,7 @@ const ProfileScreen: React.FC = () => {
       // Save changes logic here (e.g., call API to save profileData)
       // TODO: Call your API to save profile info
       setIsEditing(false);
-      Alert.alert('Profile updated!');
+      showSuccess('Profile updated!', 'Success');
     } else {
       setIsEditing(true);
     }
@@ -96,7 +96,7 @@ const ProfileScreen: React.FC = () => {
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission denied", "We need permission to access your photos.");
+      showWarning("We need permission to access your photos.", "Permission denied");
       return;
     }
 
@@ -111,7 +111,7 @@ const ProfileScreen: React.FC = () => {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setProfilePhotoUri(result.assets[0].uri);
       setPhotoModalVisible(false);
-      Alert.alert("Profile photo updated!");
+      showSuccess("Profile photo updated!", "Success");
     }
   };
 

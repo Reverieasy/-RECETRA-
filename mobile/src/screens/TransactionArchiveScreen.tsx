@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -82,20 +81,7 @@ const TransactionArchiveScreen: React.FC = () => {
    */
   const handleViewTransaction = (transaction: any) => {
     setSelectedTransaction(transaction);
-    Alert.alert(
-      'Transaction Details',
-      `Receipt: ${transaction.receiptNumber}\n` +
-      `Payer: ${transaction.payer}\n` +
-      `Amount: ₱${transaction.amount.toLocaleString()}\n` +
-      `Purpose: ${transaction.purpose}\n` +
-      `Category: ${transaction.category}\n` +
-      `Payment Method: ${transaction.paymentMethod}\n` +
-      `Status: ${transaction.paymentStatus}\n` +
-      `Issued By: ${transaction.issuedBy}\n` +
-      `Date: ${new Date(transaction.issuedAt).toLocaleDateString()}\n` +
-      `Email Status: ${transaction.emailStatus}`,
-      [{ text: 'OK' }]
-    );
+    showSuccess(`Viewing transaction: ${transaction.receiptNumber}`, 'Transaction Details');
   };
 
   /**
@@ -103,41 +89,17 @@ const TransactionArchiveScreen: React.FC = () => {
    * @param transaction - Transaction to resend notifications for
    */
   const handleResendNotifications = (transaction: any) => {
-    Alert.alert(
-      'Resend Notifications',
-      `Resend email notification for receipt ${transaction.receiptNumber}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Resend',
-          onPress: () => {
-            // Simulate resending notifications
-            setTimeout(() => {
-              showSuccess('Notifications have been resent successfully!', 'Success');
-            }, 1000);
-          },
-        },
-      ]
-    );
+    // Simulate resending notifications
+    setTimeout(() => {
+      showSuccess(`Notifications resent for ${transaction.receiptNumber}`, 'Resend Notifications');
+    }, 1000);
   };
 
   /**
    * Handles exporting transaction data
    */
   const handleExportData = () => {
-    Alert.alert(
-      'Export Data',
-      'Export transaction data to CSV format?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Export',
-          onPress: () => {
-            showSuccess('Transaction data has been exported successfully!', 'Success');
-          },
-        },
-      ]
-    );
+    showSuccess('Transaction data has been exported successfully!', 'Export Data');
   };
 
   /**
