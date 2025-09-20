@@ -5,7 +5,7 @@ import QRCode from 'react-native-qrcode-svg';
 const { width: screenWidth } = Dimensions.get('window');
 
 const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
-  // Convert amount to words (simplified version)
+  // Convert amount to words (simplified)
   const convertAmountToWords = (amount) => {
     const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
     const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
@@ -27,13 +27,11 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
     return 'Amount too large';
   };
 
-  // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
   };
 
-  // Get organization details
   const getOrganizationDetails = (orgName) => {
     const orgs = {
       'Computer Science Society': { fullName: 'Computer Science Society - NU Dasma' },
