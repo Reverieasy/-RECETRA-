@@ -11,7 +11,6 @@ This project contains **two separate applications** - a **web application** and 
 ├── assets/                     # Shared assets folder
 ├── mobile/                     # React Native Mobile Application
 ├── web/                        # React Web Application
-├── batch script/               # Windows batch scripts for easy startup
 └── README.md                   # Project documentation
 ```
 
