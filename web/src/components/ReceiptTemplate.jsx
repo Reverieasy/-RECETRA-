@@ -8,8 +8,11 @@ import QRCode from 'qrcode.react';
  * @param {Object} receipt - The receipt data object
  * @param {string} organization - The organization name
  * @param {string} paymentMethod - The payment method ('Cash' or 'Online')
+ * @param {boolean} inlineEmail - If true, render email-safe HTML (use <img> for QR)
+ * @param {string} qrImageDataUrl - Optional data/remote URL for QR image when inlineEmail
+ * @param {string} logoUrl - Optional absolute URL for the logo when sending via email
  */
-const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
+const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash', inlineEmail = false, qrImageDataUrl, logoUrl }) => {
   // Convert amount to words (simplified version)
   const convertAmountToWords = (amount) => {
     const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -88,15 +91,24 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
         {/* Header with RECETRA Logo Only */}
         <div style={styles.header}>
           <div style={styles.logoSection}>
-            <img 
-              src="/assets/Logo_with_Color.png" 
-              alt="RECETRA Logo" 
-              style={styles.logo}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
+            {/* Use absolute logo URL when provided (email-safe) */}
+            {logoUrl ? (
+              <img 
+                src={logoUrl}
+                alt="RECETRA Logo" 
+                style={styles.logo}
+              />
+            ) : (
+              <img 
+                src="/assets/Logo_with_Color.png" 
+                alt="RECETRA Logo" 
+                style={styles.logo}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
+              />
+            )}
             <div style={{...styles.logoPlaceholder, display: 'none'}}>
               <div style={styles.logoText}>RECETRA</div>
             </div>
@@ -151,15 +163,25 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
         </div>
 
         {/* QR Code Section */}
-        {receipt.qrCode && (
+        {(receipt.qrCode || qrImageDataUrl) && (
           <div style={styles.qrCodeSection}>
             <div style={styles.qrCodeContainer}>
-              <QRCode 
-                value={receipt.qrCode} 
-                size={120}
-                level="M"
-                includeMargin={true}
-              />
+              {inlineEmail ? (
+                <img 
+                  src={qrImageDataUrl || ''}
+                  alt="Receipt QR"
+                  width={120}
+                  height={120}
+                  style={{ display: 'inline-block' }}
+                />
+              ) : (
+                <QRCode 
+                  value={receipt.qrCode} 
+                  size={120}
+                  level="M"
+                  includeMargin={true}
+                />
+              )}
             </div>
             <div style={styles.qrCodeNote}>
               Scan this QR code to verify receipt authenticity

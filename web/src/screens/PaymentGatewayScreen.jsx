@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import ReactDOMServer from 'react-dom/server';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { mockOrganizations, mockCategories, addReceipt } from '../data/mockData';
 import { emailService } from '../services/emailService';
 import ReceiptTemplate from '../components/ReceiptTemplate';
+import qrcode from 'qrcode';
 
 /**
  * Payment Gateway Screen Component
@@ -96,7 +98,39 @@ const PaymentGatewayScreen = () => {
       // Send email to payer automatically
       if (paymentData.payerEmail) {
         try {
-          const emailResult = await emailService.sendReceiptEmail(receipt, paymentData.payerEmail);
+          // Generate QR code as data URL for email
+          const qrImageDataUrl = await qrcode.toDataURL(receipt.qrCode, { 
+            errorCorrectionLevel: 'H',
+            width: 120,
+            margin: 1
+          });
+
+          // Generate receipt HTML for email
+          const receiptHtml = ReactDOMServer.renderToStaticMarkup(
+            <ReceiptTemplate 
+              receipt={receipt} 
+              organization={receipt.organization}
+              paymentMethod="Online"
+              inlineEmail={true}
+              qrImageDataUrl={qrImageDataUrl}
+              logoUrl="https://imgur.com/a/placeholder.png"
+            />
+          );
+
+          const emailResult = await emailService.sendReceiptEmail(
+            {
+              html: receiptHtml,
+              amount_formatted: `₱${receipt.amount.toLocaleString()}`,
+              date_formatted: new Date(receipt.issuedAt).toLocaleString(),
+              customerName: receipt.payer
+            },
+            paymentData.payerEmail,
+            {
+              subject: `Receipt ${receiptNumber}`,
+              supportContact: 'support@yourdomain.com',
+              customerName: receipt.payer
+            }
+          );
           
           if (emailResult.success) {
             console.log('📧 PayMongo receipt email sent successfully to:', paymentData.payerEmail);

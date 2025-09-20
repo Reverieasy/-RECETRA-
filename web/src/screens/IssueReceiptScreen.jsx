@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import ReactDOMServer from 'react-dom/server';
 import Layout from '../components/Layout';
 import ReceiptTemplate from '../components/ReceiptTemplate';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +8,7 @@ import { mockCategories, mockReceiptTemplates, addReceipt } from '../data/mockDa
 import { emailService } from '../services/emailService';
 import QRCode from 'qrcode.react';
 import * as htmlToImage from 'html-to-image';
+import qrcode from 'qrcode';
 
 /**
  * Issue Receipt Screen Component
@@ -276,7 +278,42 @@ const IssueReceiptScreen = () => {
       // Send email to payer automatically
       if (receiptData.payerEmail) {
         try {
-          const emailResult = await emailService.sendReceiptEmail(receipt, receiptData.payerEmail);
+          // Generate QR code as data URL for email
+          const qrImageDataUrl = await qrcode.toDataURL(receipt.qrCode, { 
+            errorCorrectionLevel: 'H',
+            width: 120,
+            margin: 1
+          });
+
+          // Generate receipt HTML for email
+          const receiptHtml = ReactDOMServer.renderToStaticMarkup(
+            <ReceiptTemplate 
+              receipt={receipt} 
+              organization={user?.organization || receipt.organization}
+              paymentMethod="Cash"
+              inlineEmail={true}
+              qrImageDataUrl={qrImageDataUrl}
+              logoUrl="https://via.placeholder.com/280x280/4CAF50/FFFFFF?text=RECETRA"
+            />
+          );
+
+          // Debug: Log the generated HTML to see if logoUrl is being used
+          console.log('Generated receipt HTML includes logoUrl:', receiptHtml.includes('via.placeholder.com'));
+
+          const emailResult = await emailService.sendReceiptEmail(
+            {
+              html: receiptHtml,
+              amount_formatted: `₱${amount.toLocaleString()}`,
+              date_formatted: new Date(receipt.issuedAt).toLocaleString(),
+              customerName: receipt.payer
+            },
+            receiptData.payerEmail,
+            {
+              subject: `Receipt ${receiptNumber}`,
+              supportContact: 'support@yourdomain.com',
+              customerName: receipt.payer
+            }
+          );
           
           if (emailResult.success) {
             console.log('📧 Receipt email sent successfully to:', receiptData.payerEmail);
