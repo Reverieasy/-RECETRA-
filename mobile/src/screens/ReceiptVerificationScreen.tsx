@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   StyleSheet,
   ScrollView,
   Modal,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
 import Layout from '../components/Layout';
@@ -17,23 +15,11 @@ import ReceiptTemplate from '../components/ReceiptTemplate';
 import { mockReceipts } from '../data/mockData';
 import QRCode from 'react-native-qrcode-svg';
 
-
-/**
- * Receipt Verification Screen Component
- * Allows users to verify receipt authenticity through QR scanning or manual entry
- * 
- * Features:
- * - QR code scanning with camera
- * - Manual receipt number entry
- * - Complete receipt details display
- * - Payment and notification status tracking
- * - Interactive verification process
- */
 const ReceiptVerificationScreen: React.FC = () => {
-    const [receiptNumber, setReceiptNumber] = useState('');
+  const [receiptNumber, setReceiptNumber] = useState('');
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  
+
   // QR Scanner state
   const [showScanner, setShowScanner] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -42,10 +28,6 @@ const ReceiptVerificationScreen: React.FC = () => {
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const { showSuccess, showError, showWarning } = useInlineNotification();
 
-  /**
-   * Handles manual receipt verification
-   * Validates input and searches for receipt in mock data
-   */
   const handleManualVerification = () => {
     if (!receiptNumber.trim()) {
       showError('Please enter a receipt number', 'Error');
@@ -53,7 +35,6 @@ const ReceiptVerificationScreen: React.FC = () => {
     }
 
     setIsVerifying(true);
-    // Simulate API call delay for realistic experience
     setTimeout(() => {
       const receipt = mockReceipts.find(r => r.receiptNumber === receiptNumber.trim());
       setVerificationResult(receipt || null);
@@ -61,14 +42,10 @@ const ReceiptVerificationScreen: React.FC = () => {
     }, 1000);
   };
 
-  /**
-   * Opens the QR code scanner
-   */
   const handleQRScan = async () => {
     try {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
-      
       if (status === 'granted') {
         setShowScanner(true);
       } else {
@@ -80,44 +57,28 @@ const ReceiptVerificationScreen: React.FC = () => {
     }
   };
 
-  /**
-   * Handles successful QR code scan
-   */
   const handleBarCodeScanned = ({ data }: { data: string }) => {
-    // Prevent multiple scans
     if (isScanning) return;
-    
     setIsScanning(true);
     setShowScanner(false);
     setReceiptNumber(data);
     showSuccess(`QR Code scanned: ${data}`, 'QR Code Scanned');
-    // Auto-verify after scanning
     setTimeout(() => {
       setIsScanning(false);
       handleManualVerification();
     }, 1000);
   };
 
-  /**
-   * Shows QR code popup for a receipt
-   */
   const showReceiptQR = (receipt: any) => {
     setSelectedReceipt(receipt);
     setShowQRPopup(true);
   };
 
-  /**
-   * Closes the QR popup
-   */
   const closeQRPopup = () => {
     setShowQRPopup(false);
     setSelectedReceipt(null);
   };
 
-  /**
-   * Component to display successful verification results
-   * Shows complete receipt details with status indicators
-   */
   const VerificationResult: React.FC<{ receipt: any }> = ({ receipt }) => (
     <View style={styles.resultContainer}>
       <View style={styles.resultHeader}>
@@ -126,16 +87,12 @@ const ReceiptVerificationScreen: React.FC = () => {
           <Text style={styles.statusText}>Valid</Text>
         </View>
       </View>
-      
-      {/* Display the receipt using the same template as issued receipts */}
       <View style={styles.receiptDisplay}>
         <ReceiptTemplate 
           receipt={receipt} 
-          organization={receipt.organization} 
+          organization={receipt.organization}
         />
       </View>
-      
-      {/* Additional verification details */}
       <View style={styles.verificationDetails}>
         <Text style={styles.verificationTitle}>Verification Details</Text>
         <View style={styles.verificationRow}>
@@ -148,7 +105,6 @@ const ReceiptVerificationScreen: React.FC = () => {
             <Text style={styles.statusText}>{receipt.paymentStatus}</Text>
           </View>
         </View>
-        
         <View style={styles.verificationRow}>
           <Text style={styles.verificationLabel}>Email Status:</Text>
           <View style={[
@@ -159,7 +115,6 @@ const ReceiptVerificationScreen: React.FC = () => {
             <Text style={styles.statusText}>{receipt.emailStatus}</Text>
           </View>
         </View>
-        
         <View style={styles.verificationRow}>
           <Text style={styles.verificationLabel}>Verification Date:</Text>
           <Text style={styles.verificationValue}>
@@ -170,10 +125,6 @@ const ReceiptVerificationScreen: React.FC = () => {
     </View>
   );
 
-  /**
-   * Component to display when receipt is not found
-   * Provides helpful suggestions for troubleshooting
-   */
   const InvalidResult: React.FC = () => (
     <View style={styles.resultContainer}>
       <View style={styles.resultHeader}>
@@ -182,12 +133,10 @@ const ReceiptVerificationScreen: React.FC = () => {
           <Text style={styles.statusText}>Invalid</Text>
         </View>
       </View>
-      
       <View style={styles.resultContent}>
         <Text style={styles.invalidMessage}>
           The receipt number "{receiptNumber}" was not found in our system. Please check the receipt number and try again.
         </Text>
-        
         <View style={styles.suggestionsContainer}>
           <Text style={styles.suggestionsTitle}>Suggestions:</Text>
           <Text style={styles.suggestionText}>• Verify the receipt number is correct</Text>
@@ -204,23 +153,16 @@ const ReceiptVerificationScreen: React.FC = () => {
       <ScrollView style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.sectionTitle}>Verify Receipt Authenticity</Text>
-          
-          {/* Verification Methods */}
           <View style={styles.methodsContainer}>
             <TouchableOpacity style={styles.methodCard} onPress={handleQRScan}>
               <Text style={styles.methodTitle}>Scan QR Code</Text>
               <Text style={styles.methodSubtitle}>Use camera to scan receipt QR code</Text>
             </TouchableOpacity>
-            
             <View style={styles.methodCard}>
               <Text style={styles.methodTitle}>Manual Entry</Text>
               <Text style={styles.methodSubtitle}>Enter receipt number manually</Text>
             </View>
           </View>
-
-
-
-          {/* QR Scanner Modal */}
           <Modal
             animationType="slide"
             transparent={false}
@@ -244,7 +186,6 @@ const ReceiptVerificationScreen: React.FC = () => {
                     facing="back"
                     onBarcodeScanned={handleBarCodeScanned}
                   />
-                  {/* Scanning overlay */}
                   <View style={styles.scanningOverlay}>
                     <View style={styles.scanningFrame}>
                       <View style={[styles.scanningCorner, styles.scanningCornerTopLeft]} />
@@ -275,8 +216,6 @@ const ReceiptVerificationScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </Modal>
-
-          {/* QR Code Popup Modal */}
           <Modal
             animationType="fade"
             transparent={true}
@@ -291,14 +230,12 @@ const ReceiptVerificationScreen: React.FC = () => {
                     <Text style={styles.qrPopupCloseText}>✕</Text>
                   </TouchableOpacity>
                 </View>
-                
                 {selectedReceipt && (
                   <View style={styles.qrPopupBody}>
                     <Text style={styles.qrPopupReceiptTitle}>{selectedReceipt.receiptNumber}</Text>
                     <Text style={styles.qrPopupReceiptDetails}>
                       {selectedReceipt.payer} • ₱{selectedReceipt.amount.toLocaleString()}
                     </Text>
-                    
                     <View style={styles.qrPopupCodeWrapper}>
                       <QRCode 
                         value={selectedReceipt.receiptNumber}
@@ -307,7 +244,6 @@ const ReceiptVerificationScreen: React.FC = () => {
                         backgroundColor="white"
                       />
                     </View>
-                    
                     <Text style={styles.qrPopupNote}>
                       Scan this QR code to verify receipt authenticity
                     </Text>
@@ -316,11 +252,8 @@ const ReceiptVerificationScreen: React.FC = () => {
               </View>
             </View>
           </Modal>
-
-          {/* Manual Entry Form */}
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Enter Receipt Number</Text>
-            
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.input}
@@ -331,7 +264,6 @@ const ReceiptVerificationScreen: React.FC = () => {
                 autoCorrect={false}
               />
             </View>
-            
             <TouchableOpacity
               style={[styles.verifyButton, isVerifying && styles.verifyButtonDisabled]}
               onPress={handleManualVerification}
@@ -342,14 +274,8 @@ const ReceiptVerificationScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Verification Result */}
           {verificationResult && <VerificationResult receipt={verificationResult} />}
           {verificationResult === null && receiptNumber && !isVerifying && <InvalidResult />}
-
-
-
-          {/* Information */}
           <View style={styles.infoContainer}>
             <Text style={styles.infoTitle}>About Receipt Verification</Text>
             <Text style={styles.infoText}>
@@ -365,37 +291,11 @@ const ReceiptVerificationScreen: React.FC = () => {
   );
 };
 
-/**
- * Styles for the ReceiptVerificationScreen component
- * Uses a clean, professional design with consistent spacing and colors
- */
 const styles = StyleSheet.create({
-  // Main container
-  container: {
-    flex: 1,
-  },
-  
-  // Content area
-  content: {
-    padding: 16,
-  },
-  
-  // Section title
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1e3a8a',  // Primary blue color
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  
-  // Verification methods container
-  methodsContainer: {
-    flexDirection: 'row',
-    marginBottom: 24,
-  },
-  
-  // Individual method card
+  container: { flex: 1 },
+  content: { padding: 16 },
+  sectionTitle: { fontSize: 24, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 20, textAlign: 'center' },
+  methodsContainer: { flexDirection: 'row', marginBottom: 24 },
   methodCard: {
     flex: 1,
     backgroundColor: 'white',
@@ -403,59 +303,26 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 4,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  
-  // Method title
-  methodTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e3a8a',
-    marginBottom: 4,
-  },
-  
-  // Method subtitle
-  methodSubtitle: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  
-  // Form container
+  methodTitle: { fontSize: 16, fontWeight: '600', color: '#1e3a8a', marginBottom: 4 },
+  methodSubtitle: { fontSize: 12, color: '#6b7280' },
   formContainer: {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 20,
     marginBottom: 24,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  
-  // Form title
-  formTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 16,
-  },
-  
-  // Input container
-  inputContainer: {
-    marginBottom: 16,
-  },
-  
-  // Input field
+  formTitle: { fontSize: 18, fontWeight: '600', color: '#374151', marginBottom: 16 },
+  inputContainer: { marginBottom: 16 },
   input: {
     borderWidth: 1,
     borderColor: '#d1d5db',
@@ -464,43 +331,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: 'white',
   },
-  
-  // Verify button
   verifyButton: {
     backgroundColor: '#1e3a8a',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
   },
-  
-  // Disabled verify button
-  verifyButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  
-  // Verify button text
-  verifyButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  
-  // Result container
+  verifyButtonDisabled: { backgroundColor: '#9ca3af' },
+  verifyButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
   resultContainer: {
     backgroundColor: 'white',
     borderRadius: 12,
     marginBottom: 24,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  
-  // Result header
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -509,126 +357,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
-  
-  // Result title
-  resultTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#374151',
-  },
-  
-  // Result content
-  resultContent: {
-    padding: 16,
-  },
-  
-  // Result row
-  resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  
-  // Result label
-  resultLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
-    flex: 1,
-  },
-  
-  // Result value
-  resultValue: {
-    fontSize: 14,
-    color: '#374151',
-    flex: 1,
-    textAlign: 'right',
-  },
-  
-  // Status badge
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  
-  // Status text
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'white',
-  },
-  
-  // Invalid message
-  invalidMessage: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  
-  // Suggestions container
-  suggestionsContainer: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    padding: 12,
-  },
-  
-  // Suggestions title
-  suggestionsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  
-  // Suggestion text
-  suggestionText: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
-  },
-  
-  // Information container
+  resultTitle: { fontSize: 18, fontWeight: 'bold', color: '#374151' },
+  resultContent: { padding: 16 },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  statusText: { fontSize: 12, fontWeight: '600', color: 'white' },
+  invalidMessage: { fontSize: 14, color: '#6b7280', lineHeight: 20, marginBottom: 16 },
+  suggestionsContainer: { backgroundColor: '#f3f4f6', borderRadius: 8, padding: 12 },
+  suggestionsTitle: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  suggestionText: { fontSize: 12, color: '#6b7280', marginBottom: 4 },
   infoContainer: {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  
-  // Information title
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  
-  // Information text
-  infoText: {
-    fontSize: 12,
-    color: '#6b7280',
-    lineHeight: 18,
-  },
-  
-  // Scanning overlay styles
+  infoTitle: { fontSize: 16, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  infoText: { fontSize: 12, color: '#6b7280', lineHeight: 18 },
   scanningOverlay: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -647,31 +398,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#4f46e5',
     borderRadius: 10,
   },
-  scanningCornerTopLeft: {
-    top: -10,
-    left: -10,
-  },
-  scanningCornerTopRight: {
-    top: -10,
-    right: -10,
-  },
-  scanningCornerBottomLeft: {
-    bottom: -10,
-    left: -10,
-  },
-  scanningCornerBottomRight: {
-    bottom: -10,
-    right: -10,
-  },
-  scanningText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  
-  // QR Popup styles
+  scanningCornerTopLeft: { top: -10, left: -10 },
+  scanningCornerTopRight: { top: -10, right: -10 },
+  scanningCornerBottomLeft: { bottom: -10, left: -10 },
+  scanningCornerBottomRight: { bottom: -10, right: -10 },
+  scanningText: { color: 'white', fontSize: 18, fontWeight: '600', marginTop: 20, textAlign: 'center' },
   qrPopupOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -693,11 +424,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-  qrPopupTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1e3a8a',
-  },
+  qrPopupTitle: { fontSize: 20, fontWeight: '600', color: '#1e3a8a' },
   qrPopupCloseButton: {
     backgroundColor: '#ef4444',
     borderRadius: 20,
@@ -706,52 +433,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  qrPopupCloseText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  qrPopupBody: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  qrPopupReceiptTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e3a8a',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  qrPopupReceiptDetails: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  qrPopupCodeWrapper: {
-    marginBottom: 20,
-  },
-  qrPopupNote: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-
-  // New styles for receipt display
+  qrPopupCloseText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  qrPopupBody: { alignItems: 'center', width: '100%' },
+  qrPopupReceiptTitle: { fontSize: 18, fontWeight: '600', color: '#1e3a8a', marginBottom: 8, textAlign: 'center' },
+  qrPopupReceiptDetails: { fontSize: 14, color: '#6b7280', marginBottom: 20, textAlign: 'center' },
+  qrPopupCodeWrapper: { marginBottom: 20 },
+  qrPopupNote: { fontSize: 14, color: '#6b7280', textAlign: 'center', fontStyle: 'italic' },
   receiptDisplay: {
     backgroundColor: 'white',
     borderRadius: 8,
-    padding: 20,
+    padding: 0,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    alignItems: 'center',
+    width: '100%',
   },
-
-  // Verification details styles
   verificationDetails: {
     backgroundColor: '#f9fafb',
     borderRadius: 8,
@@ -759,33 +459,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
-
-  verificationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12,
-  },
-
+  verificationTitle: { fontSize: 16, fontWeight: '600', color: '#374151', marginBottom: 12 },
   verificationRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-
-  verificationLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-
-  verificationValue: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-  },
-
+  verificationLabel: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
+  verificationValue: { fontSize: 14, color: '#374151', fontWeight: '500' },
 });
 
 export default ReceiptVerificationScreen;
