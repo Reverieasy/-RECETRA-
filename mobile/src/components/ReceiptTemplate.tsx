@@ -2,17 +2,8 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
-// Get screen dimensions for responsive design
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-/**
- * RECETRA Receipt Template Component
- * Displays receipts in a professional format similar to official acknowledgment receipts
- * 
- * @param {Object} receipt - The receipt data object
- * @param {string} organization - The organization name
- * @param {string} paymentMethod - The payment method ('Cash' or 'Online')
- */
 const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
   // Convert amount to words (simplified version)
   const convertAmountToWords = (amount) => {
@@ -93,13 +84,13 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
           {/* Header with RECETRA Logo Only */}
           <View style={styles.header}>
             <View style={styles.logoSection}>
-            <Image 
-              source={require('../../assets/Logo_with_Color.png')}
-              style={styles.logo}
-              onError={() => {}}
-              fadeDuration={0}
-              resizeMode="contain"
-            />
+              <Image 
+                source={require('../../assets/Logo_with_Color.png')}
+                style={styles.logo}
+                onError={() => {}}
+                fadeDuration={0}
+                resizeMode="contain"
+              />
             </View>
           </View>
 
@@ -111,11 +102,11 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
           {/* Receipt Header */}
           <View style={styles.receiptHeader}>
             <View style={styles.receiptNumber}>
-              <Text style={styles.noLabel}>NO:</Text>
+              <Text style={styles.noLabel}>NO: </Text>
               <Text style={styles.receiptNumberValue}>{receipt.receiptNumber}</Text>
             </View>
             <View style={styles.receiptDate}>
-              <Text style={styles.dateLabel}>Date:</Text>
+              <Text style={styles.dateLabel}>Date: </Text>
               <Text style={styles.dateValue}>{formatDate(receipt.issuedAt)}</Text>
             </View>
           </View>
@@ -139,10 +130,12 @@ const ReceiptTemplate = ({ receipt, organization, paymentMethod = 'Cash' }) => {
           <View style={styles.paymentDetailsSection}>
             <Text style={styles.paymentDetailsLabel}>Payment Details: </Text>
             <View style={styles.paymentOptions}>
-              <Text style={styles.checkbox}>{paymentMethod === 'Cash' ? '☑' : '☐'}</Text>
-              <Text style={styles.paymentOption}> Cash</Text>
-              <Text style={styles.checkbox}>{paymentMethod === 'Online' ? '☑' : '☐'}</Text>
-              <Text style={styles.paymentOption}> Online</Text>
+              <Text style={styles.checkbox}>
+                {paymentMethod === 'Cash' ? '☑' : '☐'} Cash
+              </Text>
+              <Text style={[styles.checkbox, {marginLeft: 20}]}>
+                {paymentMethod === 'Online' ? '☑' : '☐'} Online
+              </Text>
             </View>
           </View>
 
@@ -181,25 +174,24 @@ const styles = StyleSheet.create({
   },
   receiptContainer: {
     justifyContent: 'center',
-    padding: screenWidth * 0.01, // Minimal padding to maximize space
+    alignItems: 'center',
+    paddingHorizontal: 0,
+    paddingVertical: 8,
     backgroundColor: '#f5f5f5',
+    width: '100%',
   },
   receipt: {
     backgroundColor: 'white',
-    paddingVertical: screenHeight * 0.01, // 1% of screen height
-    paddingHorizontal: screenWidth * 0.02, // 2% of screen width
-    borderRadius: 0,
+    padding: 16,
+    borderRadius: 8,
     margin: 0,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    height: screenHeight * 0.45, // Slightly smaller height
-    width: screenWidth * 0.98, // 98% of screen width for more space
+    width: '100%',
+    maxWidth: 400,
     alignSelf: 'center',
   },
   header: {
@@ -212,33 +204,18 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   logo: {
-    height: Math.min(screenWidth * 0.15, 80), // Much smaller logo for landscape rectangle
+    height: Math.min(screenWidth * 0.15, 80),
     width: Math.min(screenWidth * 0.15, 80),
     marginBottom: 0,
     resizeMode: 'contain',
   },
-  logoPlaceholder: {
-    height: Math.min(screenWidth * 0.4, 200),
-    width: Math.min(screenWidth * 0.4, 200),
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 0,
-  },
-  logoText: {
-    color: 'white',
-    fontSize: Math.min(screenWidth * 0.08, 28),
-    fontWeight: 'bold',
-    letterSpacing: 3,
-  },
   titleSection: {
     alignItems: 'center',
-    marginTop: screenHeight * 0.005, // Minimal margin
-    marginBottom: screenHeight * 0.01, // Minimal margin
+    marginTop: screenHeight * 0.005,
+    marginBottom: screenHeight * 0.01,
   },
   receiptTitle: {
-    fontSize: Math.min(screenWidth * 0.04, 16), // Smaller font for landscape
+    fontSize: Math.min(screenWidth * 0.04, 16),
     fontWeight: 'bold',
     color: '#000',
     letterSpacing: 1,
@@ -248,82 +225,82 @@ const styles = StyleSheet.create({
   receiptHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: screenHeight * 0.005, // Minimal margin for landscape
+    marginBottom: screenHeight * 0.005,
     alignItems: 'flex-start',
     flexWrap: 'wrap',
   },
   receiptNumber: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4, // Reduced gap
     flex: 1,
-    minWidth: screenWidth * 0.35, // Reduced minimum width
+    minWidth: screenWidth * 0.35,
   },
   receiptDate: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4, // Reduced gap
     flex: 1,
-    minWidth: screenWidth * 0.35, // Reduced minimum width
+    minWidth: screenWidth * 0.35,
   },
   noLabel: {
-    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
+    fontSize: Math.min(screenWidth * 0.035, 14),
     color: '#d32f2f',
     fontWeight: 'bold',
+    marginRight: 4,
   },
   receiptNumberValue: {
-    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
+    fontSize: Math.min(screenWidth * 0.035, 14),
     color: '#000',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     flex: 1,
   },
   dateLabel: {
-    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
+    fontSize: Math.min(screenWidth * 0.035, 14),
     color: '#000',
     fontWeight: 'bold',
+    marginRight: 4,
   },
   dateValue: {
-    fontSize: Math.min(screenWidth * 0.035, 14), // Slightly smaller
+    fontSize: Math.min(screenWidth * 0.035, 14),
     color: '#000',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     flex: 1,
   },
   acknowledgmentText: {
-    marginBottom: screenHeight * 0.01, // Minimal margin for landscape
+    marginBottom: screenHeight * 0.01,
   },
   acknowledgmentParagraph: {
-    fontSize: Math.min(screenWidth * 0.03, 12), // Much smaller font for landscape
+    fontSize: Math.min(screenWidth * 0.03, 12),
     color: '#000',
-    lineHeight: Math.min(screenWidth * 0.035, 14), // Tighter line height
+    lineHeight: Math.min(screenWidth * 0.035, 14),
     textAlign: 'left',
   },
   underlinedSpace: {
-    fontSize: Math.min(screenWidth * 0.03, 12), // Much smaller font for landscape
+    fontSize: Math.min(screenWidth * 0.03, 12),
     color: '#000',
     fontWeight: 'bold',
     borderBottomWidth: 1,
     borderBottomColor: '#000',
     paddingBottom: 1,
-    minWidth: Math.min(screenWidth * 0.1, 40), // Much smaller min width
+    minWidth: Math.min(screenWidth * 0.1, 40),
     textAlign: 'center',
   },
   underlinedName: {
-    fontSize: Math.min(screenWidth * 0.03, 12), // Much smaller font for landscape
+    fontSize: Math.min(screenWidth * 0.03, 12),
     color: '#000',
     fontWeight: 'bold',
     borderBottomWidth: 1,
     borderBottomColor: '#000',
     paddingBottom: 1,
-    minWidth: Math.min(screenWidth * 0.15, 60), // Much smaller min width
+    minWidth: Math.min(screenWidth * 0.15, 60),
     textAlign: 'center',
   },
   paymentDetailsSection: {
-    marginBottom: screenHeight * 0.01, // Minimal margin for landscape
+    marginBottom: screenHeight * 0.01,
   },
   paymentDetailsLabel: {
-    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    fontSize: Math.min(screenWidth * 0.03, 11),
     color: '#000',
     fontWeight: 'bold',
     marginBottom: 0,
@@ -332,10 +309,11 @@ const styles = StyleSheet.create({
     lineHeight: 1,
   },
   checkbox: {
-    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    fontSize: Math.min(screenWidth * 0.03, 11),
     color: '#000',
     fontWeight: 'bold',
-    marginLeft: 10, // Reduced margin
+    marginLeft: 10,
+    marginRight: 5,
   },
   paymentOptions: {
     flexDirection: 'row',
@@ -343,55 +321,53 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   paymentOption: {
-    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    fontSize: Math.min(screenWidth * 0.03, 11),
     color: '#000',
     marginLeft: 5,
   },
   receivedBySection: {
-    marginTop: screenHeight * 0.01, // Minimal margin for landscape
-    marginBottom: screenHeight * 0.005, // Minimal margin
+    marginTop: screenHeight * 0.01,
+    marginBottom: screenHeight * 0.005,
   },
   receivedByRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: screenHeight * 0.005, // Minimal margin
+    marginBottom: screenHeight * 0.005,
   },
   receivedByLabel: {
-    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    fontSize: Math.min(screenWidth * 0.03, 11),
     color: '#000',
     fontWeight: 'bold',
   },
   receivedByValue: {
-    fontSize: Math.min(screenWidth * 0.03, 11), // Much smaller font
+    fontSize: Math.min(screenWidth * 0.03, 11),
     color: '#000',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     flex: 1,
     textAlign: 'right',
   },
-
-  // QR Code Section Styles
   qrCodeSection: {
     alignItems: 'center',
-    marginTop: screenHeight * 0.005, // Minimal margin for landscape
-    padding: screenWidth * 0.02, // Minimal padding
-    borderWidth: 1, // Thinner border
+    marginTop: screenHeight * 0.005,
+    padding: screenWidth * 0.02,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: '#ccc',
-    borderRadius: 4, // Smaller border radius
+    borderRadius: 4,
     backgroundColor: '#f9f9f9',
   },
   qrCodeContainer: {
     alignItems: 'center',
-    marginBottom: 4, // Minimal margin
+    marginBottom: 4,
   },
   qrCodeNote: {
-    fontSize: Math.min(screenWidth * 0.02, 8), // Much smaller font
+    fontSize: Math.min(screenWidth * 0.02, 8),
     color: '#666',
     fontStyle: 'italic',
     textAlign: 'center',
-    paddingHorizontal: 2, // Minimal padding
+    paddingHorizontal: 2,
   },
 });
 
