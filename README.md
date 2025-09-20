@@ -106,11 +106,6 @@ This project contains **two separate applications** - a **web application** and 
    ```
    Use Expo Go app to scan QR code and run on mobile device
 
-### **Using Batch Scripts (Windows)**
-- **`Start Both Servers.bat`**: Starts both web and mobile servers simultaneously
-- **`Start Web Server.bat`**: Starts only the web application
-- **`Start Mobile Server.bat`**: Starts only the mobile application
-
 ## Development Workflow
 
 ### **Web Development**
@@ -147,25 +142,10 @@ This project contains **two separate applications** - a **web application** and 
 - **User Management**: Add, edit, and manage user accounts
 - **Role Permissions**: Verify access control for different roles
 
-## Platform-Specific Features
-
-### **Web Application**
-- **Large Screen Optimization**: Better for data entry and management
-- **Keyboard Navigation**: Full keyboard support for power users
-- **Print Support**: Print receipts and reports directly
-- **Multi-tab Support**: Work with multiple sections simultaneously
-
-### **Mobile Application**
-- **Camera Integration**: QR code scanning and photo capture
-- **Touch Optimization**: Mobile-first interface design
-- **Offline Capability**: Basic functionality without internet
-- **Push Notifications**: Real-time updates and alerts
 
 ## Security Features
 - **Role-based Authentication**: Users can only access features for their role
-- **Session Management**: Secure login/logout with token validation
-- **Input Validation**: Prevents malicious data entry
-- **Secure API Calls**: Protected endpoints for sensitive operations
+
 
 ## Recent Updates
 
@@ -178,11 +158,6 @@ This project contains **two separate applications** - a **web application** and 
 - ✅ Payment gateway receipts now correctly show "Online" payment method
 - ✅ Cleaner email delivery text without redundant "AUTOMATIC TO" prefix
 - ✅ Dynamic payment method detection in receipt templates
-
-### **Batch Scripts**
-- ✅ Simple batch scripts for easy development server startup
-- ✅ Support for both individual and combined server startup
-- ✅ Cross-platform compatibility
 
 ## Future Enhancements
 - **Backend Integration**: Replace mock data with real database
@@ -205,15 +180,3 @@ This project contains **two separate applications** - a **web application** and 
 - **Assets**: Place in appropriate folders, use descriptive names
 - **Documentation**: Update README and add inline comments
 
-## Support
-- **Technical Issues**: Check existing issues or create new ones
-- **Feature Requests**: Submit through GitHub issues
-- **Documentation**: Refer to this README and inline code comments
-- **Community**: Join discussions in project forums
-
-## Live Demo
-- **Web Application**: [recetra.vercel.app](https://recetra.vercel.app)
-
----
-
-**RECETRA** - Streamlining receipt management for NU Dasma student organizations
